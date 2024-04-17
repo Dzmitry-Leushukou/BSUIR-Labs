@@ -1,7 +1,0 @@
-﻿  3.cpp
-D:\Programming\BSUIR\Labs\Hat.h(30,20): warning C4244: =: преобразование "__int64" в "char", возможна потеря данных
-D:\Programming\BSUIR\Labs\Hat.h(18,8): warning C4101: ch: неиспользованная локальная переменная
-D:\Programming\BSUIR\Labs\6\Strashna part\3\3.cpp(9,14): warning C4267: инициализация: преобразование из "size_t" в "short"; возможна потеря данных
-D:\Programming\BSUIR\Labs\6\Strashna part\3\3.cpp(104,32): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
-D:\Programming\BSUIR\Labs\6\Strashna part\3\3.cpp(122,15): warning C4309: =: усечение константного значения
-  3.vcxproj -> D:\Programming\BSUIR\Labs\6\Strashna part\x64\Debug\3.exe
