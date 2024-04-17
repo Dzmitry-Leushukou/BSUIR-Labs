@@ -1,0 +1,8 @@
+﻿  5.cpp
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(41,16): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(51,29): warning C4018: <=: несоответствие типов со знаком и без знака
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(56,13): warning C4018: <=: несоответствие типов со знаком и без знака
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(56,32): warning C4018: <=: несоответствие типов со знаком и без знака
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(68,11): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(69,16): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\Programming\BSUIR\Labs\6\Strashna part\5\5.cpp(75,1): error C4430: отсутствует спецификатор типа - предполагается int. Примечание. C++ не поддерживает int по умолчанию

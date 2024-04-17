@@ -1,0 +1,4 @@
+﻿  2.cpp
+D:\Programming\BSUIR\Labs\Hat.h(30,20): warning C4244: =: преобразование "__int64" в "char", возможна потеря данных
+D:\Programming\BSUIR\Labs\Hat.h(18,8): warning C4101: ch: неиспользованная локальная переменная
+  2.vcxproj -> D:\Programming\BSUIR\Labs\6\Strashna part\x64\Debug\2.exe
