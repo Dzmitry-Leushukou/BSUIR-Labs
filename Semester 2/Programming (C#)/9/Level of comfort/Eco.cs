@@ -1,5 +1,4 @@
-﻿using Main;
-
+﻿
 internal class Eco:Housing,IInside
     {
         public Eco(string name, Type type, IHousing house):base(name,type, house) { }

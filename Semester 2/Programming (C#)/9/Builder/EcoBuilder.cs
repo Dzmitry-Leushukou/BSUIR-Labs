@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace Main
 {
-    internal class EcoBuilder:AbstractBuilder
+    internal class EcoBuilder : AbstractBuilder
     {
         public override Housing Build()
         {

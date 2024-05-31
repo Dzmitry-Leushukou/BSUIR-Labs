@@ -7,8 +7,8 @@
       <FileName>AbstractBuilder.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Field Name="house" />
       <Field Name="type" />
+      <Field Name="house" />
     </ShowAsAssociation>
   </Class>
   <Class Name="Housing">
@@ -18,8 +18,8 @@
       <FileName>Housing.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Field Name="house" />
       <Field Name="type" />
+      <Field Name="house" />
     </ShowAsAssociation>
   </Class>
   <Class Name="Eco">

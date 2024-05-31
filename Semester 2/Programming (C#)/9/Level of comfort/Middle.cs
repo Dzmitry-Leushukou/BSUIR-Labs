@@ -1,5 +1,4 @@
-﻿using Main;
-
+﻿
 internal class Middle : Housing, IInside,IOutside
 {
     public Middle(string name, Type type, IHousing house) : base(name, type, house) { }
