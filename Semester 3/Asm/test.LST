@@ -1,0 +1,14 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+                    org $0000
+                   a equ 3
+                   b equ 5
+  0000 86 03        ldaa #a
+  0002 C6 05        ldab #b
+  0004 3D           mul
+  0005 DD 25        std $0025
+
+  Symbol Table 
+
+  A                  0003
+  B                  0005

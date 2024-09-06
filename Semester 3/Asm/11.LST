@@ -1,0 +1,8 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+                    org 0
+  0000 DE 05        ldx 5
+  0002 18 DE 06     ldy 6
+
+                   ; 1 way
+
