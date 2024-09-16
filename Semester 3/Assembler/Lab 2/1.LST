@@ -1,0 +1,12 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+  C000 86 DA        ldaa #%11011010
+  C002 C6 AA        ldab #%10101010
+  C004 97 01        staa $1
+  C006 D7 02        stab $2
+
+                   ;Make a and b
+  C008 94 02        ANDA $2
+                   ;Now in a there are only bits that are included in a and b at
+.                  the same time
+  C00A 98 01        EORA $1
