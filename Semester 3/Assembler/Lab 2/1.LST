@@ -1,4 +1,4 @@
-  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+  ADDR B1 B2 B3 B4 D:\Programming\BSUIR\BSUIR-Labs\Semester 3\      PAGE       1
 
   C000 86 DA        ldaa #%11011010
   C002 C6 AA        ldab #%10101010

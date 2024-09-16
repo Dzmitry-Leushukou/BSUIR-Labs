@@ -1,11 +1,11 @@
   ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
 
   C000 CE 82 00     ldx #$8200
-  C003 86 03        ldaa #3
+  C003 86 FF        ldaa #255
   C005 B7 82 01     staa $8201
-  C008 86 01        ldaa #1
+  C008 86 FF        ldaa #255
   C00A B7 82 33     staa $8233
-  C00D 86 00        ldaa #0
+  C00D 86 FF        ldaa #255
   C00F B7 82 02     staa $8202
   C012 86 00        ldaa #0
   C014 18 CE 00 00  ldy #0

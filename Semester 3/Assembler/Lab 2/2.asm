@@ -1,9 +1,9 @@
  ldx #$8200
- ldaa #3
+ ldaa #255
  staa $8201
- ldaa #1	
+ ldaa #255	
  staa $8233
- ldaa #0
+ ldaa #255
  staa $8202
  ldaa #0
  ldy #0

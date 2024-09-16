@@ -1,0 +1,13 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+  C000 CE 00 C0     ldx #%11000000
+  C003 86 04        ldaa #%00000100
+  C005 A7 00        staa 0,x
+  C007 1F 00 03 02  brclr 0,x,#%00000011,ceh
+  C00B 86 03        ldaa #3
+                   ceh:
+  C00D 86 02        ldaa #2
+
+  Symbol Table 
+
+  CEH                C00D
