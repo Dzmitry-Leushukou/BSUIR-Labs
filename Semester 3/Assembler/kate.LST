@@ -1,0 +1,6 @@
+  ADDR B1 B2 B3 B4 D:\Programming\BSUIR\BSUIR-Labs\Semester 3\      PAGE       1
+
+                    org $8000
+  8000 96 56        ldaa $56
+  8002 D6 33        ldab $33
+  8004 16           TAB
