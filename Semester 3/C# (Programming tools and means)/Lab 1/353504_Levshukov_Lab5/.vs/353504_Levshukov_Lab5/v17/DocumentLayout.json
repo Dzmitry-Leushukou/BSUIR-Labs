@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\classdiagram1.cd||{59B0B277-7DDF-4E36-A3ED-02DAC5B9E2FA}|",
+      "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\classdiagram1.cd||{59B0B277-7DDF-4E36-A3ED-02DAC5B9E2FA}|",
       "RelativeMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|solutionrelative:classdiagram1.cd||{59B0B277-7DDF-4E36-A3ED-02DAC5B9E2FA}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|solutionrelative:entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\contracts\\iairport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -29,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|solutionrelative:entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|solutionrelative:entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{285DAFD5-4619-4A9E-AE46-6AC47D3186BE}|353504_Levshukov_Lab5.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 1\\353504_levshukov_lab5\\collections\\mycustomcollection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -66,26 +66,25 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 1,
               "Title": "Passanger.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Passanger.cs",
               "RelativeDocumentMoniker": "Entities\\Passanger.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Passanger.cs",
               "RelativeToolTip": "Entities\\Passanger.cs",
-              "ViewState": "AQIAAAYAAAAAAAAAAAAAABYAAAA3AAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T19:06:35.288Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Airport.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Airport.cs",
               "RelativeDocumentMoniker": "Entities\\Airport.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Airport.cs",
               "RelativeToolTip": "Entities\\Airport.cs",
-              "ViewState": "AQIAAA4AAAAAAAAAAAAAwCMAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T19:05:47.069Z",
               "EditorCaption": ""
@@ -98,75 +97,69 @@
               "RelativeDocumentMoniker": "Collections\\MyCustomCollection.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Collections\\MyCustomCollection.cs",
               "RelativeToolTip": "Collections\\MyCustomCollection.cs",
-              "ViewState": "AQIAAFgAAAAAAAAAAAAUwFcAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T17:48:36.859Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAAUAAAAAAAAAAAAAwBoAAABZAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T17:39:26.863Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "UI.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\UI.cs",
               "RelativeDocumentMoniker": "UI.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\UI.cs",
               "RelativeToolTip": "UI.cs",
-              "ViewState": "AQIAAB4AAAAAAAAAAAAYwCwAAAAXAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T19:56:53.151Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Ticket.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Ticket.cs",
               "RelativeDocumentMoniker": "Entities\\Ticket.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Entities\\Ticket.cs",
               "RelativeToolTip": "Entities\\Ticket.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T19:08:46.166Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "IAirport.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Contracts\\IAirport.cs",
               "RelativeDocumentMoniker": "Contracts\\IAirport.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Contracts\\IAirport.cs",
               "RelativeToolTip": "Contracts\\IAirport.cs",
-              "ViewState": "AQIAAAMAAAAAAAAAAAD4vxAAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T18:45:19.777Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "353504_Levshukov_Lab5",
+              "DocumentIndex": 3,
+              "Title": "353504_Levshukov_Lab5.csproj",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\353504_Levshukov_Lab5.csproj",
               "RelativeDocumentMoniker": "353504_Levshukov_Lab5.csproj",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\353504_Levshukov_Lab5.csproj",
               "RelativeToolTip": "353504_Levshukov_Lab5.csproj",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-09-18T17:41:26.587Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-18T17:41:26.587Z"
             },
             {
               "$type": "Document",
@@ -176,7 +169,6 @@
               "RelativeDocumentMoniker": "Interfaces\\ICustomCollection.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 1\\353504_Levshukov_Lab5\\Interfaces\\ICustomCollection.cs",
               "RelativeToolTip": "Interfaces\\ICustomCollection.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-18T17:43:19.747Z",
               "EditorCaption": ""
