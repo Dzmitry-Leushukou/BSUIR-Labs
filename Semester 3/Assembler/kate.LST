@@ -1,6 +1,20 @@
-  ADDR B1 B2 B3 B4 D:\Programming\BSUIR\BSUIR-Labs\Semester 3\      PAGE       1
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
 
-                    org $8000
-  8000 96 56        ldaa $56
-  8002 D6 33        ldab $33
-  8004 16           TAB
+  C000 86 05        ldaa #5 ;
+  C002 C6 0D        ldab #13 ;
+  C004 CE AF AF     ldx #$AFAF ;
+  C007 18 CE AB DF  ldy #$ABDF ;
+
+                   ;     D,     (      ,   )
+                   ;      B  .    D     2
+  C00B DD 02        std $2
+                    ;  D
+  C00D CC 00 00     ldd #0
+                    ;     .         1
+  C010 97 01        staa $1
+                    ;     A
+  C012 D3 01        addd $1
+                    ;  ,  ,    B?   -     $2.
+                    ;       .       (   -  )
+                    ;     ,
+
