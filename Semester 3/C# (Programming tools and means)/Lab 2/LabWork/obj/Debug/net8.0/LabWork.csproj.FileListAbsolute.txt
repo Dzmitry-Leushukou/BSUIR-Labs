@@ -1,0 +1,15 @@
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\bin\Debug\net8.0\LabWork.exe
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\bin\Debug\net8.0\LabWork.deps.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\bin\Debug\net8.0\LabWork.runtimeconfig.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\bin\Debug\net8.0\LabWork.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\bin\Debug\net8.0\LabWork.pdb
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.AssemblyInfoInputs.cache
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.AssemblyInfo.cs
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.csproj.CoreCompileInputs.cache
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.sourcelink.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\refint\LabWork.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.pdb
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\LabWork.genruntimeconfig.cache
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 2\LabWork\obj\Debug\net8.0\ref\LabWork.dll

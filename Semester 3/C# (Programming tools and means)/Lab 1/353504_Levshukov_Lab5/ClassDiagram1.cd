@@ -1,69 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="_353504_Levshukov_Lab5.Collections.MyCustomCollection&lt;T&gt;">
-    <Position X="8" Y="0.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AgIAAAAAAAAABAAgCACABAQAAAwAAAAAAAAAAAQAAAA=</HashCode>
-      <FileName>Collections\MyCustomCollection.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
   <Class Name="_353504_Levshukov_Lab5.Entities.Airport">
-    <Position X="4.5" Y="1.25" Width="1.5" />
+    <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAABAAGAAAAgAAAAhAAAAAAAACAAAAAAQAAAAAAAAAE=</HashCode>
       <FileName>Entities\Airport.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
+    <ShowAsCollectionAssociation>
       <Field Name="_Passangers" />
       <Field Name="_Tarrifs" />
-    </ShowAsAssociation>
+    </ShowAsCollectionAssociation>
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="_353504_Levshukov_Lab5.Entities.Passanger">
-    <Position X="2.75" Y="0.5" Width="1.5" />
+    <Position X="0.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQCAAAAAAAAAAAAAAAAAAQAAAIAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Entities\Passanger.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
+    <ShowAsCollectionAssociation>
       <Property Name="Tickets" />
-    </ShowAsAssociation>
+    </ShowAsCollectionAssociation>
   </Class>
   <Class Name="_353504_Levshukov_Lab5.Entities.Ticket">
-    <Position X="9.75" Y="0.5" Width="1.5" />
+    <Position X="4.25" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAQAAAAAAAEAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
       <FileName>Entities\Ticket.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Program">
-    <Position X="0.5" Y="0.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
-      <FileName>Program.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="_353504_Levshukov_Lab5.UI">
-    <Position X="11.5" Y="0.5" Width="1.5" />
+    <Position X="6.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AgAEAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>UI.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Interface Name="_353504_Levshukov_Lab5.Contracts.IAirport">
-    <Position X="6.25" Y="0.5" Width="1.5" />
+  <Class Name="_353504_Levshukov_Lab5.Collections.Node&lt;T&gt;">
+    <Position X="11" Y="1.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAEAAAAAAAAAgAAAAAAAACAAAAAAQAAAAAAAAAE=</HashCode>
-      <FileName>Contracts\IAirport.cs</FileName>
+      <HashCode>AgAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Collections\MyCustomCollection.cs</FileName>
     </TypeIdentifier>
-  </Interface>
-  <Interface Name="_353504_Levshukov_Lab5.Interfaces.ICustomCollection&lt;T&gt;">
-    <Position X="0.5" Y="2" Width="1.5" />
+  </Class>
+  <Class Name="_353504_Levshukov_Lab5.Collections.MyCustomCollection&lt;T&gt;">
+    <Position X="8.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AgIAAAAAAAAABAAACACABAQAAAgAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Interfaces\ICustomCollection.cs</FileName>
+      <HashCode>AgIAAAAAAAAABAAgCACABAQAAAwAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Collections\MyCustomCollection.cs</FileName>
     </TypeIdentifier>
-  </Interface>
+    <ShowAsAssociation>
+      <Field Name="_begin" />
+      <Field Name="_end" />
+      <Field Name="_cur" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

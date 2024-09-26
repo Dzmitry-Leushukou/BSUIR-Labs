@@ -1,0 +1,230 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\airport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\airport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\tarifflog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\tarifflog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\ui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:ui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\interfaces\\icustomcollection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:interfaces\\icustomcollection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\collections\\myexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:collections\\myexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\collections\\mycustomcollection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:collections\\mycustomcollection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\passanger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\passangerlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\passangerlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\journal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\journal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\entities\\airportlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:entities\\airportlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 2\\labwork\\labwork.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{2276ED5F-2780-4FE4-9AFA-3B3D42ADD712}|LabWork.csproj|solutionrelative:labwork.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ICustomCollection.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Interfaces\\ICustomCollection.cs",
+              "RelativeDocumentMoniker": "Interfaces\\ICustomCollection.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Interfaces\\ICustomCollection.cs",
+              "RelativeToolTip": "Interfaces\\ICustomCollection.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T19:19:09.281Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAwAAAA/AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-19T12:57:00.233Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UI.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\UI.cs",
+              "RelativeDocumentMoniker": "UI.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\UI.cs",
+              "RelativeToolTip": "UI.cs",
+              "ViewState": "AQIAAD0AAAAAAAAAAAAkwCUAAAAmAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-21T12:26:52.226Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MyException.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Collections\\MyException.cs",
+              "RelativeDocumentMoniker": "Collections\\MyException.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Collections\\MyException.cs",
+              "RelativeToolTip": "Collections\\MyException.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-21T12:24:13.174Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Airport.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Airport.cs",
+              "RelativeDocumentMoniker": "Entities\\Airport.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Airport.cs",
+              "RelativeToolTip": "Entities\\Airport.cs",
+              "ViewState": "AQIAACYAAAAAAAAAAAAgwBEAAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-19T13:59:39.548Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MyCustomCollection.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Collections\\MyCustomCollection.cs",
+              "RelativeDocumentMoniker": "Collections\\MyCustomCollection.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Collections\\MyCustomCollection.cs",
+              "RelativeToolTip": "Collections\\MyCustomCollection.cs",
+              "ViewState": "AQIAAHgAAAAAAAAAAAAswI4AAAA9AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-19T13:00:11.761Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Passanger.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Passanger.cs",
+              "RelativeDocumentMoniker": "Entities\\Passanger.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Passanger.cs",
+              "RelativeToolTip": "Entities\\Passanger.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAPkBAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-19T13:56:12.444Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PassangerLog.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\PassangerLog.cs",
+              "RelativeDocumentMoniker": "Entities\\PassangerLog.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\PassangerLog.cs",
+              "RelativeToolTip": "Entities\\PassangerLog.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T17:17:59.811Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TariffLog.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\TariffLog.cs",
+              "RelativeDocumentMoniker": "Entities\\TariffLog.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\TariffLog.cs",
+              "RelativeToolTip": "Entities\\TariffLog.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAABVAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T17:32:20.327Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Ticket.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Ticket.cs",
+              "RelativeDocumentMoniker": "Entities\\Ticket.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Ticket.cs",
+              "RelativeToolTip": "Entities\\Ticket.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABcAAAAvAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-19T13:57:48.785Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AirportLog.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\AirportLog.cs",
+              "RelativeDocumentMoniker": "Entities\\AirportLog.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\AirportLog.cs",
+              "RelativeToolTip": "Entities\\AirportLog.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAeAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T17:18:57.565Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Journal.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Journal.cs",
+              "RelativeDocumentMoniker": "Entities\\Journal.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\Entities\\Journal.cs",
+              "RelativeToolTip": "Entities\\Journal.cs",
+              "ViewState": "AQIAACMAAAAAAAAAAAAkwB0AAABMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-23T17:11:51.716Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "LabWork.csproj",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\LabWork.csproj",
+              "RelativeDocumentMoniker": "LabWork.csproj",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 2\\LabWork\\LabWork.csproj",
+              "RelativeToolTip": "LabWork.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-09-19T12:57:45.594Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

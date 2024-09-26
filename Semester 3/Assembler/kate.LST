@@ -1,20 +1,10 @@
   ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
 
-  C000 86 05        ldaa #5 ;
-  C002 C6 0D        ldab #13 ;
-  C004 CE AF AF     ldx #$AFAF ;
-  C007 18 CE AB DF  ldy #$ABDF ;
+  C000 CE 00 00        LDX #$0000      ;   X
+  C003 86 AA           LDAA #$AA       ;     A (10101010)
+  C005 16              TAB             ;    A  B
+  C006 58              ASLB            ;    1  (10101010 -> 01010100)
+  C007 E7 00           STAB $00,X      ;      X
 
-                   ;     D,     (      ,   )
-                   ;      B  .    D     2
-  C00B DD 02        std $2
-                    ;  D
-  C00D CC 00 00     ldd #0
-                    ;     .         1
-  C010 97 01        staa $1
-                    ;     A
-  C012 D3 01        addd $1
-                    ;  ,  ,    B?   -     $2.
-                    ;       .       (   -  )
-                    ;     ,
-
+                       ;
+  C009 3F              SWI             ;   ( )

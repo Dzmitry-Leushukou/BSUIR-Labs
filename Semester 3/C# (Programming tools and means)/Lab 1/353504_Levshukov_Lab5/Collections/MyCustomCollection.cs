@@ -93,6 +93,9 @@ namespace _353504_Levshukov_Lab5.Collections
             if (cur == null) return;
             if (cur.Item.Equals(item))
             {
+                _begin = cur.Next;
+                if (cur.Next == null)
+                    _end = _cur = null;
                 cur = null;
                 Count--;
                 return;
@@ -106,8 +109,15 @@ namespace _353504_Levshukov_Lab5.Collections
             if(cur.Next==null)return;
             if(cur.Next.Item.Equals(item))
             {
-                if(cur.Next.Next!=null)
-                    cur.Next= cur.Next.Next;
+                if (cur.Next.Next != null)
+                {
+                    cur.Next = cur.Next.Next;
+                }
+                else
+                {
+                    _end = cur;
+                    cur.Next = null;
+                }
                 Count--;
             }
         }
