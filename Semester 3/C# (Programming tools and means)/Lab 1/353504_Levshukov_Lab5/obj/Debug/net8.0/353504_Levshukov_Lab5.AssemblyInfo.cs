@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("353504_Levshukov_Lab5")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2240cf7b5b963fb4f23b8c13a5fc3b73269e429")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3550632623bada9373cdd0d0253db3b38839f5f")]
 [assembly: System.Reflection.AssemblyProductAttribute("353504_Levshukov_Lab5")]
 [assembly: System.Reflection.AssemblyTitleAttribute("353504_Levshukov_Lab5")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

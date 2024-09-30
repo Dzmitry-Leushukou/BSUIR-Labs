@@ -1,0 +1,38 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+                    org $8000
+  8000 CE FF FF     ldx #$ffff
+  8003 18 CE FF FF  ldy #$ffff
+  8007 FF FF F0     stx $fff0
+  800A 18 FF FF F5  sty $fff5
+  800E 7F FF F2     clr $fff2
+
+  8011 B6 FF F0     ldaa $fff0
+  8014 F6 FF F6     ldab $fff6
+  8017 3D           mul
+  8018 FD FF F4     std $fff4
+
+  801B B6 FF F4     ldaa $fff4
+  801E F6 FF F6     ldab $fff6
+  8021 3D           mul
+  8022 FB FF F4     addb $fff4
+  8025 FD FF F3     std $fff3
+
+  8028 B6 FF F1     ldaa $fff1
+  802B F6 FF F5     ldab $fff5
+  802E 3D           mul
+  802F FB FF F4     addb $fff4
+  8032 B9 FF F3     adca $fff3
+  8035 FD FF F3     std $fff3
+  8038 B6 FF F2     ldaa $fff2
+  803B B9 FF F2     adca $fff2
+  803E B7 FF F2     staa $fff2
+
+  8041 B6 FF F0     ldaa $fff0
+  8044 F6 FF F0     ldab $fff0
+  8047 3D           mul
+  8048 FB FF F3     addb $fff3
+  804B B9 FF F2     adca $fff2
+  804E FD FF F2     std $fff2
+  8051 18 FE FF F4  ldy $fff4
+  8055 FE FF F2     ldx $fff2
