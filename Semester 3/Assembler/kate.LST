@@ -1,6 +1,16 @@
   ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
 
-  C000 86 F0               LDAA #%11110000
-  C002 49                  ROLA
-  C003 48                  ASLA
-  C004 48                  LSLA
+                   START:
+  C000 86 37           LDAA #55
+  C002 21 06           BRN SKIP
+  C004 86 AA           LDAA #$AA
+  C006 8D 02           BSR SKIP
+  C008 86 BB           LDAA #$BB
+                   SKIP:
+  C00A 86 01           LDAA #1
+  C00C 39              RTS
+
+  Symbol Table 
+
+  START              C000
+  SKIP               C00A
