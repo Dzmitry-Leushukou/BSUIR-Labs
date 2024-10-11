@@ -134,10 +134,12 @@ namespace Lab.Entities
             int index=FindPassenger(name, id);
             if (index == -1)
                 return;
-            List<Ticket> Grouped = Passengers[index].Tickets
+            var Grouped = Passengers[index].Tickets
             .GroupBy(t => new { t.Tariff.Route, t.Date, t.owner })
-            .Select(g => new Ticket(new Tariff(g.Key.Route, g.Sum(t => t.Tariff.Price)), g.Key.Date, g.Key.owner)).ToList();
-            UI.SpentByRoutes(Grouped);
+            .Select(g => new Ticket(new Tariff(g.Key.Route, g.Sum(t => t.Tariff.Price)), g.Key.Date, g.Key.owner));
+            //
+            
+            UI.SpentByRoutes(Grouped.ToList());
         }
     }
 }
