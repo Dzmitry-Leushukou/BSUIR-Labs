@@ -1,4 +1,4 @@
-  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+  ADDR B1 B2 B3 B4 D:\Programming\BSUIR\BSUIR-Labs\Semester 3\      PAGE       1
 
   C000 CE 00 02     ldx #2
   C003 C6 00        ldab #0
@@ -65,7 +65,7 @@
   C054 26 C8        bne start
   C056 3F           swi
 
-  Symbol Table     thrass11.tmp                                     PAGE       2
+  Symbol Table     D:\Programming\BSUIR\BSUIR-Labs\Semester 3\      PAGE       2
 
   Symbol Table 
 
