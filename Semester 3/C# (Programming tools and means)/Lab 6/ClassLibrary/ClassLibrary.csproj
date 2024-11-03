@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 6</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lab 6.csproj" />
+  </ItemGroup>
+</Project>
