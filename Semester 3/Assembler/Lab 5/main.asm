@@ -1,4 +1,4 @@
-    .model small
+.model small
 .stack 100h
 .data
 Filename db 256 dup(0)   
@@ -123,11 +123,12 @@ ReadNumber proc
 mov ah, 3fh; read operation from open file
 mov al, 0 
 mov cx, 1
+lea dx, char
 int 21h ; read
 cmp ax, 0;EOF
 je return 
 cmp char, 13 ; enter
-jmp return
+je return
 
 sub char, '0'
 cmp char, 0
@@ -135,10 +136,17 @@ jl wrong_number_format
 cmp char, 10
 jge wrong_number_format
                 
-; zaebis` format
-mov cx, ax
-mul ax, 10
-mov n, cx
+; zaebis` format     
+mov ax, n 
+mov cx, 10
+mul cx 
+jc wrong_number_format
+mov bx, 0
+mov bl, char
+add ax, bx
+jc wrong_number_format
+mov n, ax
+mov ax, cx
 jmp ReadNumber
 
 wrong_number_format:
