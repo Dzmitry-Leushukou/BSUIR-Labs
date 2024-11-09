@@ -9,7 +9,7 @@ BadFile db 0
 ;need size
 n dw 0
 ;for fileread   
-char db 0    
+char dW 0    
 len dw 0
 need_len dw 0
 ;UI
@@ -122,7 +122,8 @@ ENDP
 ReadNumber proc
 mov ah, 3fh; read operation from open file
 mov al, 0 
-mov cx, 1
+mov cx, 1  
+mov char, 0
 lea dx, char
 int 21h ; read
 cmp ax, 0;EOF
@@ -141,8 +142,8 @@ mov ax, n
 mov cx, 10
 mul cx 
 jc wrong_number_format
-mov bx, 0
-mov bl, char
+;mov bx, 0
+mov bx, char
 add ax, bx
 jc wrong_number_format
 mov n, ax
