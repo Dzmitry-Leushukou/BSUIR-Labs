@@ -1,85 +1,146 @@
 .model small
 .stack 100h
 .data
-Filename db 256 dup(0)   
-fsize dw 0 
+;vars
+char db 0 
+need_size dw 0 
+size dw 0 
+ans dw 0                     
+;file vars
+;filename db 256 dup(0)
+filename db 'D:\test.txt', 0 
+file_id dw 0
 ;flags
-WNF db 0
-BadFile db 0   
-;need size
-n dw 0
-;for fileread   
-char dW 0    
-len dw 0
-need_len dw 0
+BadFileFlag db 0   
 ;UI
-EnterFilename db "Enter path to your file (max_size 256):",0Dh, 0Ah, '$'
 endl_str db 0Dh, 0Ah, '$'                                               
-BadFileMsg db "Bad file",0Dh, 0Ah, '$'  
-Wrong_number db "Wrong number format",0Dh, 0Ah, '$'  
+BadFileMsg db "Bad file",0Dh, 0Ah, '$' 
+AnsMsg db "Lines with size less than given: ", '$'  
+Wrong_number db "Wrong number format",0Dh, 0Ah, '$'
+OpenFileMsg db  "File opened successfully",0Dh, 0Ah, '$'  
+CloseFileMsg db "File closed",0Dh, 0Ah, '$'  
 .code    
 ;Include data & stack
 mov ax, @data
 mov ds, ax
 
 main:
-mov BadFile, 0
-mov WNF, 0
-clc ; set 0 in flag C 
-call Filename_read; fsize stored in si, Filename was filling
-mov fsize, si ; all registers are free
-
-call Filename_check  
-cmp BadFile, 1 ; Bad file 
-je main       
-
-;Open file mode activated
-call FileRead ;AX - file descriptor     
-call FileClose
-cmp Wrong_number, 1
-jmp main
-
+;call GetFileName
+call OpenFile 
+call FileOpenMessage
+call ReadNumber 
+call ReadFile
+call CloseFile
+call FileCloseMessage  
+call ShowAns
 EOP:
 mov ax, 4C00h
 int 21h  
 
-Filename_read proc 
-call cin_filename
-mov si, 0
-cin_fn_loop:
-cmp si, 255; size >= 255 (Last char always dollar)
-jae return
-;cin char
-mov al, 0
-mov ah, 1 
-int 21h
-
-cmp al, 13 ;cmp enter char and cined char
-je return
-
-mov Filename[si], al ; s[si]=read char
-inc si; si++
-jmp cin_fn_loop   
-ret 
-ENDP
+;READ PROCEDURES
+ReadNumber proc
+    
+    rn_loop:
+    ; based settings
+    call ReadChar
+    cmp char, 13
+    je return    
+    
+    mov bx, need_size
+    mov ax, 10
+    mul bx
+    jc WrongNumber
+    
+    mov need_size, ax
+    mov ax, 0
+    mov al, char
+    sub ax, '0'
      
-Filename_check proc 
-; open file  
-mov al, 0
-mov ah, 3Dh
-lea dx, Filename
-int 21h    
+    cmp ax, 0
+    jl WrongNumber  
+    cmp ax, 10
+    jge WrongNumber  
+    
+    add need_size, ax
+    jc WrongNumber  
+    jmp rn_loop
+    ret
+endp 
 
-jc bf ;doesn`t exist
-ret 
-  
-bf: ;error bad file
-mov BadFile, 1
-call BadFileError
+ReadFile proc
+mov si, need_size
+
+    rf_loop:
+    mov size, 0
+    inc ans
+    line_loop:
+    call ReadChar
+    
+    cmp ax, 0
+    je return
+    
+    cmp char, 9
+    je line_loop
+    
+    cmp char, 10
+    je line_loop
+    
+    cmp char, 13
+    je rf_loop
+    
+    inc size
+    
+    cmp size, si
+    jge good_line
+       
+    jmp line_loop
+    
+    good_line: 
+    dec ans
+    gl_loop:
+    call ReadChar
+    cmp char, 13
+    je rf_loop
+    
+    cmp ax, 0
+    je return
+    jmp gl_loop
+       
+    ret
+endp
+
+ReadChar proc
+    mov ah, 3fh
+    mov bx, file_id
+    mov cx, 1
+    lea dx, char
+    int 21h
+    ret
+endp    
+
+;FILE PROCEDURES
+OpenFile proc
+mov ah, 3dh
+mov al, 0
+lea dx, filename
+int 21h         
+jc WrongNumber
+mov file_id, ax
 ret
-ENDP
-     
-     
+ENDP 
+ 
+CloseFile proc
+mov ah, 3eh
+mov bx, file_id   
+int 21h
+ret 
+ENDP 
+;ERROR
+WrongNumber:
+    call WrongNumberError
+    jmp EOP
+
+;MESSAGES   
 endl proc
 mov ah, 9  
 lea dx, endl_str
@@ -87,90 +148,97 @@ int 21h
 ret      
 ENDP
 
-cin_filename proc
+FileOpenMessage proc
 mov ah, 9  
-lea dx, EnterFilename
+lea dx, OpenFileMsg
 int 21h 
-ret
+ret      
 ENDP
-
+     
+FileCloseMessage proc
+mov ah, 9  
+lea dx, CloseFileMsg
+int 21h 
+ret      
+ENDP
+     
 BadFileError proc 
-call endl
 mov ah, 9  
 lea dx, BadFilemsg
 int 21h 
 ret
-ENDP
-  
-FileRead proc   
-mov bx, ax ; copy descriptor from check proc
-mov cx, 1 ; read 1 byte
-lea dx, char ; link to char for cin 
-mov si, 0 ; local ind
-call ReadNumber ; first word - number
-read: 
-mov ah, 3fh; read operation from open file
-mov al, 0
-int 21h ; read
-cmp ax, 0;EOF
-je return      
-
-jmp read
-ret
-ENDP
-  
-ReadNumber proc
-mov ah, 3fh; read operation from open file
-mov al, 0 
-mov cx, 1  
-mov char, 0
-lea dx, char
-int 21h ; read
-cmp ax, 0;EOF
-je return 
-cmp char, 13 ; enter
-je return
-
-sub char, '0'
-cmp char, 0
-jl wrong_number_format
-cmp char, 10
-jge wrong_number_format
-                
-; zaebis` format     
-mov ax, n 
-mov cx, 10
-mul cx 
-jc wrong_number_format
-;mov bx, 0
-mov bx, char
-add ax, bx
-jc wrong_number_format
-mov n, ax
-mov ax, cx
-jmp ReadNumber
-
-wrong_number_format:
-call wner; message 
-mov WNF, 0
-ret
 ENDP  
 
-wner proc
-call endl
+WrongNumberError proc
 mov ah, 9  
 lea dx, Wrong_number
 int 21h 
 ret
-ENDP  
+ENDP 
+
+ShowAns proc
+mov ah, 9  
+lea dx, AnsMsg
+int 21h 
   
-FileClose proc
-mov ax, 003Eh
+mov dx, 0
+mov ax, ans
+mov bx, 10000
+div bx
+mov cx,dx
+
+add ax, '0'
+mov dl, al
+mov ax, 0
+mov ah, 02h
 int 21h
-ret
-ENDP
-  
-  
-  
+
+
+mov ax, cx   
+mov dx, 0
+mov bx, 1000
+div bx
+mov cx,dx
+
+add ax, '0'
+mov dl, al
+mov ax, 0
+mov ah, 02h
+int 21h
+
+mov ax, cx
+mov dx, 0
+mov bx, 100
+div bx
+mov cx,dx
+add ax, '0'
+mov dl, al
+mov ax, 0
+mov ah, 02h
+int 21h
+
+mov ax, cx
+mov dx, 0
+mov bx, 10
+div bx
+mov cx,dx
+add ax, '0'
+mov dl, al
+mov ax, 0
+mov ah, 02h
+int 21h
+
+mov ax, cx
+add ax, '0'
+mov dl, al
+mov ax, 0
+mov ah, 02h
+int 21h
+
+ret 
+ENDP 
+
+
+;RETURN
 return:
 ret
