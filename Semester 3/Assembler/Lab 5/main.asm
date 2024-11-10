@@ -7,8 +7,9 @@ need_size dw 0
 size dw 0 
 ans dw 0                     
 ;file vars
-;filename db 256 dup(0)
-filename db 'D:\test.txt', 0 
+filename db 256 dup(0) 
+fsize dw 0
+;filename db 'D:\test.txt', 0 
 file_id dw 0
 ;flags
 BadFileFlag db 0   
@@ -25,7 +26,7 @@ mov ax, @data
 mov ds, ax
 
 main:
-;call GetFileName
+call GetFileName
 call OpenFile 
 call FileOpenMessage
 call ReadNumber 
@@ -36,7 +37,37 @@ call ShowAns
 EOP:
 mov ax, 4C00h
 int 21h  
+;CMD LINE PROC
+GetFileName proc uses ax cx    
+    ; get size of filename
+    mov cx, 0
+    mov cl, ES:[80h]
+    mov fsize, cx
+    
+    cld
+    mov di, 81h
+    mov al, ' '
+    rep scasb ;find ' ' in cmd to define the end of path file
+    dec di ;show to char after ' '
+    lea si, filename
 
+copy:
+    mov al, ES:[DI] ;ES:[DI] - cmd
+    cmp al, 0Dh 
+    je endCopy
+    cmp al, 20h 
+    je endCopy
+    cmp al, 9h 
+    je endCopy
+    
+    mov DS:[SI], al
+    inc di
+    inc si
+    jmp copy
+    
+endCopy:
+    ret
+ENDP
 ;READ PROCEDURES
 ReadNumber proc
     
