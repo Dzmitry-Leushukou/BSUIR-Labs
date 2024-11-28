@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AsmCpp", "AsmCpp.vcxproj", "{D68A5036-3F2C-4501-B12A-5E6223CA3ABD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D68A5036-3F2C-4501-B12A-5E6223CA3ABD}.Debug|x86.ActiveCfg = Debug|Win32
+		{D68A5036-3F2C-4501-B12A-5E6223CA3ABD}.Debug|x86.Build.0 = Debug|Win32
+		{D68A5036-3F2C-4501-B12A-5E6223CA3ABD}.Release|x86.ActiveCfg = Release|Win32
+		{D68A5036-3F2C-4501-B12A-5E6223CA3ABD}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B28DE9A2-7D02-464F-88F8-2EFFE9367479}
+	EndGlobalSection
+EndGlobal

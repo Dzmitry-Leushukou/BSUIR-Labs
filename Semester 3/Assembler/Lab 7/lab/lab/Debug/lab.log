@@ -1,0 +1,4 @@
+﻿  Assembling asmpart.asm...
+  cpart.cpp
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(14,1): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
+  lab.vcxproj -> D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\Debug\lab.exe

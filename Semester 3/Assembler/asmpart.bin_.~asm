@@ -1,0 +1,12 @@
+sayHello PROC
+
+st_msg db "All components was linked", 0Dh, 0Ah, '$'
+mov ah, 9h
+lea dx, st_msg
+retn
+
+sayHello ENDP
+
+
+
+; [SOURCE]: D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\asmpart.asm

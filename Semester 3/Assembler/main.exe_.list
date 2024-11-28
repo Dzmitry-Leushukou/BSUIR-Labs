@@ -1,0 +1,358 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+main.exe_ -- emu8086 assembler version: 4.05  
+ 
+[ 26.11.24  --  00:22:56 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .model small
+[   2]        :                                       .stack 100h
+[   3]        :                                       .data
+[   4]        :                                       ;vars
+[   5]    0100: 00                                    char db 0
+[   6]    0101: 00 00                                 need_size dw 0
+[   7]    0103: 00 00                                 size dw 0
+[   8]    0105: 00 00                                 ans dw 0
+[   9]        :                                       ;file vars
+[  10]    0107: 00 00 00 00 00 00 00 00 00 00 00 00   filename db 256 dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  11]    0207: 00 00                                 fsize dw 0
+[  12]        :                                       ;filename db 'D:\test.txt', 0
+[  13]    0209: 00 00                                 file_id dw 0
+[  14]        :                                       ;flags
+[  15]    020B: 00                                    BadFileFlag db 0
+[  16]        :                                       ;UI
+[  17]    020C: 0D 0A 24                              endl_str db 0Dh, 0Ah, '$'
+[  18]    020F: 42 61 64 20 66 69 6C 65 0D 0A 24      BadFileMsg db "Bad file",0Dh, 0Ah, '$'
+[  19]    021A: 4C 69 6E 65 73 20 77 69 74 68 20 73   AnsMsg db "Lines with size less than given: ", '$'
+                69 7A 65 20 6C 65 73 73 20 74 68 61 
+                6E 20 67 69 76 65 6E 3A 20 24       
+[  20]    023C: 57 72 6F 6E 67 20 6E 75 6D 62 65 72   Wrong_number db "Wrong number format",0Dh, 0Ah, '$'
+                20 66 6F 72 6D 61 74 0D 0A 24       
+[  21]    0252: 46 69 6C 65 20 6F 70 65 6E 65 64 20   OpenFileMsg db  "File opened successfully",0Dh, 0Ah, '$'
+                73 75 63 63 65 73 73 66 75 6C 6C 79 
+                0D 0A 24                            
+[  22]    026D: 46 69 6C 65 20 63 6C 6F 73 65 64 0D   CloseFileMsg db "File closed",0Dh, 0Ah, '$'
+                0A 24                               
+[  23]        :                                       .code
+[  24]        :                                       ;Include data & stack
+[  25]    0280: B8 10 00                              mov ax, @data
+[  26]    0283: 8E D8                                 mov ds, ax
+[  27]        :                                       
+[  28]    0285:                                       main:
+[  29]    0285: E8 1A 00                              call GetFileName
+[  30]    0288: E8 E8 00                              call OpenFile
+[  31]    028B: E8 0B 01                              call FileOpenMessage
+[  32]    028E: E8 40 00                              call ReadNumber
+[  33]    0291: E8 7D 00                              call ReadFile
+[  34]    0294: E8 EB 00                              call CloseFile
+[  35]    0297: E8 07 01                              call FileCloseMessage
+[  36]    029A: E8 1C 01                              call ShowAns
+[  37]    029D:                                       EOP:
+[  38]    029D: B8 00 4C                              mov ax, 4C00h
+[  39]    02A0: CD 21                                 int 21h
+[  40]        :                                       ;CMD LINE PROC
+[  41]    02A2:                                       GetFileName proc uses ax cx
+[  42]        :                                       ; get size of filename
+[  43]    02A2: B9 00 00                              mov cx, 0
+[  44]    02A5: 26 8A 0E 80 00                        mov cl, ES:[80h]
+[  45]    02AA: 89 0E 07 01                           mov fsize, cx
+[  46]        :                                       
+[  47]    02AE: FC                                    cld
+[  48]    02AF: BF 81 00                              mov di, 81h
+[  49]    02B2: B0 20                                 mov al, ' '
+[  50]    02B4: F3 AE                                 rep scasb ;find ' ' in cmd to define the end of path file
+[  51]    02B6: 4F                                    dec di ;show to char after ' '
+[  52]    02B7: BE 07 00                              lea si, filename
+[  53]        :                                       
+[  54]    02BA:                                       copy:
+[  55]    02BA: 26 8A 05                              mov al, ES:[DI] ;ES:[DI] - cmd
+[  56]    02BD: 3C 0D                                 cmp al, 0Dh
+[  57]    02BF: 74 0F                                 je endCopy
+[  58]    02C1: 3C 20                                 cmp al, 20h
+[  59]    02C3: 74 0B                                 je endCopy
+[  60]    02C5: 3C 09                                 cmp al, 9h
+[  61]    02C7: 74 07                                 je endCopy
+[  62]        :                                       
+[  63]    02C9: 3E 88 04                              mov DS:[SI], al
+[  64]    02CC: 47                                    inc di
+[  65]    02CD: 46                                    inc si
+[  66]    02CE: EB EA                                 jmp copy
+[  67]        :                                       
+[  68]    02D0:                                       endCopy:
+[  69]    02D0: C3                                    ret
+[  70]        :                                       ENDP
+[  71]        :                                       ;READ PROCEDURES
+[  72]    02D1:                                       ReadNumber proc
+[  73]        :                                       
+[  74]    02D1:                                       rn_loop:
+[  75]        :                                       ; based settings
+[  76]    02D1: E8 90 00                              call ReadChar
+[  77]    02D4: 80 3E 00 00 0D                        cmp char, 13
+[  78]    02D9: 75 03 E9 52 01                        je return
+[  79]        :                                       
+[  80]    02DE: 8B 1E 01 00                           mov bx, need_size
+[  81]    02E2: B8 0A 00                              mov ax, 10
+[  82]    02E5: F7 E3                                 mul bx
+[  83]    02E7: 73 03 E9 9F 00                        jc WrongNumber
+[  84]        :                                       
+[  85]    02EC: A3 01 00                              mov need_size, ax
+[  86]    02EF: B8 00 00                              mov ax, 0
+[  87]    02F2: A0 00 00                              mov al, char
+[  88]    02F5: 2D 30 00                              sub ax, '0'
+[  89]        :                                       
+[  90]    02F8: 3D 00 00                              cmp ax, 0
+[  91]    02FB: 7D 03 E9 8B 00                        jl WrongNumber
+[  92]    0300: 3D 0A 00                              cmp ax, 10
+[  93]    0303: 7C 03 E9 83 00                        jge WrongNumber
+[  94]        :                                       
+[  95]    0308: 01 06 01 00                           add need_size, ax
+[  96]    030C: 72 7D                                 jc WrongNumber
+[  97]    030E: EB C1                                 jmp rn_loop
+[  98]    0310: C3                                    ret
+[  99]        :                                       endp
+[ 100]        :                                       
+[ 101]    0311:                                       ReadFile proc
+[ 102]    0311: 8B 36 01 00                           mov si, need_size
+[ 103]        :                                       
+[ 104]    0315:                                       rf_loop:
+[ 105]    0315: C7 06 03 00 00 00                     mov size, 0
+[ 106]    031B: FF 06 05 00                           inc ans
+[ 107]    031F:                                       line_loop:
+[ 108]    031F: E8 42 00                              call ReadChar
+[ 109]        :                                       
+[ 110]    0322: 3D 00 00                              cmp ax, 0
+[ 111]    0325: 75 03 E9 06 01                        je return
+[ 112]        :                                       
+[ 113]    032A: 80 3E 00 00 09                        cmp char, 9
+[ 114]    032F: 74 EE                                 je line_loop
+[ 115]        :                                       
+[ 116]    0331: 80 3E 00 00 0A                        cmp char, 10
+[ 117]    0336: 74 E7                                 je line_loop
+[ 118]        :                                       
+[ 119]    0338: 80 3E 00 00 0D                        cmp char, 13
+[ 120]    033D: 74 D6                                 je rf_loop
+[ 121]        :                                       
+[ 122]    033F: FF 06 03 00                           inc size
+[ 123]        :                                       
+[ 124]    0343: 39 36 03 00                           cmp size, si
+[ 125]    0347: 7D 02                                 jge good_line
+[ 126]        :                                       
+[ 127]    0349: EB D4                                 jmp line_loop
+[ 128]        :                                       
+[ 129]    034B:                                       good_line:
+[ 130]    034B: FF 0E 05 00                           dec ans
+[ 131]    034F:                                       gl_loop:
+[ 132]    034F: E8 12 00                              call ReadChar
+[ 133]    0352: 80 3E 00 00 0D                        cmp char, 13
+[ 134]    0357: 74 BC                                 je rf_loop
+[ 135]        :                                       
+[ 136]    0359: 3D 00 00                              cmp ax, 0
+[ 137]    035C: 75 03 E9 CF 00                        je return
+[ 138]    0361: EB EC                                 jmp gl_loop
+[ 139]        :                                       
+[ 140]    0363: C3                                    ret
+[ 141]        :                                       endp
+[ 142]        :                                       
+[ 143]    0364:                                       ReadChar proc
+[ 144]    0364: B4 3F                                 mov ah, 3fh
+[ 145]    0366: 8B 1E 09 01                           mov bx, file_id
+[ 146]    036A: B9 01 00                              mov cx, 1
+[ 147]    036D: BA 00 00                              lea dx, char
+[ 148]    0370: CD 21                                 int 21h
+[ 149]    0372: C3                                    ret
+[ 150]        :                                       endp
+[ 151]        :                                       
+[ 152]        :                                       ;FILE PROCEDURES
+[ 153]    0373:                                       OpenFile proc
+[ 154]    0373: B4 3D                                 mov ah, 3dh
+[ 155]    0375: B0 00                                 mov al, 0
+[ 156]    0377: BA 07 00                              lea dx, filename
+[ 157]    037A: CD 21                                 int 21h
+[ 158]    037C: 72 0D                                 jc WrongNumber
+[ 159]    037E: A3 09 01                              mov file_id, ax
+[ 160]    0381: C3                                    ret
+[ 161]        :                                       ENDP
+[ 162]        :                                       
+[ 163]    0382:                                       CloseFile proc
+[ 164]    0382: B4 3E                                 mov ah, 3eh
+[ 165]    0384: 8B 1E 09 01                           mov bx, file_id
+[ 166]    0388: CD 21                                 int 21h
+[ 167]    038A: C3                                    ret
+[ 168]        :                                       ENDP
+[ 169]        :                                       ;ERROR
+[ 170]    038B:                                       WrongNumber:
+[ 171]    038B: E8 23 00                              call WrongNumberError
+[ 172]    038E: E9 0C FF                              jmp EOP
+[ 173]        :                                       
+[ 174]        :                                       ;MESSAGES
+[ 175]    0391:                                       endl proc
+[ 176]    0391: B4 09                                 mov ah, 9
+[ 177]    0393: BA 0C 01                              lea dx, endl_str
+[ 178]    0396: CD 21                                 int 21h
+[ 179]    0398: C3                                    ret
+[ 180]        :                                       ENDP
+[ 181]        :                                       
+[ 182]    0399:                                       FileOpenMessage proc
+[ 183]    0399: B4 09                                 mov ah, 9
+[ 184]    039B: BA 52 01                              lea dx, OpenFileMsg
+[ 185]    039E: CD 21                                 int 21h
+[ 186]    03A0: C3                                    ret
+[ 187]        :                                       ENDP
+[ 188]        :                                       
+[ 189]    03A1:                                       FileCloseMessage proc
+[ 190]    03A1: B4 09                                 mov ah, 9
+[ 191]    03A3: BA 6D 01                              lea dx, CloseFileMsg
+[ 192]    03A6: CD 21                                 int 21h
+[ 193]    03A8: C3                                    ret
+[ 194]        :                                       ENDP
+[ 195]        :                                       
+[ 196]    03A9:                                       BadFileError proc
+[ 197]    03A9: B4 09                                 mov ah, 9
+[ 198]    03AB: BA 0F 01                              lea dx, BadFilemsg
+[ 199]    03AE: CD 21                                 int 21h
+[ 200]    03B0: C3                                    ret
+[ 201]        :                                       ENDP
+[ 202]        :                                       
+[ 203]    03B1:                                       WrongNumberError proc
+[ 204]    03B1: B4 09                                 mov ah, 9
+[ 205]    03B3: BA 3C 01                              lea dx, Wrong_number
+[ 206]    03B6: CD 21                                 int 21h
+[ 207]    03B8: C3                                    ret
+[ 208]        :                                       ENDP
+[ 209]        :                                       
+[ 210]    03B9:                                       ShowAns proc
+[ 211]    03B9: B4 09                                 mov ah, 9
+[ 212]    03BB: BA 1A 01                              lea dx, AnsMsg
+[ 213]    03BE: CD 21                                 int 21h
+[ 214]        :                                       
+[ 215]    03C0: BA 00 00                              mov dx, 0
+[ 216]    03C3: A1 05 00                              mov ax, ans
+[ 217]    03C6: BB 10 27                              mov bx, 10000
+[ 218]    03C9: F7 F3                                 div bx
+[ 219]    03CB: 8B CA                                 mov cx,dx
+[ 220]        :                                       
+[ 221]    03CD: 05 30 00                              add ax, '0'
+[ 222]    03D0: 8A D0                                 mov dl, al
+[ 223]    03D2: B8 00 00                              mov ax, 0
+[ 224]    03D5: B4 02                                 mov ah, 02h
+[ 225]    03D7: CD 21                                 int 21h
+[ 226]        :                                       
+[ 227]        :                                       
+[ 228]    03D9: 8B C1                                 mov ax, cx
+[ 229]    03DB: BA 00 00                              mov dx, 0
+[ 230]    03DE: BB E8 03                              mov bx, 1000
+[ 231]    03E1: F7 F3                                 div bx
+[ 232]    03E3: 8B CA                                 mov cx,dx
+[ 233]        :                                       
+[ 234]    03E5: 05 30 00                              add ax, '0'
+[ 235]    03E8: 8A D0                                 mov dl, al
+[ 236]    03EA: B8 00 00                              mov ax, 0
+[ 237]    03ED: B4 02                                 mov ah, 02h
+[ 238]    03EF: CD 21                                 int 21h
+[ 239]        :                                       
+[ 240]    03F1: 8B C1                                 mov ax, cx
+[ 241]    03F3: BA 00 00                              mov dx, 0
+[ 242]    03F6: BB 64 00                              mov bx, 100
+[ 243]    03F9: F7 F3                                 div bx
+[ 244]    03FB: 8B CA                                 mov cx,dx
+[ 245]    03FD: 05 30 00                              add ax, '0'
+[ 246]    0400: 8A D0                                 mov dl, al
+[ 247]    0402: B8 00 00                              mov ax, 0
+[ 248]    0405: B4 02                                 mov ah, 02h
+[ 249]    0407: CD 21                                 int 21h
+[ 250]        :                                       
+[ 251]    0409: 8B C1                                 mov ax, cx
+[ 252]    040B: BA 00 00                              mov dx, 0
+[ 253]    040E: BB 0A 00                              mov bx, 10
+[ 254]    0411: F7 F3                                 div bx
+[ 255]    0413: 8B CA                                 mov cx,dx
+[ 256]    0415: 05 30 00                              add ax, '0'
+[ 257]    0418: 8A D0                                 mov dl, al
+[ 258]    041A: B8 00 00                              mov ax, 0
+[ 259]    041D: B4 02                                 mov ah, 02h
+[ 260]    041F: CD 21                                 int 21h
+[ 261]        :                                       
+[ 262]    0421: 8B C1                                 mov ax, cx
+[ 263]    0423: 05 30 00                              add ax, '0'
+[ 264]    0426: 8A D0                                 mov dl, al
+[ 265]    0428: B8 00 00                              mov ax, 0
+[ 266]    042B: B4 02                                 mov ah, 02h
+[ 267]    042D: CD 21                                 int 21h
+[ 268]        :                                       
+[ 269]    042F: C3                                    ret
+[ 270]        :                                       ENDP
+[ 271]        :                                       
+[ 272]        :                                       
+[ 273]        :                                       ;RETURN
+[ 274]    0430:                                       return:
+[ 275]    0430: C3                                    ret
+[ 276]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 31      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 04      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 2D      -   check sum (l.byte)
+0013: 67      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 28      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 28      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================
