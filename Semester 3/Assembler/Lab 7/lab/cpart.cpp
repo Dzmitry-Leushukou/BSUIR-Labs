@@ -27,7 +27,7 @@ void put(unsigned short x, unsigned short y)
 {
     //std::cout<<"\n*" << x << " " << y << "*\n/" << 205 - x << " " << y << "/\n";
     if(205-y>=0&&x-l<=320)
-    field[205-y][x] = '@';
+    field[205-y][x-l] = '@';
 }
 
 short input(short l, short r)
@@ -81,8 +81,23 @@ void print_field()
         }
         fout << "\n";
     }
-    //fout << "|\n"<<l;
+    for (int j = 0; j <= 320; j++)
+    {
+        fout << "|";
+    }
+    fout << "\n";
+    short delta = 10000;
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j <= 320; j++)
+        {
+            fout << (j + l) / delta % 10;
+        }
+        fout << "\n";
+        delta /= 10;
+    }
 }
+
 //Menu
 char main_menu()
 {
