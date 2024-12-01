@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #define ll long long
 #define si short int
@@ -12,8 +13,9 @@
 short k[] = { 0,0,0,0 };
 short a = -1, b = -1;
 unsigned l = 0, r = 320;
-char field[205][325];
+char field[207][325];
 unsigned min;
+const std::string left = "        ";
 extern "C"
 {
     void buildGraphType1(short a, short b, short c, short d, short l, short r);
@@ -85,12 +87,18 @@ void print_field()
 {
     std::ofstream fout("function.graph");
     for (int i = 0; i <= 205; i++) {
+        std::string ch = std::to_string(205-i+min);
+        while (ch.size() < 5)
+            ch = "0" + ch;
+        ch = "[" + ch + "]-";
+        fout << ch;
         for (int j = 0; j <= 320; j++) {
             fout << field[i][j];
         }
         fout << "\n";
     }
     //OX
+    fout << left;
     for (int j = 0; j <= 320; j++)
     {
         fout << "|";
@@ -99,6 +107,7 @@ void print_field()
     short delta = 10000;
     for (int i = 0; i < 5; i++)
     {
+        fout << left;
         for (int j = 0; j <= 320; j++)
         {
             fout << (j + l) / delta % 10;
@@ -170,7 +179,7 @@ void func_input(short numb)
 
 void clear_field()
 {
-    for (int i = 0; i < 205; i++)
+    for (int i = 0; i <= 205; i++)
         for (int j = 0; j < 325; j++)
             field[i][j] = ' ';
 }
