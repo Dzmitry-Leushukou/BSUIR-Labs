@@ -3,26 +3,374 @@
 .STACK
 .DATA
 ;-----------Local data------------------------------
-helloFormat BYTE "Hello, %s!", 10, 13, 0
+n dw 160;const for S
+two dd 2
+s dd 0; 4byte
+f dw 0
+f_old dw 0
+x dw 0
+a dw 0
+b dw 0
+c1 dw 0
+d dw 0
+;segment
+l dw 0
+r dw 0
+
+;flags
+connect_direction dw 0
+;UI
+OFMSG BYTE "Overflow", 10, 13, 0
+FMSG BYTE " %hu", 10, 13, 0
+UMSG BYTE "S = %u", 10, 13,0
+XMSG BYTE "[%hu]", 0
 .CODE
 ;-----------External usage--------------------------
-EXTRN  printf : proc;// we'll use printf
-EXTRN  readName : proc;//and void* readName()
+EXTRN  printf : proc;// we'll use printf |printf(ebx,eax)|
+EXTRN  put : proc
 ;-----------Function definitions--------------------
-sayHello PROC
 
-
-call readName; eax = readName()
-lea ebx, helloFormat; ebx = &helloFormat
-
-;printf(ebx,eax)
+;UI PRC
+showfvalue proc
+lea ebx, FMSG; ebx = &OFMSG
+mov eax, 0
+mov ax, f
 push eax
 push ebx
 call printf
 add esp, 8;pop x2
+ret
+showfvalue endp
 
+showintvalue proc ;value stored in eax
+lea ebx, UMSG; ebx = &OFMSG
+push eax
+push ebx
+call printf
+add esp, 8;pop x2
+ret
+showintvalue endp
+
+showX proc
+lea ebx, XMSG; ebx = &OFMSG
+mov eax, 0
+mov ax, x
+push eax
+push ebx
+call printf
+add esp, 8;pop x2
+ret
+showX endp
+
+
+showOFmsg proc
+lea ebx, OFMSG; ebx = &OFMSG
+push eax
+push ebx
+call printf
+add esp, 8;pop x2
+ret
+showOFmsg endp
+
+
+;READ PRC
+ReadType1 PROC
+push ebp
+mov ebp,esp
+
+mov ax, [ebp + 8+4]
+mov a, ax
+mov ax, [ebp + 12+4]
+mov b, ax
+mov ax, [ebp + 16+4]
+mov c1, ax
+mov ax, [ebp + 20+4]
+mov d, ax
+mov ax, [ebp + 24+4]
+mov l, ax
+mov ax, [ebp + 28+4]
+mov r, ax
+
+mov esp, ebp
+pop ebp
+
+RETN
+ReadType1 ENDP
+
+
+ReadType2 PROC
+push ebp
+mov ebp,esp
+
+mov ax, [ebp + 8+4]
+mov a, ax
+mov ax, [ebp + 12+4]
+mov b, ax
+mov ax, [ebp + 16+4]
+mov l, ax
+mov ax, [ebp + 20+4]
+mov r, ax
+
+mov esp, ebp
+pop ebp
+
+RETN
+ReadType2 ENDP
+
+
+;GRAPH PRC
+buildGraphType1 PROC
+call ReadType1
+mov ax, l
+bgtloop1:
+cmp ax, r
+ja bgtend1
+
+mov x, ax
+call find1
+
+mov ax, f
+mov f_old, ax
+mov ax, x
+inc ax
+
+jmp bgtloop1
+
+bgtend1:	
 retn
 
-sayHello ENDP
+retn
+buildGraphType1 ENDP
 
+
+buildGraphType2 PROC ;ab^X a,b,l,r
+
+call ReadType2
+
+mov ax, l
+bgtloop2:
+cmp ax, r
+ja bgtend2
+
+mov x, ax
+call find2
+
+mov ax, f
+mov f_old, ax
+mov ax, x
+inc ax
+
+jmp bgtloop2
+
+bgtend2:	
+retn
+buildGraphType2 ENDP
+
+
+;SQUARE PRC
+findSquare PROC
+mov s, 0
+mov si, l
+inc si
+inc si
+
+lofs:
+cmp si, r
+jae gfsr
+mov x,si
+call find1
+mov eax, 0
+mov ax, f
+add s, eax
+jc overflow
+inc si
+inc si
+
+jmp lofs
+
+overflow:
+call showOFmsg
+jmp fsr
+gfsr:
+mov eax, s
+mul two
+jc overflow
+mov s, eax
+mov eax, 0
+mov ax, r
+mov x, ax
+call find1
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+mov eax, 0
+mov ax, l
+mov x, ax
+call find1
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+
+mov eax,s
+call showintvalue
+fsr:
+retn
+findSquare ENDP
+
+
+;FIND F(X) VALUE
+find1 PROC
+mov bx, d
+mov f, bx
+
+call showX
+
+cmp c1, 0
+je skc1
+mov ax, x
+mul c1
+jc inbuild_overflow1
+add f, ax
+jc inbuild_overflow1
+
+skc1:
+cmp b, 0
+je skb
+mov ax, x
+mul x
+jc inbuild_overflow1
+mul b
+jc inbuild_overflow1
+add f, ax
+jc inbuild_overflow1
+
+skb:
+cmp a, 0
+je ska
+mov ax, x
+mul x
+jc inbuild_overflow1
+mul x
+jc inbuild_overflow1
+mul a
+jc inbuild_overflow1
+add f, ax
+jc inbuild_overflow1
+
+ska:
+jmp good_value1
+inbuild_overflow1:
+call showOFmsg
+
+jmp retfind1
+
+good_value1:
+call showfvalue
+call trysetpixel
+
+
+retfind1:
+retn
+find1 ENDP
+
+
+find2 PROC
+mov si, x
+mov bx, a
+mov f, bx
+
+call showX
+
+loopf2:
+cmp si, 0 ; End of loop
+je good_value
+
+mov ax, b
+mul f 
+
+jc inbuild_overflow
+
+mov f, ax
+dec si
+jmp loopf2
+
+inbuild_overflow:
+call showOFmsg
+
+jmp retfind2
+
+good_value:
+call trysetpixel
+call showfvalue
+
+retfind2:
+retn
+find2 ENDP
+
+
+trysetpixel PROC
+push ax
+mov ax, x
+cmp ax, l ; not first value of x => need connect two vert
+je skip_connect
+call connect
+skip_connect:
+call setpixel
+pop ax
+retn
+trysetpixel endp
+
+setpixel PROC
+push eax
+push ebx
+mov eax, 0
+mov ebx, 0
+mov ax, f
+mov bx, x
+push eax
+push ebx
+call put
+add esp, 8;pop x2
+pop ebx
+pop eax
+retn
+setpixel endp
+
+
+connect PROC
+push bx
+push ax
+mov bx,x
+dec bx
+mov ax, f_old
+mov connect_direction, 1 ; +
+cmp ax, f
+jb connect_loop
+mov connect_direction, -1 ; -
+
+connect_loop:
+cmp ax, f
+je ecl
+
+push eax
+push ebx
+call put
+pop ebx
+pop eax
+cmp connect_direction, 1
+jne dc
+inc ax
+jmp connect_loop
+dc:
+dec ax
+jmp connect_loop
+ecl:
+pop ax
+pop bx
+retn
+connect endp
 END
