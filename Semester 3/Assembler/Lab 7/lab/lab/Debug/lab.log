@@ -1,1 +1,11 @@
-﻿  lab.vcxproj -> D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\Debug\lab.exe
+﻿  cpart.cpp
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(50,17): warning C4473: "scanf_s": передано недостаточно аргументов для строки формата
+  D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(50,17):
+  заполнители и их параметры ожидают переменное число аргументов в количестве 2, но было предоставлено 1
+  D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(50,17):
+  отсутствующий вариативный аргумент "2" требуется для строки форматирования "%c"
+  D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(50,17):
+  этот аргумент используется в качестве размера буфера
+  
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\cpart.cpp(116,17): warning C4244: return: преобразование "short" в "char", возможна потеря данных
+  lab.vcxproj -> D:\Programming\BSUIR\BSUIR-Labs\Semester 3\Assembler\Lab 7\lab\Debug\lab.exe

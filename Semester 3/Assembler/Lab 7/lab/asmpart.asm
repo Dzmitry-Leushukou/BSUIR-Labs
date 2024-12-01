@@ -13,12 +13,14 @@ a dw 0
 b dw 0
 c1 dw 0
 d dw 0
+min dw 65535
 ;segment
 l dw 0
 r dw 0
 
 ;flags
 connect_direction dw 0
+printflag dw 1
 ;UI
 OFMSG BYTE "Overflow", 10, 13, 0
 FMSG BYTE " %hu", 10, 13, 0
@@ -28,6 +30,7 @@ XMSG BYTE "[%hu]", 0
 ;-----------External usage--------------------------
 EXTRN  printf : proc;// we'll use printf |printf(ebx,eax)|
 EXTRN  put : proc
+EXTRN  set_min : proc
 ;-----------Function definitions--------------------
 
 ;UI PRC
@@ -120,7 +123,13 @@ ReadType2 ENDP
 
 ;GRAPH PRC
 buildGraphType1 PROC
+mov min, 65535
+mov printflag, 0
 call ReadType1
+mov ax,l
+mov x,ax
+call FindMin1
+mov printflag, 1
 mov ax, l
 bgtloop1:
 cmp ax, r
@@ -144,10 +153,15 @@ buildGraphType1 ENDP
 
 
 buildGraphType2 PROC ;ab^X a,b,l,r
-
+mov printflag, 0
+mov min, 65535
 call ReadType2
-
+mov ax,l
+mov x,ax
+call FindMin2
+mov printflag, 1
 mov ax, l
+mov x, ax
 bgtloop2:
 cmp ax, r
 ja bgtend2
@@ -227,7 +241,6 @@ find1 PROC
 mov bx, d
 mov f, bx
 
-call showX
 
 cmp c1, 0
 je skc1
@@ -264,11 +277,18 @@ jc inbuild_overflow1
 ska:
 jmp good_value1
 inbuild_overflow1:
+cmp printflag, 0
+je retfind1
+call showX
 call showOFmsg
 
 jmp retfind1
 
 good_value1:
+
+cmp printflag, 0
+je retfind1
+call showX
 call showfvalue
 call trysetpixel
 
@@ -282,8 +302,6 @@ find2 PROC
 mov si, x
 mov bx, a
 mov f, bx
-
-call showX
 
 loopf2:
 cmp si, 0 ; End of loop
@@ -299,19 +317,76 @@ dec si
 jmp loopf2
 
 inbuild_overflow:
+cmp printflag, 0
+je retfind2
+call showX
 call showOFmsg
 
 jmp retfind2
 
 good_value:
-call trysetpixel
+cmp printflag, 0
+je retfind2
+call showX
 call showfvalue
+call trysetpixel
 
 retfind2:
 retn
 find2 ENDP
 
 
+;Find min prc
+FindMin1 PROC
+
+fml1:
+mov si, x
+cmp si,r
+jae fmr1
+mov ax, si
+call find1
+inc x
+mov ax, f
+cmp ax, min
+jae fml1
+mov min,ax
+jmp fml1
+fmr1:
+call return_main
+RETN
+FindMin1 ENDP
+
+
+FindMin2 PROC
+
+fml2:
+mov si, x
+cmp si,r
+jae fmr2
+
+mov ax, si
+call find2
+inc x
+mov ax, f
+cmp ax, min
+jae fml2
+mov min,ax
+jmp fml2
+fmr2:
+call return_main
+RETN
+FindMin2 ENDP
+
+return_main proc
+mov eax, 0
+mov ax, min
+push eax
+call set_min
+pop eax
+retn
+return_main endp
+
+;PIXEL PRC
 trysetpixel PROC
 push ax
 mov ax, x

@@ -13,21 +13,30 @@ short k[] = { 0,0,0,0 };
 short a = -1, b = -1;
 unsigned l = 0, r = 320;
 char field[205][325];
-
+unsigned min;
 extern "C"
 {
     void buildGraphType1(short a, short b, short c, short d, short l, short r);
     void buildGraphType2(short a, short b, short l, short r);
     void findSquare();
     void put(unsigned short x, unsigned short y);
+    void set_min(unsigned short mn);
 }
 
+void set_min(unsigned short mn)
+{
+    min = mn;
+    //std::cout << "MINIMUM SET" << mn << "\n";
+}
 
 void put(unsigned short x, unsigned short y)
 {
-    //std::cout<<"\n*" << x << " " << y << "*\n/" << 205 - x << " " << y << "/\n";
-    if(205-y>=0&&x-l<=320)
-    field[205-y][x-l] = '@';
+    //std::cout << x << " " << y << "\n";
+    int i = 205 - (y - min);
+    int j = x - l;
+    //std::cout<<"!" << i << " " << j << "\n";
+    if(i>=0&&j<=320)
+    field[i][j] = '@';
 }
 
 short input(short l, short r)
@@ -81,6 +90,7 @@ void print_field()
         }
         fout << "\n";
     }
+    //OX
     for (int j = 0; j <= 320; j++)
     {
         fout << "|";
