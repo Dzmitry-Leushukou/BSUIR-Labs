@@ -10,7 +10,8 @@
 #define clear_screen system("cls")
 
 short k[] = { 0,0,0,0 };
-short a = -1, b = -1,l=0,r=320;
+short a = -1, b = -1;
+unsigned l = 0, r = 320;
 char field[205][325];
 
 extern "C"
@@ -25,7 +26,7 @@ extern "C"
 void put(unsigned short x, unsigned short y)
 {
     //std::cout<<"\n*" << x << " " << y << "*\n/" << 205 - x << " " << y << "/\n";
-    if(205-y>=0&&x<=320)
+    if(205-y>=0&&x-l<=320)
     field[205-y][x] = '@';
 }
 
@@ -80,12 +81,21 @@ void print_field()
         }
         fout << "\n";
     }
+    //fout << "|\n"<<l;
 }
 //Menu
 char main_menu()
 {
+    clear_screen;
     printf("========= Choose function =========\n1. f (x) = ax^3 + bx^2 + cx + d\n2. f (x) = bx^2 + cx + d\n3. f (x) = cx + d\n4. f (x) = d\n5. f (x) = ab^x\n");
     return input(1, 5);
+}
+
+void get_segment()
+{
+    printf("Write left bound of segment [l;l+320]\n");
+    l=input(0, 32767-320);
+    r = l + 320;
 }
 
 void func_prc()
@@ -114,7 +124,7 @@ void func_input(short numb)
             k[i] = input(0, 32767);
         }
         clear_screen;
-        printf("f (x) = %hdx^3 + %hdx^2 + %hdx + %hd\n", k[0], k[1], k[2], k[3]);
+        printf("f (x) = %hdx^3 + %hdx^2 + %hdx + %hd\t\t\ton [%hu; %hu]\n", k[0], k[1], k[2], k[3],l,r);
     }
     else
     {
@@ -128,7 +138,7 @@ void func_input(short numb)
         b = input(0, 32767);
         clear_screen;
 
-        printf("f (x) = %hd*%hd^x\n", a, b);
+        printf("f (x) = %hd*%hd^x\t\t\ton [%hu; %hu]\n", a, b,l,r);
     }
 
 }
@@ -141,7 +151,6 @@ void clear_field()
 }
 
 
-
 int main()
 {
     
@@ -151,7 +160,9 @@ int main()
         k[0] = k[1] = k[2] = k[3] = 0;
         a = b = -1;
         clear_field();
+        get_segment();
         func_input(main_menu());
+        system("pause");
         func_prc();
         system("pause");
         clear_screen;
