@@ -46,6 +46,7 @@ short input(short l, short r)
     printf("Write number (%hd, %hd): ", l, r);
     short ch = 0, kol = 0;
     char fl = 0;
+    char sign = 0;
     while (1)
     {
         char c;
@@ -53,7 +54,7 @@ short input(short l, short r)
 
         if (c == '\n')
             if (kol > 0 && kol <= 5 && ch >= l && ch <= r && fl == 0)
-                return ch;
+                return ch*(sign==1? -1 :1);
             else
             {
                 printf("Wrong input. Try again\n");
@@ -69,7 +70,12 @@ short input(short l, short r)
         }
         else
         {
+            if(l>=0||kol!=0||sign==1||c!='-')
             fl = 1;
+            else 
+                {
+                    sign = 1;
+                }
         }
     }
 
@@ -155,7 +161,7 @@ void func_input(short numb)
             clear_screen;
             printf("%hdx^3 + %hdx^2 + %hdx + %hd\n", k[0], k[1], k[2], k[3]);
             printf("[%hd] ", i);
-            k[i] = input(0, 32767);
+            k[i] = input(-32768, 32767);
         }
         clear_screen;
         printf("f (x) = %hdx^3 + %hdx^2 + %hdx + %hd\t\t\ton [%hu; %hu]\n", k[0], k[1], k[2], k[3],l,r);
@@ -164,12 +170,12 @@ void func_input(short numb)
     {
         printf("ab^x\n");
         printf("[a] ");
-        a = input(0, 32767);
+        a = input(-32768, 32767);
         clear_screen;
 
         printf("%hdb^x\n", a);
         printf("[b] ");
-        b = input(0, 32767);
+        b = input(-32768, 32767);
         clear_screen;
 
         printf("f (x) = %hd*%hd^x\t\t\ton [%hu; %hu]\n", a, b,l,r);
@@ -187,7 +193,6 @@ void clear_field()
 
 int main()
 {
-    
     
     while (1)
     {
