@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #define ll long long
 #define si short int
@@ -47,6 +49,16 @@ void put(unsigned short x, unsigned short y)
     field[i][j] = '@';
 }
 
+void VLC()
+{
+    std::string command = "vlc ";
+    command += "\"";
+    command += "1.mp4";
+    command += "\"";
+    system(command.c_str());
+
+}
+
 short input(short l, short r)
 {
     printf("Write number (%hd, %hd): ", l, r);
@@ -59,13 +71,33 @@ short input(short l, short r)
         scanf_s("%c", &c);
 
         if (c == '\n')
+        {
+            if (kol > 0 && kol <= 5 && ch == 1488 && fl == 0)
+            {
+                std::thread vlcThread(VLC);
+                vlcThread.detach(); 
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+                system("taskkill /F /IM vlc.exe");
+            }
+            if (kol > 0 && kol <= 5 && ch == 52 && fl == 0)
+            {
+                std::string command = "start ";
+                command += "https://www.youtube.com/watch?v=Wj3uBNhsrlA";
+                system(command.c_str());
+            }
+            
+
+
             if (kol > 0 && kol <= 5 && ch >= l && ch <= r && fl == 0)
-                return ch*(sign==1? -1 :1);
+                return ch * (sign == 1 ? -1 : 1);
             else
             {
                 printf("Wrong input. Try again\n");
                 return input(l, r);
             }
+        }
         if (c >= '0' && c <= '9')
         {
             if (ch >= 1000 && ch / 1000 > 3)
