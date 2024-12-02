@@ -12,20 +12,23 @@
 
 #define clear_screen system("cls")
 
-short k[] = { -1,-1,-1,-1 };
+short k[] = { 0,0,0,0 };
 short a = -1, b = -1;
 unsigned l = 0, r = 320;
 char field[207][325];
 unsigned min;
+char type;
 const std::string left = "        ";
 extern "C"
 {
     void buildGraphType1(short a, short b, short c, short d, short l, short r);
     void buildGraphType2(short a, short b, short l, short r);
-    void findSquare();
-    void put(unsigned short x, unsigned short y);
-    void set_min(unsigned short mn);
-    unsigned short sqrtx(unsigned short x)
+    void findSquare1();
+    void findSquare2();
+    void findSquare3();
+    void put(unsigned short x, unsigned  short y);
+    void set_min(short mn);
+    unsigned short sqrtx(short x)
     {
         //std::cout << sqrt(x) <<" "<<x<<'\n';
         return sqrt(x);
@@ -33,18 +36,19 @@ extern "C"
     void BuildSqrt(short l, short r);
 }
 
-void set_min(unsigned short mn)
+void set_min(short mn)
 {
     min = mn;
     //std::cout << "MINIMUM SET" << mn << "\n";
 }
 
-void put(unsigned short x, unsigned short y)
+void put(unsigned short x, unsigned  short y)
 {
-    //std::cout << x << " " << y << "\n";
+    //std::cout << x << " " << y << "|" << min << "\n";
     int i = 205 - (y - min);
     int j = x - l;
-    //std::cout<<"!" << i << " " << j << "\n";
+    if (i >= 0 && j <= 320)
+        std::cout << x << " "<<y<<"\n!" << i << " " << j << "\n";
     if(i>=0&&j<=320)
     field[i][j] = '@';
 }
@@ -121,13 +125,13 @@ short input(short l, short r)
 
 void ShowGraph()
 {
-    if (k[0] == a)
-        BuildSqrt(l, r);
+    if (type==6)
+        BuildSqrt(l, r),findSquare3();
     else
-    if (a == -1)
-        buildGraphType1(k[0],k[1],k[2],k[3],l,r);
+    if (type<5)
+        buildGraphType1(k[0],k[1],k[2],k[3],l,r), findSquare1();
     else
-        buildGraphType2(a,b,l,r);
+        buildGraphType2(a,b,l,r), findSquare2();
    
 }
 
@@ -170,7 +174,7 @@ char main_menu()
 {
     clear_screen;
     printf("========= Choose function =========\n1. f (x) = ax^3 + bx^2 + cx + d\n2. f (x) = bx^2 + cx + d\n3. f (x) = cx + d\n4. f (x) = d\n5. f (x) = ab^x\n6. f (x) = sqrt (x)\n");
-    return input(1, 6);
+    return type=input(1, 6);
 }
 
 void get_segment()
@@ -189,7 +193,6 @@ void func_prc()
     const char* filePath = "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\function.graph";
     HINSTANCE result = ShellExecuteA(NULL, "open", "notepad.exe", filePath, NULL, SW_SHOWMAXIMIZED);
     //printf("Square: ");
-    findSquare();
     printf("\n");
 }
 
@@ -241,9 +244,9 @@ void clear_field()
 int main()
 {
     
-    while (1)
+    while (true)
     {
-        k[0] = k[1] = k[2] = k[3] = -1;
+        k[0] = k[1] = k[2] = k[3] = 0;
         a = b = -1;
         clear_field();
         get_segment();

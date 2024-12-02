@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\cpart.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|solutionrelative:cpart.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\asmpart.asm||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|solutionrelative:asmpart.asm||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\cpart.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A07C342C-A534-4258-AA19-C7C2356CD6CE}|lab.vcxproj|solutionrelative:cpart.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,30 +18,30 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "asmpart.asm",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\asmpart.asm",
               "RelativeDocumentMoniker": "asmpart.asm",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\asmpart.asm",
               "RelativeToolTip": "asmpart.asm",
-              "ViewState": "AQIAAAkBAAAAAAAAAAAAABgBAAAGAAAA",
+              "ViewState": "AQIAAEIBAAAAAAAAAAApwFcBAAALAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2024-11-27T10:35:56.305Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "cpart.cpp",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\cpart.cpp",
               "RelativeDocumentMoniker": "cpart.cpp",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\Assembler\\Lab 7\\lab\\cpart.cpp",
               "RelativeToolTip": "cpart.cpp",
-              "ViewState": "AQIAAEUAAAAAAAAAAAAAAFIAAAANAAAA",
+              "ViewState": "AQIAAOsAAAAAAAAAAAAAAAEBAAAFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-11-27T10:35:27.693Z",
               "EditorCaption": ""

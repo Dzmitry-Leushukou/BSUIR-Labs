@@ -217,15 +217,16 @@ bgtend3:
 retn
 buildSqrt ENDP
 ;SQUARE PRC
-findSquare PROC
+findSquare1 PROC
+mov printflag, 0
 mov s, 0
 mov si, l
 inc si
 inc si
 
-lofs:
+lofs1:
 cmp si, r
-jae gfsr
+jae gfsr1
 mov x,si
 call find1
 mov eax, 0
@@ -235,12 +236,12 @@ jc overflow
 inc si
 inc si
 
-jmp lofs
+jmp lofs1
 
 overflow:
 call showOFmsg
-jmp fsr
-gfsr:
+jmp fsr1
+gfsr1:
 mov eax, s
 mul two
 jc overflow
@@ -266,10 +267,118 @@ jc overflow
 
 mov eax,s
 call showintvalue
-fsr:
+fsr1:
 retn
-findSquare ENDP
+findSquare1 ENDP
 
+findSquare2 PROC
+mov printflag, 0
+mov s, 0
+mov si, l
+inc si
+inc si
+
+lofs2:
+cmp si, r
+jae gfsr2
+mov x,si
+call find2
+mov si, x
+mov eax, 0
+mov ax, f
+add s, eax
+jc overflow
+inc si
+inc si
+
+jmp lofs2
+
+overflow:
+call showOFmsg
+jmp fsr2
+gfsr2:
+mov eax, s
+mul two
+jc overflow
+mov s, eax
+mov eax, 0
+mov ax, r
+mov x, ax
+call find2
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+mov eax, 0
+mov ax, l
+mov x, ax
+call find2
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+
+mov eax,s
+call showintvalue
+fsr2:
+retn
+findSquare2 ENDP
+
+findSquare3 PROC
+mov printflag, 0
+mov s, 0
+mov si, l
+inc si
+inc si
+
+lofs3:
+cmp si, r
+jae gfsr3
+mov x,si
+call find3
+mov eax, 0
+mov ax, f
+add s, eax
+jc overflow
+inc si
+inc si
+
+jmp lofs3
+
+overflow:
+call showOFmsg
+jmp fsr3
+gfsr3:
+mov eax, s
+mul two
+jc overflow
+mov s, eax
+mov eax, 0
+mov ax, r
+mov x, ax
+call find3
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+mov eax, 0
+mov ax, l
+mov x, ax
+call find3
+mov eax, 0
+mov ax, f
+
+add s, eax
+jc overflow
+
+mov eax,s
+call showintvalue
+fsr3:
+retn
+findSquare3 ENDP
 
 ;FIND F(X) VALUE
 
@@ -467,6 +576,7 @@ trysetpixel PROC
 push ax
 mov ax, x
 cmp ax, l ; not first value of x => need connect two vert
+
 je skip_connect
 call connect
 skip_connect:
@@ -495,6 +605,8 @@ setpixel endp
 connect PROC
 push bx
 push ax
+mov ebx,0
+mov ebx,0
 mov bx,x
 dec bx
 mov ax, f_old
