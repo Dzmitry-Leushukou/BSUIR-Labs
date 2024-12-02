@@ -10,7 +10,7 @@
 
 #define clear_screen system("cls")
 
-short k[] = { 0,0,0,0 };
+short k[] = { -1,-1,-1,-1 };
 short a = -1, b = -1;
 unsigned l = 0, r = 320;
 char field[207][325];
@@ -23,6 +23,12 @@ extern "C"
     void findSquare();
     void put(unsigned short x, unsigned short y);
     void set_min(unsigned short mn);
+    unsigned short sqrtx(unsigned short x)
+    {
+        //std::cout << sqrt(x) <<" "<<x<<'\n';
+        return sqrt(x);
+    }
+    void BuildSqrt(short l, short r);
 }
 
 void set_min(unsigned short mn)
@@ -83,10 +89,14 @@ short input(short l, short r)
 
 void ShowGraph()
 {
+    if (k[0] == a)
+        BuildSqrt(l, r);
+    else
     if (a == -1)
         buildGraphType1(k[0],k[1],k[2],k[3],l,r);
     else
         buildGraphType2(a,b,l,r);
+   
 }
 
 void print_field()
@@ -127,8 +137,8 @@ void print_field()
 char main_menu()
 {
     clear_screen;
-    printf("========= Choose function =========\n1. f (x) = ax^3 + bx^2 + cx + d\n2. f (x) = bx^2 + cx + d\n3. f (x) = cx + d\n4. f (x) = d\n5. f (x) = ab^x\n");
-    return input(1, 5);
+    printf("========= Choose function =========\n1. f (x) = ax^3 + bx^2 + cx + d\n2. f (x) = bx^2 + cx + d\n3. f (x) = cx + d\n4. f (x) = d\n5. f (x) = ab^x\n6. f (x) = sqrt (x)\n");
+    return input(1, 6);
 }
 
 void get_segment()
@@ -154,6 +164,11 @@ void func_prc()
 void func_input(short numb)
 {
     clear_screen;
+    if (numb == 6)
+    {
+        printf("f(x) = sqrt (x)\t\t\ton [%hu; %hu]\n",l,r);
+        return;
+    }
     if (numb < 5)
     {
         for (int i = numb - 1; i < 4; i++)
@@ -196,7 +211,7 @@ int main()
     
     while (1)
     {
-        k[0] = k[1] = k[2] = k[3] = 0;
+        k[0] = k[1] = k[2] = k[3] = -1;
         a = b = -1;
         clear_field();
         get_segment();

@@ -31,6 +31,7 @@ XMSG BYTE "[%hu]", 0
 EXTRN  printf : proc;// we'll use printf |printf(ebx,eax)|
 EXTRN  put : proc
 EXTRN  set_min : proc
+EXTRN  sqrtx : proc
 ;-----------Function definitions--------------------
 
 ;UI PRC
@@ -180,7 +181,41 @@ bgtend2:
 retn
 buildGraphType2 ENDP
 
+BuildSqrt proc
+push ebp
+mov ebp,esp
 
+mov ax, [ebp + 8]
+mov l, ax
+mov ax, [ebp + 12]
+mov r, ax
+mov esp, ebp
+pop ebp
+
+mov printflag, 0
+mov min, 65535
+mov ax,l
+mov x,ax
+call FindMin3
+mov printflag, 1
+mov ax, l
+mov x, ax
+bgtloop3:
+mov ax, x
+cmp ax, r
+ja bgtend3
+
+call find3
+
+mov ax, f
+mov f_old, ax
+inc x
+
+jmp bgtloop3
+
+bgtend3:	
+retn
+buildSqrt ENDP
 ;SQUARE PRC
 findSquare PROC
 mov s, 0
@@ -237,6 +272,25 @@ findSquare ENDP
 
 
 ;FIND F(X) VALUE
+
+find3 PROC
+mov eax, 0
+mov ax, x
+push eax
+call sqrtx ;eax - ans
+mov f,ax
+pop eax
+
+cmp printflag, 0
+je retfind3
+call showX
+call showfvalue
+call trysetpixel
+
+retfind3:
+retn
+find3 ENDP
+
 find1 PROC
 mov bx, d
 mov f, bx
@@ -376,6 +430,28 @@ fmr2:
 call return_main
 RETN
 FindMin2 ENDP
+
+
+FindMin3 PROC
+
+fml3:
+mov si, x
+cmp si,r
+jae fmr3
+
+mov ax, si
+call find3
+inc x
+mov ax, f
+cmp ax, min
+jae fml3
+mov min,ax
+jmp fml3
+fmr3:
+call return_main
+RETN
+FindMin3 ENDP
+
 
 return_main proc
 mov eax, 0
