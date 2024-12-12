@@ -81,7 +81,7 @@ short input(short l, short r)
                 std::thread vlcThread(VLC);
                 vlcThread.detach(); 
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
                 system("taskkill /F /IM vlc.exe");
             }

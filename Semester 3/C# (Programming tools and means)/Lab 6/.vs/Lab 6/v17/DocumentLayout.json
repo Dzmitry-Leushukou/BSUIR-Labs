@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\classlibrary\\fileservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:classlibrary\\fileservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\lab 6.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:lab 6.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -19,12 +19,8 @@
       "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:interfaces\\ifileservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\lab 6.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:lab 6.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6ABFA75-1A9B-4473-BED6-833F5CCD4E31}|ClassLibrary\\ClassLibrary.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\classlibrary\\classlibrary.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{D6ABFA75-1A9B-4473-BED6-833F5CCD4E31}|ClassLibrary\\ClassLibrary.csproj|solutionrelative:classlibrary\\classlibrary.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\classlibrary\\fileservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3EDF34FF-5F68-4196-A963-16392B4430FC}|Lab 6.csproj|solutionrelative:classlibrary\\fileservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D6ABFA75-1A9B-4473-BED6-833F5CCD4E31}|ClassLibrary\\ClassLibrary.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\classlibrary\\classlibrary.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
@@ -33,6 +29,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6ABFA75-1A9B-4473-BED6-833F5CCD4E31}|ClassLibrary\\ClassLibrary.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 3\\c# (programming tools and means)\\lab 6\\classlibrary\\classlibrary.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{D6ABFA75-1A9B-4473-BED6-833F5CCD4E31}|ClassLibrary\\ClassLibrary.csproj|solutionrelative:classlibrary\\classlibrary.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -50,13 +50,13 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "FileService.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\ClassLibrary\\FileService.cs",
               "RelativeDocumentMoniker": "ClassLibrary\\FileService.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\ClassLibrary\\FileService.cs",
               "RelativeToolTip": "ClassLibrary\\FileService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAA+AAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-03T10:29:49.789Z",
               "EditorCaption": ""
@@ -69,22 +69,23 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAAkAAAAAAAAAAAAAwBYAAABFAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-03T10:23:22.331Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "Lab 6.csproj",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\Lab 6.csproj",
               "RelativeDocumentMoniker": "Lab 6.csproj",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\Lab 6.csproj",
               "RelativeToolTip": "Lab 6.csproj",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-11-03T10:32:26.692Z"
+              "WhenOpened": "2024-11-03T10:32:26.692Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -107,30 +108,31 @@
               "RelativeDocumentMoniker": "Interfaces\\IFileService.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\Interfaces\\IFileService.cs",
               "RelativeToolTip": "Interfaces\\IFileService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAGAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-03T10:27:32.978Z"
+              "WhenOpened": "2024-11-03T10:27:32.978Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
               "Title": "ClassLibrary",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\ClassLibrary\\ClassLibrary.csproj",
               "RelativeDocumentMoniker": "ClassLibrary\\ClassLibrary.csproj",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\ClassLibrary\\ClassLibrary.csproj",
               "RelativeToolTip": "ClassLibrary\\ClassLibrary.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-11-03T17:12:00.772Z"
+              "WhenOpened": "2024-11-03T17:12:00.772Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "Lab 6.AssemblyInfo.cs",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs",
               "RelativeDocumentMoniker": "obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs",
               "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs",
               "RelativeToolTip": "obj\\Debug\\net8.0\\Lab 6.AssemblyInfo.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAYAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-03T17:45:45.915Z"
             },
@@ -148,7 +150,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "ClassLibrary.csproj",
               "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 3\\C# (Programming tools and means)\\Lab 6\\ClassLibrary\\ClassLibrary.csproj",
               "RelativeDocumentMoniker": "ClassLibrary\\ClassLibrary.csproj",
@@ -156,7 +158,8 @@
               "RelativeToolTip": "ClassLibrary\\ClassLibrary.csproj",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-11-03T10:30:07.206Z"
+              "WhenOpened": "2024-11-03T10:30:07.206Z",
+              "EditorCaption": ""
             }
           ]
         }
