@@ -8,7 +8,10 @@ internal class Program
     private static void Main(string[] args)
     {
 
-        var configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
 
         var Drivers = new List<Driver>
         {
@@ -59,8 +62,7 @@ internal class Program
                 Console.WriteLine($"[{index}] OK");
             else
                 Console.WriteLine($"[{index}] Wrong");
-            index++;
-            
+            index++;            
         }
 
 

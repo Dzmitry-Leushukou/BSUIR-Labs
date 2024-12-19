@@ -1,8 +1,0 @@
-﻿  Assembling asmpart.asm...
-asmpart.asm(1): error A2008: syntax error : .
-asmpart.asm(2): error A2008: syntax error : .
-asmpart.asm(3): error A2008: syntax error : .
-asmpart.asm(19): error A2070: invalid instruction operands
-asmpart.asm(20): error A2070: invalid instruction operands
-asmpart.asm(24): error A2008: syntax error : retn
-D:\VisualStudio\MSBuild\Microsoft\VC\v170\BuildCustomizations\masm.targets(70,5): error MSB3721: выход из команды "ml64.exe /c /nologo /Zi /Fo"lab\x64\Debug\asmpart.obj" /W3 /errorReport:prompt  /Taasmpart.asm" с кодом "1".
