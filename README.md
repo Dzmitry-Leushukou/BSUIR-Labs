@@ -7,5 +7,6 @@
 - [Programming (C#)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%202/Programming%20(C%23)) (Romanyuk Maxim)
 ### [Third semester (2024)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203)
 - [Applied problems of mathematical analysis](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Applied%20problems%20of%20mathematical%20analysis) (Lecturer: Kalugina Marina)
-- [Assembler](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Asm) (Romanyuk Maxim)
+- [Assembler](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Assembler) (Romanyuk Maxim)
 - [Methods of numerical analysis](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Methods%20of%20numerical%20analysis) (Lecturer: Anisimov Vladimir)
+- [C# (Programming tools and means)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/C%23%20(Programming%20tools%20and%20means)) (Lecturer: Glamazdin Igor)
