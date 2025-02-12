@@ -1,0 +1,13 @@
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\bin\Debug\net8.0\Lab 7.exe
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\bin\Debug\net8.0\Lab 7.deps.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\bin\Debug\net8.0\Lab 7.runtimeconfig.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\bin\Debug\net8.0\Lab 7.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\bin\Debug\net8.0\Lab 7.pdb
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.csproj.CoreCompileInputs.cache
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.sourcelink.json
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\refint\Lab 7.dll
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.pdb
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\Lab 7.genruntimeconfig.cache
+D:\Programming\BSUIR\BSUIR-Labs\Semester 3\C# (Programming tools and means)\Lab 7\obj\Debug\net8.0\ref\Lab 7.dll
