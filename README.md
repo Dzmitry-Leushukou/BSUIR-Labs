@@ -10,3 +10,7 @@
 - [Assembler](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Assembler) (Romanyuk Maxim)
 - [Methods of numerical analysis](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/Methods%20of%20numerical%20analysis) (Lecturer: Anisimov Vladimir)
 - [C# (Programming tools and means)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203/C%23%20(Programming%20tools%20and%20means)) (Lecturer: Glamazdin Igor)
+### [Fourth semester (2024)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%203)
+- [C# (Programming tools and means)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/main/Semester%204/C%23%20(Programming%20tools%20and%20means)) (Lecturer: Glamazdin Igor)
+
+
