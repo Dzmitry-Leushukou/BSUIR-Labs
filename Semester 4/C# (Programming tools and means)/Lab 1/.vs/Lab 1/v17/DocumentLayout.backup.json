@@ -1,0 +1,149 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\mainpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:mainpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\appshell.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:appshell.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\appshell.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:appshell.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\lab 1.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:lab 1.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|d:\\programming\\bsuir\\bsuir-labs\\semester 4\\c# (programming tools and means)\\lab 1\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{597AEE02-93C9-445D-9446-1C397392CFE0}|Lab 1.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Lab 1.csproj",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\Lab 1.csproj",
+              "RelativeDocumentMoniker": "Lab 1.csproj",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\Lab 1.csproj",
+              "RelativeToolTip": "Lab 1.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-02-14T11:54:57.87Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AppShell.xaml.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\AppShell.xaml.cs",
+              "RelativeDocumentMoniker": "AppShell.xaml.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\AppShell.xaml.cs",
+              "RelativeToolTip": "AppShell.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T11:47:37.408Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainPage.xaml.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MainPage.xaml.cs",
+              "RelativeDocumentMoniker": "MainPage.xaml.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MainPage.xaml.cs",
+              "RelativeToolTip": "MainPage.xaml.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAD4vycAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T11:29:52.66Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainPage.xaml",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MainPage.xaml",
+              "RelativeDocumentMoniker": "MainPage.xaml",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MainPage.xaml",
+              "RelativeToolTip": "MainPage.xaml",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAowDEAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-02-14T11:29:40.255Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AppShell.xaml",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\AppShell.xaml",
+              "RelativeDocumentMoniker": "AppShell.xaml",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\AppShell.xaml",
+              "RelativeToolTip": "AppShell.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-02-14T11:29:36.625Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "App.xaml",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\App.xaml",
+              "RelativeDocumentMoniker": "App.xaml",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\App.xaml",
+              "RelativeToolTip": "App.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-02-14T11:29:32.024Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-02-14T11:29:15.022Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MauiProgram.cs",
+              "DocumentMoniker": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MauiProgram.cs",
+              "RelativeDocumentMoniker": "MauiProgram.cs",
+              "ToolTip": "D:\\Programming\\BSUIR\\BSUIR-Labs\\Semester 4\\C# (Programming tools and means)\\Lab 1\\MauiProgram.cs",
+              "RelativeToolTip": "MauiProgram.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T11:28:15.553Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
