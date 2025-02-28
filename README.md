@@ -11,7 +11,7 @@ All actions put in to stack.
 * **Draw** - draw by fill symbol one of 3 type of figure by user choose:<br>
 a) Triangle - draw by coordinates of 3 vertices<br>
 b) Rectangle - draw by coordinates of 4 vertices or by 2 vertices on one diagonal<br>
-c) Circle - draw by coordinates of center and radius
+c) Circle - draw by coordinates of center and radius<br>
 Drawn figure add to the vector to future editing.
 * **Fill** - dill selected figure by fill symbol.
 * **Erase** - delete figure from vector and call repaint
