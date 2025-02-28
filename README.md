@@ -2,8 +2,6 @@
 
 **Description:**  1
 
-**Class diagram** photo
-
 ## **Functional requirements** 
 All actions put in to stack.
 * **Help** - show all commands and their syntax.
@@ -23,3 +21,5 @@ Drawn figure add to the vector to future editing.
 * **Clear** - Clear palette, delete all figures from vector.
 * **Repaint** -  Clear palette and draw all figures in vector.
 
+## **Class diagram** 
+![CD1 drawio (4)](https://github.com/user-attachments/assets/2d579b85-29df-46cd-be2b-7e0129460ae7)
