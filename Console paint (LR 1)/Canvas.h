@@ -14,6 +14,7 @@ public:
 	void move(int, int, int);
 	void draw(int, std::vector<std::pair<int,int>>);
 	void fill(int);
+	void erase(int);
 private:
 	void repaint();
 	bool check(const std::vector<std::pair<int, int>>& v);

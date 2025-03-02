@@ -29,5 +29,6 @@ private:
 	Canvas* canvas;
 	bool move_mode = false;
 	bool fill_mode = false;
+	bool erase_mode = false;
 };
 

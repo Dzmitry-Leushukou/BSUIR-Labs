@@ -27,6 +27,12 @@ void Canvas::fill(int id)
 	figures.at(id)->setFillTime();
 }
 
+void Canvas::erase(int id)
+{
+	delete figures.at(id);
+	figures.at(id) = nullptr;
+	figures.erase(figures.begin() + id);
+}
 
 Canvas::Canvas(int VSize, int HSize)
 {

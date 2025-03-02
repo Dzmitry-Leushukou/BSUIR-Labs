@@ -67,6 +67,18 @@ void UI::process(std::string com)
 		return;
 	}
 
+	if (erase_mode)
+	{
+		if (com == "q")
+		{
+			erase_mode = false;
+			show();
+		}
+		else
+			erase(com);
+		return;
+	}
+
 	if (com == "/help")
 	{
 		help();
@@ -96,6 +108,13 @@ void UI::process(std::string com)
 	if (com=="/fill")
 	{
 		fill_mode = true;
+		show();
+		return;
+	}
+
+	if (com == "/erase")
+	{
+		erase_mode = true;
 		show();
 		return;
 	}
@@ -203,6 +222,18 @@ void UI::show()
 			std::cout << "[" << id++ << "] " << i->toString() << "\n";
 		}
 	}
+
+	if (erase_mode)
+	{
+		std::cout << "[ERASE MODE]\n";
+		std::cout << "For erase figure write \"id\"\nFor quit from mode write \"q\"\nFigures:\n";
+		int id = 0;
+		std::vector<const Figure*>figures = canvas->getFigures();
+		for (auto& i : figures)
+		{
+			std::cout << "[" << id++ << "] " << i->toString() << "\n";
+		}
+	}
 }
 
 void UI::set(char c,char s)
@@ -300,7 +331,28 @@ void UI::fill(std::string s)
 	}
 	
 }
-void erase(std::string)
+void UI::erase(std::string s)
 {
-
+	try
+	{
+		for (auto& i : s)
+		{
+			if (!isdigit(i))
+				throw std::invalid_argument("");
+		}
+		int id = stoi(s);
+		canvas->erase(id);
+		show();
+	}
+	catch (const std::out_of_range& e)
+	{
+		wrong();
+		return;
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
 }
