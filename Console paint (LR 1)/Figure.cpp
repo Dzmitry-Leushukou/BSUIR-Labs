@@ -16,8 +16,16 @@ void Figure::move(int x, int y)
 		i.second += y;
 	}
 }
-
-bool Figure::getIsFill()
+void Figure::setFill()
 {
-	return isFill;
+	isFill = true;
+}
+
+time_t Figure::getDrawTime()
+{
+	return drawTime;
+}
+time_t Figure::getFillTime()
+{
+	return fillTime;
 }

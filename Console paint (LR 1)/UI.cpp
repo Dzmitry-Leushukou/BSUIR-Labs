@@ -225,7 +225,7 @@ void UI::draw(std::string s) // get all after "/draw"
 				v.push_back({ stoi(s1),0 }), f = true;
 		}
 
-		if(f)
+		if((f&&type!=2)||(!f&&type==2))
 			throw std::invalid_argument("Wrong params format");
 
 		canvas->draw(type, v);
@@ -242,5 +242,5 @@ void UI::draw(std::string s) // get all after "/draw"
 		wrong();
 		return;
 	}
-	
+	show();
 }

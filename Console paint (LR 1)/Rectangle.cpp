@@ -2,14 +2,19 @@
 
 std::vector < std::pair<int, int>> Rectangle::fill()
 {
-	fillTime = clock();
-	isFill = true;
-	std::vector < std::pair<int, int>> fillCoords;
+	if (isFill)
+	{
+		fillTime = clock();
+		std::vector < std::pair<int, int>> fillCoords;
 
-	for (int x = vertex[0].first + 1; x < vertex[1].first; x++)
-		for (int y = vertex[0].second + 1; y < vertex[1].second; y++)
-			fillCoords.push_back({ x,y });
-	return fillCoords;
+		for (int x = vertex[0].first + 1; x < vertex[1].first; x++)
+			for (int y = vertex[0].second + 1; y < vertex[1].second; y++)
+				fillCoords.push_back({ x,y });
+
+		return fillCoords;
+	}
+	else
+		return {};
 }
 std::vector < std::pair<int, int>> Rectangle::draw()
 {
@@ -42,7 +47,8 @@ std::string Rectangle::toString() const
 	res +="ectangle: [" + c1 + "] [" + c2 + "] [" + c3 + "] [" + c4 + "]";
 	return res;
 }
-Rectangle::Rectangle()
+Rectangle::Rectangle(std::vector<std::pair<int, int>> vertex)
 {
 	std::sort(vertex.begin(), vertex.end());
+	this->vertex = vertex;
 }
