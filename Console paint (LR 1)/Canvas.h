@@ -11,6 +11,7 @@ public:
 	void set(short ind, char c);
 	std::vector<const Figure*> getFigures() const;
 	void move(int, int, int);
+	void draw(int, std::vector<std::pair<int,int>>);
 private:
 	void repaint();
 

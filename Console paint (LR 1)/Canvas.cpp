@@ -46,3 +46,18 @@ void Canvas::repaint()
 
 
 }
+
+void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
+{
+	switch (id)
+	{
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	default:
+		throw std::invalid_argument("Incorrect type");
+	}
+}

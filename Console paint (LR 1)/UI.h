@@ -20,6 +20,7 @@ private:
 	void wrong();
 	void set(char, char);
 	void move(std::string);
+	void draw(std::string);
 
 	//Fields
 	Canvas* canvas;

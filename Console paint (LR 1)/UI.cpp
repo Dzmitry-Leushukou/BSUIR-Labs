@@ -28,6 +28,8 @@ void UI::help()
 	std::cout << "\"/help\" - show all commands\n";
 	std::cout << "\"/set id (id = [0 - background, 1 - fill, 2 - draw]) char\" - set symbol for fill, draw, background\n";
 	std::cout << "\"/move\" - go to move mode (help about move figure showes when you go to it)\n";
+	std::cout << "\"/draw id x1 y1 x2 y2 x3 y3\" - draw selected figure\n";
+	std::cout << "NOTE: id = [0 - rectangle (x1 y1 x2 y2), 1 - triangle(x1 y1 x2 y2 x3 y3), 2 - cirlce(x1 y1 x2(radius))]\n";
 	system("pause");
 }
 
@@ -70,6 +72,12 @@ void UI::process(std::string com)
 			move(com);
 		return;
 	}
+
+	if (com.size() > 5 && com.substr(0, 5) == "/draw")
+	{
+		draw(com.substr(5));
+		return;
+	}
 	wrong();
 }
 
@@ -105,11 +113,14 @@ void UI::move(std::string s)
 		move_x = stoi(ch);
 
 		ch = "";
-		while (s[i] != ' ')
+		while (i < s.size()&&(std::isdigit(s[i])||s[i]=='-'))
 		{
 			ch += s[i];
 			i++;
 		}
+
+		if (i < s.size())
+			throw std::out_of_range("");
 
 		move_y = stoi(ch);
 
@@ -174,4 +185,62 @@ void UI::set(char c,char s)
 	}
 	else
 		wrong();
+}
+
+void UI::draw(std::string s) // get all after "/draw"
+{
+	int type = 0, i = 0;
+	try
+	{
+		if (s[i++] != ' ')
+			throw std::invalid_argument("Wrong params format");
+
+		if(s[i+1]!=' ')
+			throw std::invalid_argument("Wrong params format");
+
+		type = s[i] - '0';
+		i += 2;
+		//get x1 y1
+		std::vector<std::pair<int, int>>v;
+		bool f = false;
+		while (i < s.size())
+		{
+			std::string s1="";
+			while (i < s.size() && (std::isdigit(s[i]) || s[i] == '-'))
+			{
+				s1 += s[i];
+				i++;
+			}
+			if (i < s.size() && s[i] == ' ') // space
+				i++;
+			else
+				if (i < s.size()) //!space but string not end
+					throw std::invalid_argument("Wrong params format");
+
+			if (f)
+			{
+				v.back().second = stoi(s1), f = false;
+			}
+			else
+				v.push_back({ stoi(s1),0 }), f = true;
+		}
+
+		if(f)
+			throw std::invalid_argument("Wrong params format");
+
+		canvas->draw(type, v);
+		
+	}
+	catch (const std::out_of_range& e)
+	{
+		wrong();
+		return;
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << "\n";
+		wrong();
+		return;
+	}
+	
 }
