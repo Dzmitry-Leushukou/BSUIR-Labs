@@ -33,54 +33,15 @@ Circle::Circle(std::vector<std::pair<int, int>> vertex)
 	R = vertex.at(1).first;
 	this->vertex.clear();
 	cx = vertex[0].first, cy = vertex[0].second;
-	int x = cx;
-	int y = cy-R;
-
-	while (x!=cx-R)//UL
+	for (int x = cx - R; x <= cx + R; x++)
 	{
-		for (y = 0; y <= cy; y++)
+		for (int y = cy - R; y <= cy + R; y++)
 		{
-			if (std::round(std::sqrtl((x - cx) * (x - cx) + (y - cy) * (y - cy))) <= R)
-				break;
+			if (std::round(std::sqrtl((cx - x) * (cx - x) + (cy - y) * (cy - y))) == R)
+			{
+				this->vertex.push_back({ x,y });
+			}
 		}
-		this->vertex.push_back({ x,y });
-		x--;
 	}
-	this->vertex.push_back({ x++,cy });
-	
-	while (x != cx)//UR
-	{
-		for (y = 59; y >= cy; y--)
-		{
-			if (std::round(std::sqrtl((x - cx) * (x - cx) + (y - cy) * (y - cy))) <= R)
-				break;
-		}
-		this->vertex.push_back({ x,y });
-		x++;
-	}
-	this->vertex.push_back({x++,cy + R});
-
-	while (x!=cx+R)//DR
-	{
-		for (y = 59; y >= cy; y--)
-		{
-			if (std::round(std::sqrtl((x - cx) * (x - cx) + (y - cy) * (y - cy))) <= R)
-				break;
-		}
-		this->vertex.push_back({ x,y });
-		x++;
-	}
-	this->vertex.push_back({ x--,cy });
-	while (x!=cx)//DL
-	{
-		for (y = 0; y <= cy; y++)
-		{
-			if (std::round(std::sqrtl((x - cx) * (x - cx) + (y - cy) * (y - cy))) <= R)
-				break;
-		}
-		this->vertex.push_back({ x,y });
-		x--;
-	}
-	this->vertex.push_back({ x,cy - R});
 
 }

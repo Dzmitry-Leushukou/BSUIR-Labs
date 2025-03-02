@@ -118,6 +118,11 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 		if (points.size() < 2)
 			throw std::invalid_argument("So few coordinates for circle");
 		figures.push_back(new Circle(points));
+		if (!(check(figures.back()->draw())))
+		{
+			erase(figures.size()-1);
+			throw std::invalid_argument("Incorrect coordinates");
+		}
 		break;
 
 	default:
