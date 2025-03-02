@@ -7,13 +7,12 @@ UI::UI()
 
 void UI::inputHandler()
 {
+	help();
 	show();
 	std::string com;
 	while (true)
 	{
 		std::getline(std::cin,com);
-		process(com);
-		std::getline(std::cin, com);
 		process(com);
 		std::getline(std::cin, com);
 		process(com);
