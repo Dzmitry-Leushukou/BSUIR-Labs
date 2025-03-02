@@ -3,6 +3,7 @@
 
 #include "Figure.h"
 #include "Rectangle.h"
+#include "Circle.h"
 
 class Canvas
 {

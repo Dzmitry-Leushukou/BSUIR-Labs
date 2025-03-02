@@ -105,14 +105,19 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 		if(points.size() > 2)
 			throw std::invalid_argument("So many coordinates for rectangle");
 		if (points.size() < 2)
-			throw std::invalid_argument("So many coordinates for rectangle");
+			throw std::invalid_argument("So few coordinates for rectangle");
 		figures.push_back(new Rectangle(points));
 		break;
 
-	case 1:
+	case 1: //
 		break;
 
-	case 2:
+	case 2: //circle
+		if (points.size() > 2)
+			throw std::invalid_argument("So many coordinates for circle");
+		if (points.size() < 2)
+			throw std::invalid_argument("So few coordinates for circle");
+		figures.push_back(new Circle(points));
 		break;
 
 	default:
