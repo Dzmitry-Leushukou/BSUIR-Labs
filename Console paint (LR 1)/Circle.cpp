@@ -5,6 +5,7 @@ std::vector < std::pair<int, int>> Circle::fill()
 	if (isFill)
 	{
 		std::vector < std::pair<int, int>> fillCoords;
+		
 		for (int i = left_ind; i <= right_ind; i++)
 		{
 			for (int j = vertex.at(i).second+1; j < vertex.at(i + 1).second; j++)
@@ -42,8 +43,8 @@ Circle::Circle(std::vector<std::pair<int, int>> vertex)
 	{
 		if (x == cx - R + 1)
 			left_ind = this->vertex.size();
-		if (x == cx + R - 1)
-			right_ind = this->vertex.size();
+		if (x == cx + R)
+			right_ind = this->vertex.size()-1;
 		for (int y = cy - R; y <= cy + R; y++)
 		{
 			if (std::round(std::sqrtl((cx - x) * (cx - x) + (cy - y) * (cy - y))) == R)

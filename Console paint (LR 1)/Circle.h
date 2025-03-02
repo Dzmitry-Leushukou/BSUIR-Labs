@@ -13,6 +13,6 @@ public:
 	virtual std::string toString() const override;
 	Circle(std::vector<std::pair<int, int>> vertex);
 private:
-	int R,cx,cy,left_ind=-1,right_ind=-1;
+	int R,cx,cy,left_ind=0,right_ind=0;
 };
 
