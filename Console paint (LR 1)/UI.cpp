@@ -52,20 +52,80 @@ void UI::process(std::string com)
 		return;
 	}
 
-	if (com.size() == 5 && com == "/move")
+	if (com == "/move")
 	{
 		move_mode = true;
 		show();
 		return;
 	}
 
-	if (move_mode&&com == "q")
+	if (move_mode)
 	{
-		move_mode = false;
-		show();
+		if (com == "q")
+		{
+			move_mode = false;
+			show();
+		}
+		else
+			move(com);
 		return;
 	}
 	wrong();
+}
+
+void UI::move(std::string s)
+{
+	int id, i, move_x,move_y;
+	//check command
+	try
+	{
+		std::string type;
+		type = s[0] + s[1];
+
+		if (type != "id"||s[2]!= ' ')
+			throw std::out_of_range("");
+
+		i = 3;
+		std::string ID;
+		while (s[i] != ' ')
+		{
+			ID += s[i];
+			i++;
+		}
+
+		id = stoi(ID);
+
+		std::string ch;
+		while (s[i] != ' ')
+		{
+			ch += s[i];
+			i++;
+		}
+
+		move_x = stoi(ch);
+
+		ch = "";
+		while (s[i] != ' ')
+		{
+			ch += s[i];
+			i++;
+		}
+
+		move_y = stoi(ch);
+
+		canvas->move(id, move_x, move_y);
+	}
+	catch (const std::out_of_range& e)
+	{
+		wrong();
+		return;
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what()<<'\n';
+		wrong();
+		return;
+	}
 }
 
 void UI::show()
@@ -97,7 +157,7 @@ void UI::show()
 		std::cout << "[MOVE MODE]\n";
 		std::cout << "For move figure write \"id x y\"\nFor quit from mode write \"q\"\nFigures:\n";
 		int id = 0;
-		std::vector<Figure*>figures = canvas->getFigures();
+		std::vector<const Figure*>figures = canvas->getFigures();
 		for (auto& i : figures)
 		{
 			std::cout << "[" << id++ << "] " << i->toString() << "\n";

@@ -5,9 +5,19 @@ std::vector<std::vector<char>> Canvas::getCanva() const
 	return canva;
 }
 
-std::vector<Figure*> Canvas::getFigures() const
+std::vector<const Figure*> Canvas::getFigures() const
 {
-	return figures;
+	std::vector<const Figure*>f;
+	for (auto& i : figures)
+	{
+		f.push_back(i);
+	}
+	return f;
+}
+
+void Canvas::move(int id, int x, int y)
+{
+	figures[id]->move(x, y);
 }
 
 Canvas::Canvas(int VSize, int HSize)

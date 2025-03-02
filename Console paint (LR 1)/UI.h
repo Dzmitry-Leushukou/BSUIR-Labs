@@ -19,6 +19,7 @@ private:
 	void help();
 	void wrong();
 	void set(char, char);
+	void move(std::string);
 
 	//Fields
 	Canvas* canvas;

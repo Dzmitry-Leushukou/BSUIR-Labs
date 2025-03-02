@@ -9,7 +9,7 @@ public:
 	virtual void fill() = 0;
 	bool getIsFill();
 	virtual void draw() = 0;
-	virtual std::string toString() = 0;
+	virtual std::string toString() const = 0;
 private:
 	std::vector<std::pair<int, int>>vertex;
 	bool isFill=false;
