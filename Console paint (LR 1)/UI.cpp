@@ -147,7 +147,7 @@ void UI::show()
 	system("cls");
 	
 	std::vector<std::vector<char>> a = canvas->getCanva();
-	for (int i = 0; i < a[0].size()+2; i++)
+	for (int i = 0; i < a.at(0).size()+2; i++)
 	{
 		std::cout << "_";
 	}
@@ -160,7 +160,7 @@ void UI::show()
 		std::cout << "|";
 		std::cout << '\n';
 	}
-	for (int i = 0; i < a[0].size()+2; i++)
+	for (int i = 0; i < a.at(0).size()+2; i++)
 	{
 		std::cout << "-";
 	}
@@ -195,10 +195,10 @@ void UI::draw(std::string s) // get all after "/draw"
 	int type = 0, i = 0;
 	try
 	{
-		if (s[i++] != ' ')
+		if (s.at(i++) != ' ')
 			throw std::invalid_argument("Wrong params format");
 
-		if(s[i+1]!=' ')
+		if(s.at(i+1)!=' ')
 			throw std::invalid_argument("Wrong params format");
 
 		type = s.at(i) - '0';

@@ -18,7 +18,7 @@ std::vector<const Figure*> Canvas::getFigures() const
 
 void Canvas::move(int id, int x, int y)
 {
-	figures[id]->move(x, y);
+	figures.at(id)->move(x, y);
 }
 
 Canvas::Canvas(int VSize, int HSize)
@@ -42,14 +42,14 @@ void Canvas::repaint()
 	for (int i = 0; i < canva.size(); i++)
 	{
 		for (int j = 0; j < canva.at(i).size(); j++)
-			canva.at(i)[j] = symb[0];
+			canva.at(i).at(j) = symb[0];
 	}
 
 	std::vector<std::vector<time_t>>time;
 	time.resize(canva.size());
 	for (auto& i : time)
 	{
-		i.resize(canva[0].size());
+		i.resize(canva.at(0).size());
 		for (auto& j : i)
 		{
 			j = 0;
@@ -61,9 +61,9 @@ void Canvas::repaint()
 		time_t t = i->getDrawTime();
 		for (auto& j : c)
 		{
-			if (time[j.first][j.second] < t)
+			if (time.at(j.first).at(j.second) < t)
 			{
-				canva[j.first][j.second] = symb[2];
+				canva.at(j.first).at(j.second) = symb[2];
 			}
 		}
 
@@ -71,9 +71,9 @@ void Canvas::repaint()
 		t = i->getFillTime();
 		for (auto& j : c)
 		{
-			if (time[j.first][j.second] < t)
+			if (time.at(j.first).at(j.second) < t)
 			{
-				canva[j.first][j.second] = symb[1];
+				canva.at(j.first).at(j.second) = symb[1];
 			}
 		}
 	}
@@ -106,7 +106,7 @@ bool Canvas::check(const std::vector<std::pair<int, int>>&v)
 {
 	for (auto& i : v)
 	{
-		if (!(i.first >= 0 && i.first < canva.size()&& i.second >= 0 && i.second < canva[0].size()))
+		if (!(i.first >= 0 && i.first < canva.size()&& i.second >= 0 && i.second < canva.at(0).size()))
 			return false;
 	}
 	return true;
