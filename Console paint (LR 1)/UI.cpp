@@ -27,8 +27,7 @@ void UI::help()
 	std::cout << "==Commands==\n";
 	std::cout << "\"/help\" - show all commands\n";
 	std::cout << "\"/set id (id = [0 - background, 1 - fill, 2 - draw]) char\" - set symbol for fill, draw, background\n";
-	//std::cout << "/\n";
-	//std::cout << "/set id (0 - background, 1 - fill, 2 - draw) symbol\n";
+	std::cout << "\"/move\" - go to move mode (help about move figure showes when you go to it)\n";
 	system("pause");
 }
 
@@ -53,7 +52,19 @@ void UI::process(std::string com)
 		return;
 	}
 
+	if (com.size() == 5 && com == "/move")
+	{
+		move_mode = true;
+		show();
+		return;
+	}
 
+	if (move_mode&&com == "q")
+	{
+		move_mode = false;
+		show();
+		return;
+	}
 	wrong();
 }
 
@@ -80,6 +91,18 @@ void UI::show()
 		std::cout << "-";
 	}
 	std::cout << '\n';
+
+	if (move_mode)
+	{
+		std::cout << "[MOVE MODE]\n";
+		std::cout << "For move figure write \"id x y\"\nFor quit from mode write \"q\"\nFigures:\n";
+		int id = 0;
+		std::vector<Figure*>figures = canvas->getFigures();
+		for (auto& i : figures)
+		{
+			std::cout << "[" << id++ << "] " << i->toString() << "\n";
+		}
+	}
 }
 
 void UI::set(char c,char s)

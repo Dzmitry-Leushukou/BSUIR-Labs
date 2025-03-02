@@ -4,6 +4,12 @@ std::vector<std::vector<char>> Canvas::getCanva() const
 {
 	return canva;
 }
+
+std::vector<Figure*> Canvas::getFigures() const
+{
+	return figures;
+}
+
 Canvas::Canvas(int VSize, int HSize)
 {
 	canva.resize(VSize);

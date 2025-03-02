@@ -2,7 +2,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "Canvas.h"
+#include "Figure.h"
 
 class UI
 {
@@ -20,5 +22,6 @@ private:
 
 	//Fields
 	Canvas* canvas;
+	bool move_mode = false;
 };
 
