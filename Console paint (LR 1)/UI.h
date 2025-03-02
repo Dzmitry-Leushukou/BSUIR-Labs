@@ -23,7 +23,7 @@ private:
 	void draw(std::string);
 	void fill(std::string);
 	void erase(std::string);
-
+	void clear();
 
 	//Fields
 	Canvas* canvas;

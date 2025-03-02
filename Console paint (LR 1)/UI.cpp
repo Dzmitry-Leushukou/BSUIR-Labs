@@ -27,10 +27,12 @@ void UI::help()
 	std::cout << "==Commands==\n";
 	std::cout << "\"/help\" - show all commands\n";
 	std::cout << "\"/set id (id = [0 - background, 1 - fill, 2 - draw]) char\" - set symbol for fill, draw, background\n";
-	std::cout << "\"/move\" - go to move mode (help about move figure showes when you go to it)\n";
+	std::cout << "\"/move\" - go to move mode (help inside mode)\n";
 	std::cout << "\"/draw id x1 y1 x2 y2 x3 y3\" - draw selected figure\n";
 	std::cout << "NOTE: id = [0 - rectangle (x1 y1 x2 y2), 1 - triangle(x1 y1 x2 y2 x3 y3), 2 - cirlce(x1 y1 x2(radius))]\n";
-	std::cout << "\"/fill\" - go to fill mode (help about move figure showes when you go to it)\n"; std::cout << "\"/draw id x1 y1 x2 y2 x3 y3\" - draw selected figure\n";
+	std::cout << "\"/fill\" - go to fill mode (help inside mode)\n"; 
+	std::cout << "\"/erase\" - go to erase mode (help inside mode)\n";
+	std::cout << "\"/clear\" - clear palette\n";
 	system("pause");
 }
 
@@ -79,6 +81,12 @@ void UI::process(std::string com)
 		return;
 	}
 
+	if (com == "/clear")
+	{
+		clear();
+		return;
+	}
+
 	if (com == "/help")
 	{
 		help();
@@ -97,7 +105,6 @@ void UI::process(std::string com)
 		show();
 		return;
 	}
-
 
 	if (com.size() > 5 && com.substr(0, 5) == "/draw")
 	{
@@ -331,6 +338,7 @@ void UI::fill(std::string s)
 	}
 	
 }
+
 void UI::erase(std::string s)
 {
 	try
@@ -355,4 +363,13 @@ void UI::erase(std::string s)
 		wrong();
 		return;
 	}
+}
+
+void UI::clear()
+{
+	while (canvas->getFigures().size())
+	{
+		canvas->erase(0);
+	}
+	show();
 }
