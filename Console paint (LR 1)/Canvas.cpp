@@ -26,7 +26,7 @@ Canvas::Canvas(int VSize, int HSize)
 	canva.resize(VSize);
 	for (int i = 0; i < canva.size(); i++)
 	{
-		canva[i].resize(HSize);
+		canva.at(i).resize(HSize);
 	}
 	repaint();
 }
@@ -41,8 +41,8 @@ void Canvas::repaint()
 {
 	for (int i = 0; i < canva.size(); i++)
 	{
-		for (int j = 0; j < canva[i].size(); j++)
-			canva[i][j] = symb[0];
+		for (int j = 0; j < canva.at(i).size(); j++)
+			canva.at(i)[j] = symb[0];
 	}
 
 	std::vector<std::vector<time_t>>time;

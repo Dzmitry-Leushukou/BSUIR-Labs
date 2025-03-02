@@ -42,6 +42,18 @@ void UI::wrong()
 
 void UI::process(std::string com)
 {
+	if (move_mode)
+	{
+		if (com == "q")
+		{
+			move_mode = false;
+			show();
+		}
+		else
+			move(com);
+		return;
+	}
+
 	if (com == "/help")
 	{
 		help();
@@ -61,21 +73,16 @@ void UI::process(std::string com)
 		return;
 	}
 
-	if (move_mode)
-	{
-		if (com == "q")
-		{
-			move_mode = false;
-			show();
-		}
-		else
-			move(com);
-		return;
-	}
 
 	if (com.size() > 5 && com.substr(0, 5) == "/draw")
 	{
 		draw(com.substr(5));
+		return;
+	}
+
+	if (com.size() > 5 && com.substr(0, 5) == "/fill")
+	{
+		//fill(com.substr(5));
 		return;
 	}
 	wrong();
@@ -87,35 +94,30 @@ void UI::move(std::string s)
 	//check command
 	try
 	{
-		std::string type;
-		type = s[0] + s[1];
 
-		if (type != "id"||s[2]!= ' ')
-			throw std::out_of_range("");
-
-		i = 3;
+		i = 0;
 		std::string ID;
-		while (s[i] != ' ')
+		while (s.at(i) != ' ')
 		{
-			ID += s[i];
+			ID += s.at(i);
 			i++;
 		}
 
 		id = stoi(ID);
-
+		i++;
 		std::string ch;
-		while (s[i] != ' ')
+		while (s.at(i) != ' ')
 		{
-			ch += s[i];
+			ch += s.at(i);
 			i++;
 		}
 
 		move_x = stoi(ch);
-
+		i++;
 		ch = "";
-		while (i < s.size()&&(std::isdigit(s[i])||s[i]=='-'))
+		while (i < s.size()&&(std::isdigit(s.at(i))||s.at(i)=='-'))
 		{
-			ch += s[i];
+			ch += s.at(i);
 			i++;
 		}
 
@@ -125,6 +127,7 @@ void UI::move(std::string s)
 		move_y = stoi(ch);
 
 		canvas->move(id, move_x, move_y);
+		show();
 	}
 	catch (const std::out_of_range& e)
 	{
@@ -198,7 +201,7 @@ void UI::draw(std::string s) // get all after "/draw"
 		if(s[i+1]!=' ')
 			throw std::invalid_argument("Wrong params format");
 
-		type = s[i] - '0';
+		type = s.at(i) - '0';
 		i += 2;
 		//get x1 y1
 		std::vector<std::pair<int, int>>v;
@@ -206,12 +209,12 @@ void UI::draw(std::string s) // get all after "/draw"
 		while (i < s.size())
 		{
 			std::string s1="";
-			while (i < s.size() && (std::isdigit(s[i]) || s[i] == '-'))
+			while (i < s.size() && (std::isdigit(s.at(i)) || s.at(i) == '-'))
 			{
-				s1 += s[i];
+				s1 += s.at(i);
 				i++;
 			}
-			if (i < s.size() && s[i] == ' ') // space
+			if (i < s.size() && s.at(i) == ' ') // space
 				i++;
 			else
 				if (i < s.size()) //!space but string not end
