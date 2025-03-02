@@ -22,6 +22,7 @@ Drawn figure add to the vector to future editing.
 * **Repaint** -  Clear palette and draw all figures in vector.
 
 ## **Class diagram** 
-![CD1 drawio (1)](https://github.com/user-attachments/assets/a28f49c4-187c-403c-aa1f-51e0365d97cc)
+![CD1 drawio (2)](https://github.com/user-attachments/assets/5d1444b4-d5e4-4308-8aed-ad4b781d6c05)
+
 
 
