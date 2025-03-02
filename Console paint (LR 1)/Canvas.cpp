@@ -43,4 +43,6 @@ void Canvas::repaint()
 		for (int j = 0; j < canva[i].size(); j++)
 			canva[i][j] = symb[0];
 	}
+
+
 }
