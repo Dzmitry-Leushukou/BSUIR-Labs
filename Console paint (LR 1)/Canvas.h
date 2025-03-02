@@ -13,6 +13,7 @@ public:
 	std::vector<const Figure*> getFigures() const;
 	void move(int, int, int);
 	void draw(int, std::vector<std::pair<int,int>>);
+	void fill(int);
 private:
 	void repaint();
 	bool check(const std::vector<std::pair<int, int>>& v);

@@ -21,9 +21,13 @@ private:
 	void set(char, char);
 	void move(std::string);
 	void draw(std::string);
+	void fill(std::string);
+	void erase(std::string);
+
 
 	//Fields
 	Canvas* canvas;
 	bool move_mode = false;
+	bool fill_mode = false;
 };
 

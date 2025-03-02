@@ -4,7 +4,6 @@ std::vector < std::pair<int, int>> Rectangle::fill()
 {
 	if (isFill)
 	{
-		fillTime = clock();
 		std::vector < std::pair<int, int>> fillCoords;
 
 		for (int x = vertex.at(0).first + 1; x < vertex.at(1).first; x++)
@@ -18,7 +17,6 @@ std::vector < std::pair<int, int>> Rectangle::fill()
 }
 std::vector < std::pair<int, int>> Rectangle::draw()
 {
-	drawTime = clock();
 	std::vector < std::pair<int, int>> drawCoords;
 
 	for (int x = vertex.at(0).first; x <= vertex.at(1).first; x++)
@@ -49,6 +47,7 @@ std::string Rectangle::toString() const
 }
 Rectangle::Rectangle(std::vector<std::pair<int, int>> vertex)
 {
+	drawTime = clock();
 	std::sort(vertex.begin(), vertex.end());
 	this->vertex = vertex;
 }

@@ -21,6 +21,13 @@ void Canvas::move(int id, int x, int y)
 	figures.at(id)->move(x, y);
 }
 
+void Canvas::fill(int id)
+{
+	figures.at(id)->setFill(1);
+	figures.at(id)->setFillTime();
+}
+
+
 Canvas::Canvas(int VSize, int HSize)
 {
 	canva.resize(VSize);
@@ -64,6 +71,7 @@ void Canvas::repaint()
 			if (time.at(j.first).at(j.second) < t)
 			{
 				canva.at(j.first).at(j.second) = symb[2];
+				time.at(j.first).at(j.second) = t;
 			}
 		}
 
@@ -74,6 +82,7 @@ void Canvas::repaint()
 			if (time.at(j.first).at(j.second) < t)
 			{
 				canva.at(j.first).at(j.second) = symb[1];
+				time.at(j.first).at(j.second) = t;
 			}
 		}
 	}
@@ -93,10 +102,13 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 			throw std::invalid_argument("So many coordinates for rectangle");
 		figures.push_back(new Rectangle(points));
 		break;
+
 	case 1:
 		break;
+
 	case 2:
 		break;
+
 	default:
 		throw std::invalid_argument("Incorrect type");
 	}

@@ -16,9 +16,9 @@ void Figure::move(int x, int y)
 		i.second += y;
 	}
 }
-void Figure::setFill()
+void Figure::setFill(bool s)
 {
-	isFill = true;
+	isFill = s;
 }
 
 time_t Figure::getDrawTime()
@@ -28,4 +28,9 @@ time_t Figure::getDrawTime()
 time_t Figure::getFillTime()
 {
 	return fillTime;
+}
+
+void Figure::setFillTime()
+{
+	fillTime = clock();
 }

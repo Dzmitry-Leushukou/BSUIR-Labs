@@ -30,6 +30,7 @@ void UI::help()
 	std::cout << "\"/move\" - go to move mode (help about move figure showes when you go to it)\n";
 	std::cout << "\"/draw id x1 y1 x2 y2 x3 y3\" - draw selected figure\n";
 	std::cout << "NOTE: id = [0 - rectangle (x1 y1 x2 y2), 1 - triangle(x1 y1 x2 y2 x3 y3), 2 - cirlce(x1 y1 x2(radius))]\n";
+	std::cout << "\"/fill\" - go to fill mode (help about move figure showes when you go to it)\n"; std::cout << "\"/draw id x1 y1 x2 y2 x3 y3\" - draw selected figure\n";
 	system("pause");
 }
 
@@ -51,6 +52,18 @@ void UI::process(std::string com)
 		}
 		else
 			move(com);
+		return;
+	}
+
+	if (fill_mode)
+	{
+		if (com == "q")
+		{
+			fill_mode = false;
+			show();
+		}
+		else
+			fill(com);
 		return;
 	}
 
@@ -80,9 +93,10 @@ void UI::process(std::string com)
 		return;
 	}
 
-	if (com.size() > 5 && com.substr(0, 5) == "/fill")
+	if (com=="/fill")
 	{
-		//fill(com.substr(5));
+		fill_mode = true;
+		show();
 		return;
 	}
 	wrong();
@@ -177,6 +191,18 @@ void UI::show()
 			std::cout << "[" << id++ << "] " << i->toString() << "\n";
 		}
 	}
+
+	if (fill_mode)
+	{
+		std::cout << "[FILL MODE]\n";
+		std::cout << "For fill figure write \"id\"\nFor quit from mode write \"q\"\nFigures:\n";
+		int id = 0;
+		std::vector<const Figure*>figures = canvas->getFigures();
+		for (auto& i : figures)
+		{
+			std::cout << "[" << id++ << "] " << i->toString() << "\n";
+		}
+	}
 }
 
 void UI::set(char c,char s)
@@ -246,4 +272,35 @@ void UI::draw(std::string s) // get all after "/draw"
 		return;
 	}
 	show();
+}
+
+void UI::fill(std::string s)
+{
+	try 
+	{
+		for (auto& i : s)
+		{
+			if (!isdigit(i))
+				throw std::invalid_argument("");
+		}
+		int id = stoi(s);
+		canvas->fill(id);
+		show();
+	}
+	catch (const std::out_of_range& e)
+	{
+		wrong();
+		return;
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
+	
+}
+void erase(std::string)
+{
+
 }
