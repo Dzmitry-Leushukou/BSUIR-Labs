@@ -109,7 +109,17 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 		figures.push_back(new Rectangle(points));
 		break;
 
-	case 1: //
+	case 1: // triangle
+		if (points.size() > 3)
+			throw std::invalid_argument("So many coordinates for triangle");
+		if (points.size() < 3)
+			throw std::invalid_argument("So few coordinates for triangle");
+		if(points[0].first * (points[1].second - points[2].second) + points[1].first * (points[2].second - points[0].second) 
+			+ points[2].first * (points[0].second - points[1].second)==0)
+			throw std::invalid_argument("Three vertices cannot lie on the same line");
+		if(points[0]==points[1] || points[2] == points[1] || points[0] == points[2])
+			throw std::invalid_argument("2 points can`t locate on the same coordinates");
+		figures.push_back(new Triangle(points));
 		break;
 
 	case 2: //circle

@@ -4,6 +4,7 @@
 #include "Figure.h"
 #include "Rectangle.h"
 #include "Circle.h"
+#include "Triangle.h"
 
 class Canvas
 {
