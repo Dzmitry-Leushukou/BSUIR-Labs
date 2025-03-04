@@ -7,8 +7,8 @@ class Triangle :
     public Figure
 {
 public:
-	std::vector < std::pair<int, int>> fill();
-	std::vector < std::pair<int, int>> draw();
+	virtual  std::vector < std::pair<int, int>> fill() override;
+	virtual  std::vector < std::pair<int, int>> draw() override;
 	virtual std::string toString() const override;
 	Triangle(std::vector<std::pair<int, int>> vertex);
 };

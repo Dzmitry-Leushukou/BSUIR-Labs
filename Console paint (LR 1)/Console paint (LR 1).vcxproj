@@ -132,6 +132,7 @@
     <ClCompile Include="Console paint (LR 1).cpp" />
     <ClCompile Include="Figure.cpp" />
     <ClCompile Include="Rectangle.cpp" />
+    <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
@@ -140,6 +141,7 @@
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Figure.h" />
     <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="Serializer.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>

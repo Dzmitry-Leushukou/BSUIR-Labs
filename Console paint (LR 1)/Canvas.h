@@ -17,6 +17,10 @@ public:
 	void draw(int, std::vector<std::pair<int,int>>);
 	void fill(int);
 	void erase(int);
+	char* getSymb()
+	{
+		return symb;
+	}
 private:
 	void repaint();
 	bool check(const std::vector<std::pair<int, int>>& v);

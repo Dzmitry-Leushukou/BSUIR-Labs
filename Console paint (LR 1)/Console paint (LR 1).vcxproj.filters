@@ -36,12 +36,12 @@
     <ClCompile Include="Rectangle.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Serializer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Canvas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Figure.h">
@@ -54,6 +54,12 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Rectangle.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Serializer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Canvas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

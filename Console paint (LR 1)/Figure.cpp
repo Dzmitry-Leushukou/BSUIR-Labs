@@ -1,5 +1,22 @@
 #include "Figure.h"
 
+std::string Figure::getFullInfo() const
+{
+	std::string res;
+	if (isFill)
+		res = "1 ";
+	else
+		res = "0 ";
+
+	res += std::to_string(drawTime) + " " + std::to_string(fillTime);
+	for (auto& i : vertex)
+	{
+		res += " " + std::to_string(i.first) + " " + std::to_string(i.second);
+	}
+
+	return res;
+}
+
 void Figure::move(int x, int y)
 {
 	for (auto& i : vertex)

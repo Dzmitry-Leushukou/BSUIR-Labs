@@ -1,5 +1,29 @@
 #include "Circle.h"
 
+std::string Circle::getFullInfo() const
+{
+	std::string res;
+	if (isFill)
+		res = "1 ";
+	else
+		res = "0 ";
+
+	res += std::to_string(drawTime) + " " + 
+		   std::to_string(fillTime) + " " +
+		   std::to_string(R)+ " " +
+		   std::to_string(cx)+ " " +
+		   std::to_string(cy) + " "  +
+		   std::to_string(left_ind) + " " +
+		   std::to_string(right_ind);
+
+	for (auto& i : vertex)
+	{
+		res += " " + std::to_string(i.first) + " " + std::to_string(i.second);
+	}
+
+	return res;
+}
+
 std::vector < std::pair<int, int>> Circle::fill()
 {
 	if (isFill)

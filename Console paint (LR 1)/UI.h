@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Canvas.h"
-#include "Figure.h"
+#include "Serializer.h"
 
 class UI
 {
@@ -14,7 +14,8 @@ public:
 private:
 	void process(std::string);
 	void show();
-	
+	bool isDigit(char c);
+
 	//Commands
 	void help();
 	void wrong();
@@ -24,6 +25,7 @@ private:
 	void fill(std::string);
 	void erase(std::string);
 	void clear();
+	void save();
 
 	//Fields
 	Canvas* canvas;

@@ -124,6 +124,13 @@ void UI::process(std::string com)
 		show();
 		return;
 	}
+
+	if (com == "/save")
+	{
+		save();
+		return;
+	}
+
 	wrong();
 }
 
@@ -154,7 +161,7 @@ void UI::move(std::string s)
 		move_x = stoi(ch);
 		i++;
 		ch = "";
-		while (i < s.size()&&(std::isdigit(s.at(i))||s.at(i)=='-'))
+		while (i < s.size()&&(isDigit(s.at(i))||s.at(i)=='-'))
 		{
 			ch += s.at(i);
 			i++;
@@ -272,7 +279,7 @@ void UI::draw(std::string s) // get all after "/draw"
 		while (i < s.size())
 		{
 			std::string s1="";
-			while (i < s.size() && (std::isdigit(s.at(i)) || s.at(i) == '-'))
+			while (i < s.size() && (isDigit(s.at(i)) || s.at(i) == '-'))
 			{
 				s1 += s.at(i);
 				i++;
@@ -317,7 +324,7 @@ void UI::fill(std::string s)
 	{
 		for (auto& i : s)
 		{
-			if (!isdigit(i))
+			if (!isDigit(i))
 				throw std::invalid_argument("");
 		}
 		int id = stoi(s);
@@ -344,7 +351,7 @@ void UI::erase(std::string s)
 	{
 		for (auto& i : s)
 		{
-			if (!isdigit(i))
+			if (!isDigit(i))
 				throw std::invalid_argument("");
 		}
 		int id = stoi(s);
@@ -371,4 +378,14 @@ void UI::clear()
 		canvas->erase(0);
 	}
 	show();
+}
+
+void UI::save()
+{
+	Serializer::Serialize(canvas->getSymb(), canvas->getFigures(), "test.txt");
+}
+
+bool UI::isDigit(char c)
+{
+	return c >= '0' && c <= '9';
 }

@@ -2,6 +2,8 @@
 #include <vector>
 #include <stdexcept>
 #include <ctime>
+#include <string>
+
 class Figure
 {
 public:
@@ -13,6 +15,7 @@ public:
 	time_t getFillTime();
 	time_t getDrawTime();
 	void setFillTime();
+	virtual std::string getFullInfo() const;
 protected:
 	std::vector<std::pair<int, int>>vertex;
 	bool isFill=false;
