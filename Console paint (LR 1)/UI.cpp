@@ -3,6 +3,7 @@
 UI::UI()
 {
 	canvas = new Canvas(20,60);
+	action_control->addAction(canvas);
 }
 
 void UI::inputHandler()
@@ -32,6 +33,8 @@ void UI::help()
 	std::cout << "\"/clear\" - clear palette\n";
 	std::cout << "\"/save path_to_file\" - save to file\n";
 	std::cout << "\"/load path_to_file\" - load from file\n";
+	std::cout << "\"/undo\" - undo last action\n";
+	std::cout << "\"/redo\" - redo last undo\n";
 	system("pause");
 }
 
@@ -118,6 +121,18 @@ void UI::process(std::string com)
 		return;
 	}
 
+	if (com == "/undo")
+	{
+		undo();
+		return;
+	}
+
+	if (com == "/redo")
+	{
+		redo();
+		return;
+	}
+
 	if (com == "/erase")
 	{
 		erase_mode = true;
@@ -192,6 +207,7 @@ void UI::move(std::string s)
 		wrong();
 		return;
 	}
+	action_control->addAction(canvas);
 }
 
 void UI::show()
@@ -261,6 +277,7 @@ void UI::set(char c,char s)
 	{
 		canvas->set(c - '0', s);
 		show();
+		action_control->addAction(canvas);
 	}
 	else
 		wrong();
@@ -322,6 +339,7 @@ void UI::draw(std::string s) // get all after "/draw"
 		return;
 	}
 	show();
+	action_control->addAction(canvas);
 }
 
 void UI::fill(std::string s)
@@ -348,6 +366,7 @@ void UI::fill(std::string s)
 		wrong();
 		return;
 	}
+	action_control->addAction(canvas);
 	
 }
 
@@ -375,6 +394,7 @@ void UI::erase(std::string s)
 		wrong();
 		return;
 	}
+	action_control->addAction(canvas);
 }
 
 void UI::clear()
@@ -384,6 +404,7 @@ void UI::clear()
 		canvas->erase(0);
 	}
 	show();
+	action_control->addAction(canvas);
 }
 
 void UI::save(std::string filepath)
@@ -422,9 +443,38 @@ void UI::load(std::string filepath)
 		wrong();
 		return;
 	}
+	action_control->addAction(canvas);
 }
 
 bool UI::isDigit(char c)
 {
 	return c >= '0' && c <= '9';
+}
+
+void UI::redo()
+{
+	try
+	{
+		*canvas = action_control->redo();
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
+}
+
+void UI::undo()
+{
+	try
+	{
+		*canvas = action_control->undo();
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
 }

@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actions.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="Console paint (LR 1).cpp" />
@@ -137,6 +138,7 @@
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actions.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Figure.h" />

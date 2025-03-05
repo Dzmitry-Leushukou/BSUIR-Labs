@@ -59,7 +59,6 @@ Triangle::Triangle(bool fill, time_t dt, time_t ft, std::vector<std::pair<int, i
 			{
 				this->vertex.push_back({ x,std::round(((long double)x - b) / k) });
 			}
-		std::sort(this->vertex.begin() + 3, this->vertex.end());
 	}
 
 
@@ -70,9 +69,11 @@ std::vector < std::pair<int, int>> Triangle::fill()
 {
 	if (isFill)
 	{
-		std::vector < std::pair<int, int>> fillCoords;
-
-		for (int i = 3; i < vertex.size()-1; i++)
+		std::vector < std::pair<int, int>> fillCoords,vertex;
+		vertex = this->vertex;
+		std::sort(vertex.begin(), vertex.end());
+		
+		for (int i = 0; i < vertex.size()-1; i++)
 		{
 			if(vertex.at(i).first== vertex.at(i+1).first)
 			for (int j = vertex.at(i).second + 1; j < vertex.at(i + 1).second; j++)
@@ -142,7 +143,6 @@ Triangle::Triangle(std::vector<std::pair<int, int>> vertex)
 			{
 				this->vertex.push_back({ x,std::round(((long double)x - b)/k)});
 			}
-		std::sort(this->vertex.begin()+3, this->vertex.end());
 	}
 	
 	

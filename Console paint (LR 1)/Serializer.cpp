@@ -30,7 +30,6 @@ void Serializer::Serialize(char symb[3], std::vector<const Figure*>figures, std:
 	fout.close();
 }
 
-
 Canvas* Serializer::Deserialize(std::string filename)
 {
 	std::ifstream fin;
@@ -159,4 +158,105 @@ bool Serializer::checkCanvasFigures(Canvas* canva)
 		}
 	}
 	return true;
+}
+
+std::vector<std::string> Serializer::SerializeToString(char symb[3], std::vector<const Figure*>figures)
+{
+	std::vector<std::string> res;
+	std::string s = "";
+	s += (char)symb[0];
+	s += " ";
+	s += (char)symb[1];
+	s += " ";
+	s += (char)symb[2];
+	res.push_back(s);
+	
+	res.push_back(std::to_string(Canvas::getVSIZE()) + " " + std::to_string(Canvas::getHSIZE()) + " ");
+	for (auto& figure : figures)
+	{
+		if (const Triangle* triangle = dynamic_cast<const Triangle*>(figure))
+		{
+			res.push_back("Triangle ");
+		}
+		if (const Circle* triangle = dynamic_cast<const Circle*>(figure))
+		{
+			res.push_back("Circle ");
+		}
+		if (const Rectangle* triangle = dynamic_cast<const Rectangle*>(figure))
+		{
+			res.push_back("Rectangle ");
+		}
+		res.back()+=figure->getFullInfo() + " |";
+	}
+	return res;
+}
+
+Canvas Serializer::DeserializeFromString(std::vector<std::string> str)
+{
+	std::reverse(str.begin(), str.end());
+	char symb[3];
+	std::vector<Figure*>figures;
+	std::string s;
+	s = str.back();
+	str.pop_back();
+
+	symb[0] = s.at(0);
+	symb[1] = s.at(2);
+	symb[2] = s.at(4);
+
+
+	s = str.back();
+	str.pop_back();
+	int vs, hs;
+	int i = 0;
+	vs = readInt(s, i, 2);
+	hs = readInt(s, i, 2);
+	
+	int line = 0;
+	while (!str.empty())
+	{
+		s = str.back();
+		str.pop_back();
+		int i = 0;
+		//Type
+		std::string type;
+		while (s.at(i) != ' ')
+		{
+			type += s.at(i);
+			i++;
+		}
+		i++;
+		if (type == "Circle")
+		{
+			bool fill = Serializer::readNumber(s, i, line);
+			time_t drawTime = Serializer::readNumber(s, i, line);
+			time_t fillTime = Serializer::readNumber(s, i, line);
+			int R = Serializer::readInt(s, i, line);
+			int cx = Serializer::readInt(s, i, line);
+			int cy = Serializer::readInt(s, i, line);
+
+			figures.push_back(new Circle(fill, drawTime, fillTime, R, cx, cy));
+		}
+		else
+			if (type == "Triangle" || type == "Rectangle")
+			{
+				bool fill = Serializer::readNumber(s, i, line);
+				time_t drawTime = Serializer::readNumber(s, i, line);
+				time_t fillTime = Serializer::readNumber(s, i, line);
+				std::vector<std::pair<int, int>>v;
+				while (s.at(i) != '|')
+				{
+					v.push_back({ Serializer::readInt(s, i, line), 0 });
+					v.back().second = Serializer::readInt(s, i, line);
+				}
+				if (type == "Triangle")
+				{
+					figures.push_back(new Triangle(fill, drawTime, fillTime, v));
+				}
+				else
+					figures.push_back(new Rectangle(fill, drawTime, fillTime, v));
+			}
+	}
+	 
+	return Canvas(symb, figures, vs, hs);
 }

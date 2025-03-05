@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "Actions.h"
 #include "Canvas.h"
 #include "Serializer.h"
 
@@ -27,9 +28,12 @@ private:
 	void clear();
 	void save(std::string);
 	void load(std::string);
+	void undo();
+	void redo();
 
 	//Fields
 	Canvas* canvas;
+	Actions* action_control = new Actions();
 	bool move_mode = false;
 	bool fill_mode = false;
 	bool erase_mode = false;
