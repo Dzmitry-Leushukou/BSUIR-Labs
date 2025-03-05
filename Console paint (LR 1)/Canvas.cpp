@@ -56,7 +56,7 @@ Canvas::Canvas(char symb[3], std::vector<Figure*>figures, int v, int h)
 	VSIZE = v;
 	HSIZE = h;
 	canva.resize(VSIZE);
-	for (int i = 0; i < canva.size(); i++)
+	for (int i = 0; i < VSIZE; i++)
 	{
 		canva.at(i).resize(HSIZE);
 	}
@@ -71,17 +71,17 @@ void Canvas::set(short ind, char c)
 
 void Canvas::repaint()
 {
-	for (int i = 0; i < canva.size(); i++)
+	for (int i = 0; i < VSIZE; i++)
 	{
-		for (int j = 0; j < canva.at(i).size(); j++)
+		for (int j = 0; j < HSIZE; j++)
 			canva.at(i).at(j) = symb[0];
 	}
 
 	std::vector<std::vector<time_t>>time;
-	time.resize(canva.size());
+	time.resize(VSIZE);
 	for (auto& i : time)
 	{
-		i.resize(canva.at(0).size());
+		i.resize(HSIZE);
 		for (auto& j : i)
 		{
 			j = 0;

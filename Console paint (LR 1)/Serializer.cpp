@@ -96,10 +96,10 @@ Canvas* Serializer::Deserialize(std::string filename)
 					v.push_back({ Serializer::readInt(s, i, line), 0});
 					v.back().second = Serializer::readInt(s, i, line);
 				}
-				if (v.size() < 3 && type == "Triangle")
+				if (v.size() != 3 && type == "Triangle")
 					throw std::invalid_argument("Wrong info line:" + std::to_string(line));
 				else 
-					if (v.size() < 2 && type == "Rectangle")
+					if (v.size() != 2 && type == "Rectangle")
 						throw std::invalid_argument("Wrong info line:" + std::to_string(line));
 
 				if (type == "Triangle")
