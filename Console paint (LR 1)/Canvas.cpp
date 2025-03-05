@@ -160,3 +160,18 @@ bool Canvas::check(const std::vector<std::pair<int, int>>&v)
 	}
 	return true;
 }
+
+char * Canvas::getSymb()
+{
+	return symb;
+}
+
+int Canvas::getVSIZE()
+{
+	return VSIZE;
+}
+
+int Canvas::getHSIZE()
+{
+	return HSIZE;
+}

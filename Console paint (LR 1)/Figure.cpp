@@ -5,11 +5,11 @@ bool Figure::checkFields() const
 {
 	for (auto& i : vertex)
 	{
-		if (i.first < 0 || i.first >= Canvas::VSIZE)
+		if (i.first < 0 || i.first >= Canvas::getVSIZE())
 		{
 			return false;
 		}
-		if (i.second < 0 || i.second >= Canvas::HSIZE)
+		if (i.second < 0 || i.second >= Canvas::getHSIZE())
 		{
 			return false;
 		}
@@ -38,10 +38,10 @@ void Figure::move(int x, int y)
 {
 	for (auto& i : vertex)
 	{
-		if(i.first + x < 0 || i.first + x >= Canvas::VSIZE)
-			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OX 0.."+std::to_string(Canvas::VSIZE-1));
-		if (i.second + y < 0 || i.second + y >= Canvas::HSIZE)
-			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OY 0.." + std::to_string(Canvas::HSIZE - 1));
+		if(i.first + x < 0 || i.first + x >= Canvas::getVSIZE())
+			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OX 0.."+std::to_string(Canvas::getVSIZE()-1));
+		if (i.second + y < 0 || i.second + y >= Canvas::getHSIZE())
+			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OY 0.." + std::to_string(Canvas::getHSIZE() - 1));
 	}
 	
 	for (auto& i : vertex)

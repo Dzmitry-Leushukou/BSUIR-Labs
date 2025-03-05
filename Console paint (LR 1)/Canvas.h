@@ -18,12 +18,14 @@ public:
 	void draw(int, std::vector<std::pair<int,int>>);
 	void fill(int);
 	void erase(int);
-	char* getSymb()
-	{
-		return symb;
-	}
-	static int HSIZE, VSIZE;
+	char* getSymb();
+	
+	static int getHSIZE();
+	static int getVSIZE();
+	
 private:
+	static int HSIZE, VSIZE;
+
 	void repaint();
 	bool check(const std::vector<std::pair<int, int>>& v);
 	//Visual
