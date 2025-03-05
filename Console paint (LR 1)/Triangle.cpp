@@ -14,8 +14,9 @@ std::vector < std::pair<int, int>> Triangle::fill()
 	{
 		std::vector < std::pair<int, int>> fillCoords;
 
-		for (int i = 3; i < vertex.size()-1; i+=2)
+		for (int i = 3; i < vertex.size()-1; i++)
 		{
+			if(vertex.at(i).first== vertex.at(i+1).first)
 			for (int j = vertex.at(i).second + 1; j < vertex.at(i + 1).second; j++)
 			{
 				fillCoords.push_back({ vertex.at(i).first,j });

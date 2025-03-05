@@ -30,9 +30,8 @@ void UI::help()
 	std::cout << "\"/fill\" - go to fill mode (help inside mode)\n"; 
 	std::cout << "\"/erase\" - go to erase mode (help inside mode)\n";
 	std::cout << "\"/clear\" - clear palette\n";
-	std::cout << "\"/save filename\" - save to file\n";
-	std::cout << "\"/load filename\" - load from file\n";
-	std::cout << "\"/resize x y (x y new vertical and horizontal size)\" - load from file\n";
+	std::cout << "\"/save path_to_file\" - save to file\n";
+	std::cout << "\"/load path_to_file\" - load from file\n";
 	system("pause");
 }
 
@@ -126,15 +125,15 @@ void UI::process(std::string com)
 		return;
 	}
 
-	if (com == "/save ")
+	if (com.size() > 6 && com.substr(0, 6) == "/save ")
 	{
-		save();
+		save(com.substr(6));
 		return;
 	}
 
-	if (com == "/load ")
+	if (com.size() > 6 && com.substr(0, 6) == "/load ")
 	{
-		load();
+		load(com.substr(6));
 		return;
 	}
 
@@ -387,11 +386,11 @@ void UI::clear()
 	show();
 }
 
-void UI::save()
+void UI::save(std::string filepath)
 {
 	try
 	{
-		Serializer::Serialize(canvas->getSymb(), canvas->getFigures(), "test.txt");
+		Serializer::Serialize(canvas->getSymb(), canvas->getFigures(), filepath);
 	}
 	catch (const std::invalid_argument& e)
 	{
@@ -401,16 +400,19 @@ void UI::save()
 	}
 }
 
-void UI::load()
+void UI::load(std::string filepath)
 {
 	try
 	{
-		delete canvas;
-		canvas = nullptr;
-		canvas = Serializer::Deserialize("test.txt");
+		Canvas* canvas;
+		canvas = Serializer::Deserialize(filepath);
+		delete this->canvas;
+		this->canvas = nullptr;
+		this->canvas = canvas;
 	}
 	catch (const std::out_of_range& e)
 	{
+		std::cout << e.what() << '\n';
 		wrong();
 		return;
 	}

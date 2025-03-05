@@ -10,7 +10,7 @@ class Canvas
 {
 public:
 	Canvas(int, int);
-	Canvas(char symb[3],std::vector<Figure*>figures);
+	Canvas(char symb[3],std::vector<Figure*>figures, int, int);
 	std::vector<std::vector<char>> getCanva();
 	void set(short ind, char c);
 	std::vector<const Figure*> getFigures() const;

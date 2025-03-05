@@ -1,4 +1,13 @@
 #include "Circle.h"
+#include "Canvas.h"
+
+bool Circle::checkFields() const
+{
+	if (cx - R >= Canvas::getVSIZE() || cx - R < 0 || cx + R >= Canvas::getVSIZE() || cx + R < 0 || R < 0 ||
+		cy - R >= Canvas::getHSIZE() || cy - R < 0 || cy + R >= Canvas::getHSIZE() || cy + R < 0)
+		return false;
+	return true;
+}
 
 std::string Circle::getFullInfo() const
 {
@@ -8,18 +17,11 @@ std::string Circle::getFullInfo() const
 	else
 		res = "0 ";
 
-	res += std::to_string(drawTime) + " " + 
-		   std::to_string(fillTime) + " " +
-		   std::to_string(R)+ " " +
-		   std::to_string(cx)+ " " +
-		   std::to_string(cy) + " "  +
-		   std::to_string(left_ind) + " " +
-		   std::to_string(right_ind);
-
-	for (auto& i : vertex)
-	{
-		res += " " + std::to_string(i.first) + " " + std::to_string(i.second);
-	}
+	res += std::to_string(drawTime) + " " +
+		std::to_string(fillTime) + " " +
+		std::to_string(R) + " " +
+		std::to_string(cx) + " " +
+		std::to_string(cy);
 
 	return res;
 }
@@ -30,8 +32,9 @@ std::vector < std::pair<int, int>> Circle::fill()
 	{
 		std::vector < std::pair<int, int>> fillCoords;
 		
-		for (int i = left_ind; i <= right_ind; i++)
+		for (int i = left_ind; i < right_ind; i++)
 		{
+			if(vertex.at(i).first== vertex.at(i+1).first)
 			for (int j = vertex.at(i).second+1; j < vertex.at(i + 1).second; j++)
 			{
 				fillCoords.push_back({ vertex.at(i).first,j });
@@ -81,7 +84,7 @@ Circle::Circle(std::vector<std::pair<int, int>> vertex)
 }
 
 Circle::Circle(bool f, time_t d, time_t fill, int r, int cx,
-	           int cy, int l, int ri, std::vector<std::pair<int, int>>v)
+	           int cy)
 {
 	this->isFill = f;
 	this->drawTime = d;
@@ -89,7 +92,20 @@ Circle::Circle(bool f, time_t d, time_t fill, int r, int cx,
 	this->R = r;
 	this->cx = cx;
 	this->cy = cy;
-	this->left_ind = l;
-	this->right_ind = ri;
-	this->vertex = v;
+
+	this->vertex.clear();
+	for (int x = cx - R; x <= cx + R; x++)
+	{
+		if (x == cx - R + 1)
+			left_ind = this->vertex.size();
+		if (x == cx + R)
+			right_ind = this->vertex.size() - 1;
+		for (int y = cy - R; y <= cy + R; y++)
+		{
+			if (std::round(std::sqrtl((cx - x) * (cx - x) + (cy - y) * (cy - y))) == R)
+			{
+				this->vertex.push_back({ x,y });
+			}
+		}
+	}
 }

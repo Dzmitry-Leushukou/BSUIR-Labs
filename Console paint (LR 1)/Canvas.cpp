@@ -48,11 +48,19 @@ Canvas::Canvas(int VSize, int HSize)
 	}
 	repaint();
 }
-Canvas::Canvas(char symb[3], std::vector<Figure*>figures)
+Canvas::Canvas(char symb[3], std::vector<Figure*>figures, int v, int h)
 {
 	for(int i=0;i<=2;i++)
 	this->symb[i] = symb[i];
 	this->figures = figures;
+	VSIZE = v;
+	HSIZE = h;
+	canva.resize(VSIZE);
+	for (int i = 0; i < canva.size(); i++)
+	{
+		canva.at(i).resize(HSIZE);
+	}
+	repaint();
 }
 
 void Canvas::set(short ind, char c)
@@ -129,7 +137,7 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 			+ points[2].first * (points[0].second - points[1].second)==0)
 			throw std::invalid_argument("Three vertices cannot lie on the same line");
 		if(points[0]==points[1] || points[2] == points[1] || points[0] == points[2])
-			throw std::invalid_argument("2 points can`t locate on the same coordinates");
+			throw std::invalid_argument("2 vertices can`t locate on the same coordinates");
 		figures.push_back(new Triangle(points));
 		break;
 
@@ -139,7 +147,7 @@ void Canvas::draw(int id, std::vector<std::pair<int, int>>points)
 		if (points.size() < 2)
 			throw std::invalid_argument("So few coordinates for circle");
 		figures.push_back(new Circle(points));
-		if (!(check(figures.back()->draw())))
+		if (!figures.back()->checkFields()||!(check(figures.back()->draw())))
 		{
 			erase(figures.size()-1);
 			throw std::invalid_argument("Incorrect coordinates");
