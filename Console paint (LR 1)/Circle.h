@@ -12,6 +12,7 @@ public:
 	virtual std::vector < std::pair<int, int>> draw() override;
 	virtual std::string toString() const override;
 	Circle(std::vector<std::pair<int, int>> vertex);
+	Circle(bool,time_t,time_t, int,int,int,int,int,std::vector<std::pair<int, int>>);
 	virtual std::string getFullInfo() const override;
 private:
 	int R,cx,cy,left_ind=0,right_ind=0;

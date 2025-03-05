@@ -1,5 +1,8 @@
 #include "Canvas.h"
 
+int Canvas::HSIZE = 60;
+int Canvas::VSIZE = 20;
+
 std::vector<std::vector<char>> Canvas::getCanva()
 {
 	repaint();
@@ -36,12 +39,20 @@ void Canvas::erase(int id)
 
 Canvas::Canvas(int VSize, int HSize)
 {
+	VSIZE = VSize;
+	HSIZE = HSize;
 	canva.resize(VSize);
 	for (int i = 0; i < canva.size(); i++)
 	{
 		canva.at(i).resize(HSize);
 	}
 	repaint();
+}
+Canvas::Canvas(char symb[3], std::vector<Figure*>figures)
+{
+	for(int i=0;i<=2;i++)
+	this->symb[i] = symb[i];
+	this->figures = figures;
 }
 
 void Canvas::set(short ind, char c)

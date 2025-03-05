@@ -7,4 +7,6 @@ int main()
     std::cin.tie(0);
     UI* ui = new UI();
     ui->inputHandler();
+    delete ui;
+    ui = nullptr;
 }

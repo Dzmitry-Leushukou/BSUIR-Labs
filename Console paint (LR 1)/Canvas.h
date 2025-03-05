@@ -10,6 +10,7 @@ class Canvas
 {
 public:
 	Canvas(int, int);
+	Canvas(char symb[3],std::vector<Figure*>figures);
 	std::vector<std::vector<char>> getCanva();
 	void set(short ind, char c);
 	std::vector<const Figure*> getFigures() const;
@@ -21,6 +22,7 @@ public:
 	{
 		return symb;
 	}
+	static int HSIZE, VSIZE;
 private:
 	void repaint();
 	bool check(const std::vector<std::pair<int, int>>& v);

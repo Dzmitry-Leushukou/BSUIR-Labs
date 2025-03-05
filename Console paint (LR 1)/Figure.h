@@ -16,6 +16,7 @@ public:
 	time_t getDrawTime();
 	void setFillTime();
 	virtual std::string getFullInfo() const;
+	virtual bool checkFields() const;
 protected:
 	std::vector<std::pair<int, int>>vertex;
 	bool isFill=false;

@@ -14,8 +14,6 @@ void UI::inputHandler()
 	{
 		std::getline(std::cin,com);
 		process(com);
-		std::getline(std::cin, com);
-		process(com);
 		show();
 	}
 }
@@ -32,6 +30,9 @@ void UI::help()
 	std::cout << "\"/fill\" - go to fill mode (help inside mode)\n"; 
 	std::cout << "\"/erase\" - go to erase mode (help inside mode)\n";
 	std::cout << "\"/clear\" - clear palette\n";
+	std::cout << "\"/save filename\" - save to file\n";
+	std::cout << "\"/load filename\" - load from file\n";
+	std::cout << "\"/resize x y (x y new vertical and horizontal size)\" - load from file\n";
 	system("pause");
 }
 
@@ -125,9 +126,15 @@ void UI::process(std::string com)
 		return;
 	}
 
-	if (com == "/save")
+	if (com == "/save ")
 	{
 		save();
+		return;
+	}
+
+	if (com == "/load ")
+	{
+		load();
 		return;
 	}
 
@@ -382,7 +389,37 @@ void UI::clear()
 
 void UI::save()
 {
-	Serializer::Serialize(canvas->getSymb(), canvas->getFigures(), "test.txt");
+	try
+	{
+		Serializer::Serialize(canvas->getSymb(), canvas->getFigures(), "test.txt");
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
+}
+
+void UI::load()
+{
+	try
+	{
+		delete canvas;
+		canvas = nullptr;
+		canvas = Serializer::Deserialize("test.txt");
+	}
+	catch (const std::out_of_range& e)
+	{
+		wrong();
+		return;
+	}
+	catch (const std::invalid_argument& e)
+	{
+		std::cout << e.what() << '\n';
+		wrong();
+		return;
+	}
 }
 
 bool UI::isDigit(char c)

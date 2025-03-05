@@ -11,5 +11,6 @@ public:
 	virtual  std::vector < std::pair<int, int>> draw() override;
 	virtual std::string toString() const override;
 	Triangle(std::vector<std::pair<int, int>> vertex);
+	Triangle(bool, time_t,time_t, std::vector<std::pair<int, int>>);
 };
 

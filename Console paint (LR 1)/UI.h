@@ -26,6 +26,7 @@ private:
 	void erase(std::string);
 	void clear();
 	void save();
+	void load();
 
 	//Fields
 	Canvas* canvas;

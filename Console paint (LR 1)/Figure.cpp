@@ -1,4 +1,21 @@
 #include "Figure.h"
+#include "Canvas.h"
+
+bool Figure::checkFields() const
+{
+	for (auto& i : vertex)
+	{
+		if (i.first < 0 || i.first >= Canvas::VSIZE)
+		{
+			return false;
+		}
+		if (i.second < 0 || i.second >= Canvas::HSIZE)
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 std::string Figure::getFullInfo() const
 {
@@ -21,10 +38,10 @@ void Figure::move(int x, int y)
 {
 	for (auto& i : vertex)
 	{
-		if(i.first + x < 0 || i.first + x > 19)
-			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OX 0..19");
-		if (i.second + y < 0 || i.second + y > 59)
-			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OY 0..59");
+		if(i.first + x < 0 || i.first + x >= Canvas::VSIZE)
+			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OX 0.."+std::to_string(Canvas::VSIZE-1));
+		if (i.second + y < 0 || i.second + y >= Canvas::HSIZE)
+			throw std::invalid_argument("Invalid move argument. Figure vertices should located on OY 0.." + std::to_string(Canvas::HSIZE - 1));
 	}
 	
 	for (auto& i : vertex)

@@ -1,5 +1,13 @@
 #include "Rectangle.h"
 
+Rectangle::Rectangle(bool fill, time_t dt, time_t ft, std::vector<std::pair<int, int>>v)
+{
+	this->isFill = fill;
+	drawTime = dt;
+	fillTime = ft;
+	this->vertex = v;
+}
+
 std::vector < std::pair<int, int>> Rectangle::fill()
 {
 	if (isFill)

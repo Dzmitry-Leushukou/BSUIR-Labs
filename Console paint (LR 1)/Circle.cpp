@@ -79,3 +79,17 @@ Circle::Circle(std::vector<std::pair<int, int>> vertex)
 	}
 
 }
+
+Circle::Circle(bool f, time_t d, time_t fill, int r, int cx,
+	           int cy, int l, int ri, std::vector<std::pair<int, int>>v)
+{
+	this->isFill = f;
+	this->drawTime = d;
+	this->fillTime = fill;
+	this->R = r;
+	this->cx = cx;
+	this->cy = cy;
+	this->left_ind = l;
+	this->right_ind = ri;
+	this->vertex = v;
+}
