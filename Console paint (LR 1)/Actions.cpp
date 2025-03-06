@@ -1,4 +1,5 @@
 #include "Actions.h"
+
 Canvas Actions::undo()
 {
 	ind--;

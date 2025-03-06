@@ -39,8 +39,8 @@ void Canvas::erase(int id)
 
 Canvas::Canvas(int VSize, int HSize)
 {
-	VSIZE = VSize;
-	HSIZE = HSize;
+	VSIZE = std::max(VSize,0);
+	HSIZE = std::max(HSize,0);
 	canva.resize(VSize);
 	for (int i = 0; i < canva.size(); i++)
 	{
@@ -48,13 +48,14 @@ Canvas::Canvas(int VSize, int HSize)
 	}
 	repaint();
 }
+
 Canvas::Canvas(char symb[3], std::vector<Figure*>figures, int v, int h)
 {
 	for(int i=0;i<=2;i++)
 	this->symb[i] = symb[i];
 	this->figures = figures;
-	VSIZE = v;
-	HSIZE = h;
+	VSIZE = std::max(v,0);
+	HSIZE = std::max(h,0);
 	canva.resize(VSIZE);
 	for (int i = 0; i < VSIZE; i++)
 	{
@@ -163,7 +164,7 @@ bool Canvas::check(const std::vector<std::pair<int, int>>&v)
 {
 	for (auto& i : v)
 	{
-		if (!(i.first >= 0 && i.first < canva.size()&& i.second >= 0 && i.second < canva.at(0).size()))
+		if (!(i.first >= 0 && i.first < VSIZE && i.second >= 0 && i.second < HSIZE))
 			return false;
 	}
 	return true;
@@ -174,12 +175,12 @@ char * Canvas::getSymb()
 	return symb;
 }
 
-int Canvas::getVSIZE()
+int Canvas::getVSIZE() 
 {
 	return VSIZE;
 }
 
-int Canvas::getHSIZE()
+int Canvas::getHSIZE() 
 {
 	return HSIZE;
 }

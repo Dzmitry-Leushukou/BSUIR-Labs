@@ -50,6 +50,7 @@ void Figure::move(int x, int y)
 		i.second += y;
 	}
 }
+
 void Figure::setFill(bool s)
 {
 	isFill = s;
@@ -59,6 +60,7 @@ time_t Figure::getDrawTime()
 {
 	return drawTime;
 }
+
 time_t Figure::getFillTime()
 {
 	return fillTime;

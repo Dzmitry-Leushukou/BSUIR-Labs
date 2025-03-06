@@ -23,6 +23,7 @@ std::vector < std::pair<int, int>> Rectangle::fill()
 	else
 		return {};
 }
+
 std::vector < std::pair<int, int>> Rectangle::draw()
 {
 	std::vector < std::pair<int, int>> drawCoords;
@@ -40,6 +41,7 @@ std::vector < std::pair<int, int>> Rectangle::draw()
 	}
 	return drawCoords;
 }
+
 std::string Rectangle::toString() const 
 {
 	std::string c1, c2, c3, c4;
@@ -53,6 +55,7 @@ std::string Rectangle::toString() const
 	res +="ectangle: [" + c1 + "] [" + c2 + "] [" + c3 + "] [" + c4 + "]";
 	return res;
 }
+
 Rectangle::Rectangle(std::vector<std::pair<int, int>> vertex)
 {
 	drawTime = clock();

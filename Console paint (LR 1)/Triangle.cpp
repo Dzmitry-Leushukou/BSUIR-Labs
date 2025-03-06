@@ -87,10 +87,12 @@ std::vector < std::pair<int, int>> Triangle::fill()
 	else
 		return {};
 }
+
 std::vector < std::pair<int, int>> Triangle::draw()
 {
 	return vertex;
 }
+
 std::string Triangle::toString() const
 {
 
@@ -104,6 +106,7 @@ std::string Triangle::toString() const
 	res += "riangle: [" + c1 + "] ";
 	return res;
 }
+
 Triangle::Triangle(std::vector<std::pair<int, int>> vertex)
 {
 	drawTime = clock();

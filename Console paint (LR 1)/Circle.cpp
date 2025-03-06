@@ -45,10 +45,12 @@ std::vector < std::pair<int, int>> Circle::fill()
 	else
 		return {};
 }
+
 std::vector < std::pair<int, int>> Circle::draw()
 {	
 	return vertex;
 }
+
 std::string Circle::toString() const
 {
 	std::string c1, c2;
@@ -60,6 +62,7 @@ std::string Circle::toString() const
 	res += "ircle: [" + c1 + "] R = " + c2;
 	return res;
 }
+
 Circle::Circle(std::vector<std::pair<int, int>> vertex)
 {
 	drawTime = clock();
