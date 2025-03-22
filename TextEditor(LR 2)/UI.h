@@ -3,10 +3,10 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <Windows.h>
 
 #include "File.h"
 #include "MD.h"
-#include "TXT.h"
 
 class UI
 {
@@ -15,15 +15,20 @@ public:
 private:
 //Input processing methods
 	void create();
-	void open(std::string);
+	void openl(std::string);
 	void del();
 	void edit();
 	void save();
 	void load();
+	void show();
+	void close();
+	void showFiles();
 	void wrong(std::string s = "");
 	void process(std::string);
 	void help();
+	void simulateConsoleInput(const std::string& text);
 //Fields
 	File * file = nullptr;
+	unsigned char mode = 0; // 0 - common, 1 - edit, 2 - preview
 };
 

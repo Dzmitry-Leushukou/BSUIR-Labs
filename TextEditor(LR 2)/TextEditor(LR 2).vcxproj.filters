@@ -27,9 +27,6 @@
     <ClCompile Include="MD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TXT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -39,9 +36,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TXT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
