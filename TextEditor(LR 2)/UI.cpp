@@ -22,6 +22,12 @@ void UI::process(std::string s)
 			return;
 		}
 
+		if (s == "help")
+		{
+			help();
+			return;
+		}
+
 		wrong();
 	}
 	catch (const std::exception& e)
@@ -64,7 +70,7 @@ void UI::show()
 	{
 		if (file)
 		{
-			1
+			
 		}
 		else
 			showFiles();
@@ -76,6 +82,11 @@ void UI::show()
 	}
 	case 2: // preview
 	{
+		break;
+	}
+	case 3: // create
+	{
+		showcreateMenu();
 		break;
 	}
 	}
@@ -99,7 +110,9 @@ void UI::help()
 {
 	system("cls");
 	std::cout << "==Commands==\n";
+	std::cout << "\"create\" - open create menu\n";
 	std::cout << "\"openl path_to_file\" - open local file\n";
+	std::cout << "\"help\" - to show this menu again\n";
 	system("pause");
 	system("cls");
 }
@@ -134,4 +147,9 @@ void UI::simulateConsoleInput(const std::string& text)
 		std::cerr << "WriteConsoleInput failed, error: " << GetLastError() << std::endl;
 	}
 	
+}
+
+void UI::showcreateMenu()
+{
+	std::cout<<"Choose file format:\n0. "
 }

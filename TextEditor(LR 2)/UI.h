@@ -22,6 +22,7 @@ private:
 	void load();
 	void show();
 	void close();
+	void showcreateMenu();
 	void showFiles();
 	void wrong(std::string s = "");
 	void process(std::string);
@@ -29,6 +30,6 @@ private:
 	void simulateConsoleInput(const std::string& text);
 //Fields
 	File * file = nullptr;
-	unsigned char mode = 0; // 0 - common, 1 - edit, 2 - preview
+	unsigned char mode = 0;
 };
 
