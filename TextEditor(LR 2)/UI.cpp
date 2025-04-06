@@ -1,8 +1,14 @@
 #include "UI.h"
 
+UI::UI()
+{
+	users = Serializer::loadUsers("users.txt");
+}
+
 void UI::inputHandler()
 {
 	std::string s;
+	userMenu();
 	help();
 	while (std::getline(std::cin, s))
 	{
@@ -11,14 +17,61 @@ void UI::inputHandler()
 	}
 }
 
+void UI::userMenu()
+{
+	showUsersList();
+	std::cout << "Choose id of user (write -1 to create new): ";
+	int id = getNumber(-1, users.size() - 1);
+	if (id == -1)//create
+	{
+		system("cls");
+		std::cout << "Write username:";
+		std::string s;
+		std::cin >> s;
+		users.push_back(new User(s));
+	}
+	else
+	{
+		std::cout << "Choose operation with user:\n0. Choose\n1. Delete\n";
+		int op = getNumber(0, 1);
+		if (op == 1)
+		{
+			delete users[id];
+			users[id] = nullptr;
+			users.erase(users.begin() + id);
+		}
+		else
+			user = users[id];
+	}
+
+	Serializer::saveUsers(users, "users.txt");
+	if (!user)
+		userMenu();
+}
+
+void UI::showUsersList()
+{
+	int numb = 0;
+	for (auto& i : users)
+	{
+		std::cout << numb << ". " << i->getName()<<'\n';
+		numb++;
+	}
+}
+
 void UI::process(std::string s)
 {
 	try 
 	{
-		if (s.size() > 6 && s.substr(0, 6) == "openl ")
+		if (s == "user")
 		{
-			openl(s.substr(6));
-			show();
+			userMenu();
+			return;
+		}
+
+		if (s=="open")
+		{
+			open();
 			return;
 		}
 
@@ -28,6 +81,17 @@ void UI::process(std::string s)
 			return;
 		}
 
+		if (s == "create")
+		{
+			create();
+			return;
+		}
+
+		if (s == "edit")
+		{
+			create();
+			return;
+		}
 		wrong();
 	}
 	catch (const std::exception& e)
@@ -36,65 +100,36 @@ void UI::process(std::string s)
 	}
 }
 
-void UI::openl(std::string filepath)
+void UI::open()
 {
-	if (std::filesystem::exists(filepath)) //check exist of file
-	{		
-		std::filesystem::path filePath(filepath);
+	
+}
 
-		delete file;
-		if (filePath.has_extension()&&filePath.extension().string()=="md")
+
+void UI::show(char sec)
+{
+	std::vector<std::vector<std::pair<std::string, char>>> p = user->getPermissions();
+	
+	std::cout << "Allowed files:\n";
+
+	for (char i = sec; i < p.size(); i++)
+	{
+		if (i == 0)
+			std::cout << "\n==As spectator==\n";
+		if (i == 1)
+			std::cout << "\n==As editor==\n";
+		if (i == 2)
+			std::cout << "\n==As admin==\n";
+		for (auto& j : p[i])
 		{
-			file = new MD(filepath);
+			std::string st_type = "local";
+			if (j.second == 1)
+				st_type = "cloud";
+
+			std::cout << j.first << " " << st_type << "\n";
 		}
-		else
-			file = new File(filepath);
 		
-		std::cout << "Loading file info...\n";
-		return;		
 	}
-	throw std::invalid_argument("File doesn`t exist");
-}
-
-void UI::close()
-{
-
-}
-
-void UI::show()
-{
-	system("cls");
-	switch (mode)
-	{
-	case 0: // default
-	{
-		if (file)
-		{
-			
-		}
-		else
-			showFiles();
-		break;
-	}
-	case 1: // edit
-	{
-		break;
-	}
-	case 2: // preview
-	{
-		break;
-	}
-	case 3: // create
-	{
-		showcreateMenu();
-		break;
-	}
-	}
-}
-
-void UI::showFiles()
-{
-
 }
 
 void UI::wrong(std::string s)
@@ -110,11 +145,11 @@ void UI::help()
 {
 	system("cls");
 	std::cout << "==Commands==\n";
-	std::cout << "\"create\" - open create menu\n";
-	std::cout << "\"openl path_to_file\" - open local file\n";
+	std::cout << "\"user\" - userMenu\n";
+	std::cout << "\"create\" - create file\n";
+	std::cout << "\"open\" - open file\n";
 	std::cout << "\"help\" - to show this menu again\n";
 	system("pause");
-	system("cls");
 }
 
 void UI::simulateConsoleInput(const std::string& text) 
@@ -149,7 +184,61 @@ void UI::simulateConsoleInput(const std::string& text)
 	
 }
 
-void UI::showcreateMenu()
+void UI::create()
 {
-	std::cout<<"Choose file format:\n0. "
+	short n = getStorageType();
+	if (n == 0)
+	{
+		std::string filepath = getFilePath(false);
+		std::ofstream cr(filepath);
+		cr.close();
+		std::cout << "File("<<filepath<<") created successfully\n";
+		user->addPermission(2, filepath, 0);
+		system("pause");
+	}
+
+	Serializer::saveUsers(users,"users.txt");
+}
+
+int UI::getStorageType()
+{
+	std::cout << "Choose storage type (0 - local, 1 - cloud):\n";
+	return getNumber(0, 1);
+}
+
+int UI::getNumber(int min,int max)
+{
+	int n;
+	while (true) 
+	{
+		if (std::cin >> n)
+		{
+			if (n < min || n>max)
+			{
+				std::cout << "Wrong number\n";
+			}
+			else return n;
+		}
+		else std::cout << "Wrong input\n";
+	}
+}
+
+std::string UI::getFilePath(bool need)
+{
+	std::string filepath;
+	while (true)
+	{
+		std::cout << "Write filepath: ";
+		std::cin >> filepath;
+		if (need == std::filesystem::exists(filepath))
+		{
+			return filepath;
+		}
+		if (need)
+			std::cout << "File doesn`t exist\n";
+		else
+			std::cout << "File already exist\n";
+	
+	}
+	
 }
