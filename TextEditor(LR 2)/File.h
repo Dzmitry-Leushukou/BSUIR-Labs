@@ -7,9 +7,10 @@ class File
 {
 public:
 	File(std::string);
-	virtual ~File() {}
-	void save();
+	void update(std::string);
 	std::vector<std::string> to_string() const;
+	void save();
+	std::string getPath() const;
 private:
 	std::string path;
 	std::vector<std::string> text;

@@ -8,7 +8,6 @@
 
 #include "User.h"
 #include "File.h"
-#include "MD.h"
 #include "Serializer.h"
 
 class UI
@@ -21,10 +20,6 @@ private:
 	void create();
 	void open();
 	
-	void show(char);
-	void userMenu();
-	void close();
-	
 	void wrong(std::string s = "");
 	void process(std::string);
 	void help();
@@ -34,10 +29,15 @@ private:
 	std::string getFilePath(bool);
 	int getNumber(int,int);
 	void showUsersList();
+	void userMenu();
+	void fileMenu();
+	void editMenu();
+	void show(char);
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;
 	std::vector<User*>users;
 	User* user = nullptr;
+	std::vector<std::string> files;
 };
 

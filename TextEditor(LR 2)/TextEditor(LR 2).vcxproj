@@ -132,7 +132,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="File.cpp" />
-    <ClCompile Include="MD.cpp" />
     <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="TextEditor(LR 2).cpp" />
     <ClCompile Include="UI.cpp" />
@@ -140,7 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="File.h" />
-    <ClInclude Include="MD.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="User.h" />

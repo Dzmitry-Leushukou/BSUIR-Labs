@@ -11,10 +11,15 @@ void Serializer::saveUsers(std::vector<User*>u,std::string file)
 		{
 			for (auto& k : p[j])
 			{
-				fout << k.first << " " << k.second << '\n';
+				fout << k.first << " " << (int)k.second << '\n';
 			}
 			fout << "*\n";
 		}
+		for (auto& j : i->getStyles())
+		{
+			fout << j << '\n';
+		}
+		fout << "*\n";
 	}
 
 	fout.close();
@@ -31,15 +36,24 @@ std::vector<User*> Serializer::loadUsers(std::string file)
 		std::vector<std::pair<std::string, char>>p[3];
 		for (int i = 0; i < 3; i++)
 		{
-			while (fin >> s && s != "*")
+			while (fin >> s)
 			{
+				if (s == "*")
+					break;
 				p[i].push_back({ s,0 });
 				fin >> s;
 				p[i].back().second = std::stoi(s);
 			}
 		}
-
-		User* u = new User(user, p);
+		std::vector<std::string>st;
+		std::getline(fin, s);
+		while (std::getline(fin, s))
+		{
+			if (s == "*")
+				break;
+			st.push_back(s);
+		}
+		User* u = new User(user, p,st);
 		users.push_back(u);
 	}
 	return users;

@@ -8,20 +8,28 @@ UI::UI()
 void UI::inputHandler()
 {
 	std::string s;
-	userMenu();
 	help();
-	while (std::getline(std::cin, s))
+	while (true)
 	{
-		process(s);
 		system("cls");
+		if (!user)
+		{
+			userMenu();
+			continue;
+		}
+		show(0);
+		std::getline(std::cin, s);
+		process(s);
 	}
 }
 
 void UI::userMenu()
 {
+	system("cls");
 	showUsersList();
 	std::cout << "Choose id of user (write -1 to create new): ";
 	int id = getNumber(-1, users.size() - 1);
+
 	if (id == -1)//create
 	{
 		system("cls");
@@ -29,6 +37,7 @@ void UI::userMenu()
 		std::string s;
 		std::cin >> s;
 		users.push_back(new User(s));
+		system("cls");
 	}
 	else
 	{
@@ -36,12 +45,14 @@ void UI::userMenu()
 		int op = getNumber(0, 1);
 		if (op == 1)
 		{
+			if (user == users[id])
+				user = nullptr;
 			delete users[id];
 			users[id] = nullptr;
 			users.erase(users.begin() + id);
 		}
 		else
-			user = users[id];
+			user = users[id],user->setStyles();
 	}
 
 	Serializer::saveUsers(users, "users.txt");
@@ -87,11 +98,6 @@ void UI::process(std::string s)
 			return;
 		}
 
-		if (s == "edit")
-		{
-			create();
-			return;
-		}
 		wrong();
 	}
 	catch (const std::exception& e)
@@ -102,16 +108,82 @@ void UI::process(std::string s)
 
 void UI::open()
 {
+	system("cls");
+	show(0);
+	std::cout << "Choose id of file or write -1 to go back\n";
+	int id = getNumber(-1, files.size() - 1);
+	if (id == -1)
+		return;
 	
+	file = new File(files[id]);
+
+	fileMenu();
 }
 
+void UI::fileMenu()
+{
+	int id = 0;
+	while (id != -1)
+	{
+		system("cls");
+		std::vector<std::string> text = file->to_string();
+
+		for (auto& i : text)
+			std::cout << i << "\n";
+
+		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save \n 4. Cut\n"<<
+					 "5. Find\n - 1. Exit\n";
+		id = getNumber(-1, 5);
+
+		if (id == 0)
+		{
+			if (user->getPermission(file->getPath()) >= 1)
+				editMenu();
+			else
+			{
+				std::cout << "You do not have permission to edit this file.\n";
+				system("pause");
+			}
+			continue;
+		}
+		/*
+		if (id == 1)
+		{
+			preview();
+			continue;
+		}
+
+		if (id == 2)
+		{
+			saveAsMenu();
+			continue;
+		}
+		*/
+	}
+}
+
+void UI::editMenu()
+{
+	std::vector<std::string> text = file->to_string();
+	std::string s;
+	for (auto& i : text)
+		s += i + "*\\n*";
+	
+	std::cout << "For set \'\\n\' write \"*\\n*\"\n";
+	simulateConsoleInput(s);
+	std::string new_text;
+	std::getline(std::cin, new_text);
+	file->update(new_text);
+}
 
 void UI::show(char sec)
 {
 	std::vector<std::vector<std::pair<std::string, char>>> p = user->getPermissions();
 	
-	std::cout << "Allowed files:\n";
+	files.clear();
 
+	std::cout << "Allowed files:";
+	int id = 0;
 	for (char i = sec; i < p.size(); i++)
 	{
 		if (i == 0)
@@ -126,7 +198,9 @@ void UI::show(char sec)
 			if (j.second == 1)
 				st_type = "cloud";
 
-			std::cout << j.first << " " << st_type << "\n";
+			std::cout << id << ": " << j.first << " " << st_type << "\n";
+			files.push_back(j.first);
+			id++;
 		}
 		
 	}
@@ -143,13 +217,13 @@ void UI::wrong(std::string s)
 
 void UI::help()
 {
-	system("cls");
 	std::cout << "==Commands==\n";
 	std::cout << "\"user\" - userMenu\n";
 	std::cout << "\"create\" - create file\n";
-	std::cout << "\"open\" - open file\n";
+	std::cout << "\"open\" - id of file to open it (to edit you also need open the file)\n";
 	std::cout << "\"help\" - to show this menu again\n";
 	system("pause");
+	//std::cin.ignore();
 }
 
 void UI::simulateConsoleInput(const std::string& text) 
@@ -195,6 +269,7 @@ void UI::create()
 		std::cout << "File("<<filepath<<") created successfully\n";
 		user->addPermission(2, filepath, 0);
 		system("pause");
+		std::cin.ignore();
 	}
 
 	Serializer::saveUsers(users,"users.txt");
@@ -211,15 +286,21 @@ int UI::getNumber(int min,int max)
 	int n;
 	while (true) 
 	{
-		if (std::cin >> n)
+		std::string s;
+		std::getline(std::cin, s);
+		try
 		{
+			n = std::stoi(s);
 			if (n < min || n>max)
 			{
 				std::cout << "Wrong number\n";
 			}
 			else return n;
 		}
-		else std::cout << "Wrong input\n";
+		catch (...)
+		{
+			std::cout << "Wrong input\n";
+		}
 	}
 }
 

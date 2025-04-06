@@ -5,16 +5,39 @@ void User::addPermission(char type, std::string path, char st)
 	permissions[type].push_back({ path,st });
 }
 
-User::User(std::string s, std::vector<std::pair<std::string, char>> p[3])
+User::User(std::string s, std::vector<std::pair<std::string, char>> p[3], std::vector<std::string>st)
 {
 	username = s;
 	for (int j = 0; j < 3; j++)
 		permissions[j] = p[j];
+	styles = st;
+}
+
+void User::setStyles()
+{
+	for (auto& i : styles)
+	{
+		system(i.c_str());
+	}
 }
 
 User::User(std::string s)
 {
 	username = s;
+}
+
+char User::getPermission(std::string filepath)
+{
+	for (int j = 0; j < 3; j++)
+	{
+		for (auto& i : permissions[j])
+		{
+			if (i.first == filepath)
+			{
+				return i.second;
+			}
+		}
+	}
 }
 
 std::vector<std::vector<std::pair<std::string, char>>> User::getPermissions()
@@ -28,4 +51,8 @@ std::vector<std::vector<std::pair<std::string, char>>> User::getPermissions()
 std::string User::getName()
 {
 	return username;
+}
+std::vector<std::string>User::getStyles()const
+{
+	return styles;
 }
