@@ -98,12 +98,92 @@ void UI::process(std::string s)
 			return;
 		}
 
+		if (s == "style")
+		{
+			style();
+			return;
+		}
 		wrong();
 	}
 	catch (const std::exception& e)
 	{
 		wrong(e.what());
 	}
+}
+
+void UI::style()
+{
+	system("cls");
+	std::cout << "Choose what you wanna change:\n0. Color\n1. Font\n-1. Exit\n";
+	int n = getNumber(-1, 1);
+	if (n == -1)
+		return;
+	if (n == 0)
+	{
+		changeColor();
+		return;
+	}
+	changeFont();
+}
+
+void UI::changeFont()
+{
+
+}
+
+void UI::changeColor()
+{
+	std::cout << "Choose color of background:" <<
+		"\n0. Black" <<
+		"\n1. Dark blue" <<
+		"\n2. Green" <<
+		"\n3. Blue" <<
+		"\n4. Red" <<
+		"\n5. Violet" <<
+		"\n6. Yellow" <<
+		"\n7. White" <<
+		"\n8. Grey" <<
+		"\n9. Light dark blue" <<
+		"\n10. Light green" <<
+		"\n11. Light blue" <<
+		"\n12. Light red" <<
+		"\n13. Light violet" <<
+		"\n14. Light yellow" <<
+		"\n15. Bright white" << "\n";
+	int f = getNumber(0,15);
+
+	std::cout << "Choose color of text:" <<
+		"\n0. Black" <<
+		"\n1. Dark blue" <<
+		"\n2. Green" <<
+		"\n3. Blue" <<
+		"\n4. Red" <<
+		"\n5. Violet" <<
+		"\n6. Yellow" <<
+		"\n7. White" <<
+		"\n8. Grey" <<
+		"\n9. Light dark blue" <<
+		"\n10. Light green" <<
+		"\n11. Light blue" <<
+		"\n12. Light red" <<
+		"\n13. Light violet" <<
+		"\n14. Light yellow" <<
+		"\n15. Bright white" << "\n";
+	int s = getNumber(0, 15);
+	
+	std::string cmd = "color ";
+	char a='0'+f, b='0'+s;
+	if (f >= 10)
+	{
+		a = 'A' + (f - 10);
+	}
+	if (s >= 10)
+	{
+		b = 'A' + (f - 10);
+	}
+	cmd = cmd + a + b;
+	user->addStyle(cmd);
+	Serializer::saveUsers(users, "users.txt");
 }
 
 void UI::open()
@@ -221,6 +301,7 @@ void UI::help()
 	std::cout << "\"user\" - userMenu\n";
 	std::cout << "\"create\" - create file\n";
 	std::cout << "\"open\" - id of file to open it (to edit you also need open the file)\n";
+	std::cout << "\"style\" - to set color or font\n";
 	std::cout << "\"help\" - to show this menu again\n";
 	system("pause");
 	//std::cin.ignore();

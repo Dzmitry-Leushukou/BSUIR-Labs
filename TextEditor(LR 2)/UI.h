@@ -19,7 +19,7 @@ private:
 //Input processing methods
 	void create();
 	void open();
-	
+	void style();
 	void wrong(std::string s = "");
 	void process(std::string);
 	void help();
@@ -33,6 +33,8 @@ private:
 	void fileMenu();
 	void editMenu();
 	void show(char);
+	void changeColor();
+	void changeFont();
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;

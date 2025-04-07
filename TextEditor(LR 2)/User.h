@@ -13,6 +13,7 @@ public:
 	char getPermission(std::string);
 	std::vector<std::string>getStyles()const;
 	void setStyles();
+	void addStyle(std::string s);
 private:
 	std::string username;
 	std::vector<std::pair<std::string, char>> permissions[3];

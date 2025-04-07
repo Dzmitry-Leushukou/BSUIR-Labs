@@ -21,6 +21,12 @@ void User::setStyles()
 	}
 }
 
+void User::addStyle(std::string s)
+{
+	styles.push_back(s);
+	setStyles();
+}
+
 User::User(std::string s)
 {
 	username = s;
