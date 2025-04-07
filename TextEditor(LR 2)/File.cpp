@@ -51,7 +51,25 @@ void File::update(std::string s)
 
 void File::save()
 {
+	std::ofstream fout(path);
+	for (auto& i : text)
+		fout << i << '\n';
+}
 
+void File::saveAs(FileSaver * saver, std::string ext)
+{
+	saver->save(text, replaceExtension(ext));
+}
+
+std::string File::replaceExtension(std::string new_ext)
+{
+	std::size_t dotPos = path.find_last_of('.');
+
+	if (dotPos != std::string::npos) {
+		return path.substr(0, dotPos) + "." + new_ext;
+	}
+
+	return path + "." + new_ext;
 }
 
 std::string File::getPath() const

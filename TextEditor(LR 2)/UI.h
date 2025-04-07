@@ -9,6 +9,11 @@
 #include "User.h"
 #include "File.h"
 #include "Serializer.h"
+#include "TXTSaver.h"
+#include "JSONSaver.h"
+#include "XMLSaver.h"
+#include "FileSaver.h"
+#include "MDSaver.h"
 
 class UI
 {
@@ -41,5 +46,10 @@ private:
 	std::vector<User*>users;
 	User* user = nullptr;
 	std::vector<std::string> files;
+//Savers
+	FileSaver* txt_saver = new TXTSaver();
+	FileSaver* json_saver = new JSONSaver();
+	FileSaver* xml_saver = new XMLSaver();
+	FileSaver* md_saver = new MDSaver();
 };
 

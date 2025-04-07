@@ -211,7 +211,7 @@ void UI::fileMenu()
 		for (auto& i : text)
 			std::cout << i << "\n";
 
-		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save \n 4. Cut\n"<<
+		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n 4. Cut\n"<<
 					 "5. Find\n - 1. Exit\n";
 		id = getNumber(-1, 5);
 
@@ -226,19 +226,40 @@ void UI::fileMenu()
 			}
 			continue;
 		}
-		/*
-		if (id == 1)
+		if (id == 2)
 		{
-			preview();
+			file->save();
+			continue;
+		}
+		if (id == 3)
+		{
+			std::cout << "Choose save format:\n0. txt\n1. md\n2. json\n3. xml\n-1. cancel\n";
+			int n = getNumber(-1, 3);
+			switch (n)
+			{
+			case -1:
+				break;
+			case 0:
+				file->saveAs(txt_saver,"txt");
+				break;
+			case 1:
+				file->saveAs(md_saver,"md");
+				break;
+			case 2:
+				file->saveAs(json_saver, "json");
+				break;
+			case 3:
+				file->saveAs(xml_saver, "xml");
+				break;
+			}
+
 			continue;
 		}
 
-		if (id == 2)
+		if (id == 4)
 		{
-			saveAsMenu();
-			continue;
+
 		}
-		*/
 	}
 }
 

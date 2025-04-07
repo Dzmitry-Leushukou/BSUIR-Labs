@@ -132,16 +132,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="File.cpp" />
+    <ClCompile Include="FileSaver.cpp" />
+    <ClCompile Include="JSONSaver.cpp" />
+    <ClCompile Include="MDSaver.cpp" />
     <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="TextEditor(LR 2).cpp" />
+    <ClCompile Include="TXTSaver.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="User.cpp" />
+    <ClCompile Include="XMLSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="File.h" />
+    <ClInclude Include="FileSaver.h" />
+    <ClInclude Include="JSONSaver.h" />
+    <ClInclude Include="MDSaver.h" />
     <ClInclude Include="Serializer.h" />
+    <ClInclude Include="TXTSaver.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="User.h" />
+    <ClInclude Include="XMLSaver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
