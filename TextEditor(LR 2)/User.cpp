@@ -40,7 +40,7 @@ char User::getPermission(std::string filepath)
 		{
 			if (i.first == filepath)
 			{
-				return i.second;
+				return j;
 			}
 		}
 	}

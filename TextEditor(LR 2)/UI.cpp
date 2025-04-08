@@ -211,7 +211,7 @@ void UI::fileMenu()
 		for (auto& i : text)
 			std::cout << i << "\n";
 
-		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n 4. Cut\n"<<
+		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n4. Cut\n"<<
 					 "5. Find\n - 1. Exit\n";
 		id = getNumber(-1, 5);
 
@@ -256,11 +256,43 @@ void UI::fileMenu()
 			continue;
 		}
 
-		if (id == 4)
+		if (id == 4) 
 		{
-
+			cutMenu();
+			continue;
 		}
 	}
+}
+
+void UI::cutMenu()
+{
+	std::vector<std::string>v = file->to_string();
+	for (int i = 0; i < v.size(); i++)
+	{
+		std::cout << "[" << i << "]" << v[i] << '\n';
+	}
+	std::cout << "From line number(write -1 to exit): ";
+	int ll = getNumber(-1, v.size() - 1);
+	if (ll == -1)
+		return;
+	std::cout << "From number of character: ";
+	int lc = getNumber(0, v[ll].size() - 1);
+	std::cout << "To line number(line number >= from): ";
+	int rl = getNumber(ll, v.size() - 1);
+	int rc;
+	if (ll == rl)
+	{
+		std::cout << "To number of character(number >= from): ";
+		rc = getNumber(lc, v[rl].size() - 1);
+	}
+	else 
+	{
+		std::cout << "To number of character: ";
+		rc = getNumber(0, v[rl].size() - 1);
+	}
+
+	file->cut(ll, lc, rl, rc);
+
 }
 
 void UI::editMenu()
@@ -325,7 +357,6 @@ void UI::help()
 	std::cout << "\"style\" - to set color or font\n";
 	std::cout << "\"help\" - to show this menu again\n";
 	system("pause");
-	//std::cin.ignore();
 }
 
 void UI::simulateConsoleInput(const std::string& text) 

@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <Windows.h>
 
 #include "FileSaver.h"
 
@@ -14,6 +15,7 @@ public:
 	void save();
 	void saveAs(FileSaver* saver, std::string);
 	std::string getPath() const;
+	void cut(int, int, int, int);
 private:
 	std::string replaceExtension(std::string new_ext);
 

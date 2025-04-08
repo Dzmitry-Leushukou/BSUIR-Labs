@@ -40,6 +40,7 @@ private:
 	void show(char);
 	void changeColor();
 	void changeFont();
+	void cutMenu();
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;

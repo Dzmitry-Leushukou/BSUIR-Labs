@@ -56,6 +56,59 @@ void File::save()
 		fout << i << '\n';
 }
 
+void File::cut(int ll, int lc, int rl, int rc)
+{
+	std::vector<std::string>updText;
+	std::string cutted, newLine;
+	for (int i = 0; i < ll; i++)
+		updText.push_back(text[i]);
+	for (int i = 0; i < lc; i++)
+		newLine += text[ll][i];
+	if(rl==ll)
+		for (int i = lc; i <= rc; i++)
+		{
+			cutted += text[ll][i];
+		}
+	else 
+	{
+		for (int i = lc; i < text[ll].size(); i++)
+		{
+			cutted += text[ll][i];
+		}
+		ll++;
+		while (ll < rl)
+		{
+			cutted += "*\\n*";
+			for (int i = 0; i < text[ll].size(); i++)
+				cutted += text[ll][i];
+			ll++;
+		}
+		cutted += "*\\n*";
+		for (int i = 0; i <= rc; i++)
+			cutted += text[ll][i];
+
+	}
+
+	for (int j = rc + 1; j < text[rl].size(); j++)
+		newLine += text[rl][j];
+	updText.push_back(newLine);
+
+	for (int i = rl+1; i < text.size(); i++)
+		updText.push_back(text[i]);
+	text = updText;
+
+	OpenClipboard(NULL);
+	EmptyClipboard();
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, cutted.size() + 1);
+	if (hGlobal) 
+	{
+		memcpy(GlobalLock(hGlobal), cutted.c_str(), cutted.size() + 1);
+		GlobalUnlock(hGlobal);
+		SetClipboardData(CF_TEXT, hGlobal);
+	}
+	CloseClipboard();
+}
+
 void File::saveAs(FileSaver * saver, std::string ext)
 {
 	saver->save(text, replaceExtension(ext));
