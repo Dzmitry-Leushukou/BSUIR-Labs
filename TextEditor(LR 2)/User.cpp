@@ -17,7 +17,22 @@ void User::setStyles()
 {
 	for (auto& i : styles)
 	{
-		system(i.c_str());
+		try {
+			int fontSize = stoi(i);
+			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+			CONSOLE_FONT_INFOEX cfi;
+
+			cfi.cbSize = sizeof(cfi);
+			GetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
+
+			cfi.dwFontSize.Y = fontSize; // Set the font height
+			SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
+		}
+		catch (...)
+		{
+			system(i.c_str());
+		}
+		
 	}
 }
 

@@ -128,7 +128,11 @@ void UI::style()
 
 void UI::changeFont()
 {
+	std::cout << "Write wanted size (1..72): ";
+	int size = getNumber(1, 72);
 
+	user->addStyle(std::to_string(size));
+	Serializer::saveUsers(users, "users.txt");
 }
 
 void UI::changeColor()
@@ -212,7 +216,7 @@ void UI::fileMenu()
 			std::cout << i << "\n";
 
 		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n4. Cut\n"<<
-					 "5. Find\n - 1. Exit\n";
+					 "5. Find\n-1. Exit\n";
 		id = getNumber(-1, 5);
 
 		if (id == 0)
@@ -228,11 +232,23 @@ void UI::fileMenu()
 		}
 		if (id == 2)
 		{
+			if (user->getPermission(file->getPath()) < 1)
+			{
+				std::cout << "You do not have permission to edit this file.\n";
+				system("pause");
+				continue;
+			}
 			file->save();
 			continue;
 		}
 		if (id == 3)
 		{
+			if (user->getPermission(file->getPath()) < 1)
+			{
+				std::cout << "You do not have permission to edit this file.\n";
+				system("pause");
+				continue;
+			}
 			std::cout << "Choose save format:\n0. txt\n1. md\n2. json\n3. xml\n-1. cancel\n";
 			int n = getNumber(-1, 3);
 			switch (n)
@@ -258,6 +274,12 @@ void UI::fileMenu()
 
 		if (id == 4) 
 		{
+			if (user->getPermission(file->getPath()) < 1)
+			{
+				std::cout << "You do not have permission to edit this file.\n";
+				system("pause");
+				continue;
+			}
 			cutMenu();
 			continue;
 		}
