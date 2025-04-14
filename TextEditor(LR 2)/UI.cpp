@@ -283,7 +283,21 @@ void UI::fileMenu()
 			cutMenu();
 			continue;
 		}
+
+		if (id == 5)//find
+		{
+			std::cout << "Write what you wanna find (find operation work with raw text (\\n = *\\\\n*): ";
+			std::string s;
+			std::cin >> s;
+			find(s);
+		}
 	}
+}
+
+void UI::find(std::string s)
+{
+	std::string text = file->getRaw();
+	//slidin window
 }
 
 void UI::cutMenu()
@@ -319,10 +333,7 @@ void UI::cutMenu()
 
 void UI::editMenu()
 {
-	std::vector<std::string> text = file->to_string();
-	std::string s;
-	for (auto& i : text)
-		s += i + "*\\n*";
+	std::string s = file->getRaw();
 	
 	std::cout << "For set \'\\n\' write \"*\\n*\"\n";
 	simulateConsoleInput(s);

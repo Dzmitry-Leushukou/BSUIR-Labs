@@ -21,6 +21,14 @@ std::vector<std::string> File::to_string() const
 	return text;
 }
 
+std::string File::getRaw()
+{
+	std::string s;
+	for (auto& i : text)
+		s += i + "*\\n*";
+	return s;
+}
+
 void File::update(std::string s)
 {
 	std::string tmp;
