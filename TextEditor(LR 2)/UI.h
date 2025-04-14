@@ -44,6 +44,7 @@ private:
 	void changeFont();
 	void cutMenu();
 	void find(std::string s);
+	void preview();
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;

@@ -12,9 +12,9 @@ public:
 	void setFontSize(int);
 	void setTextStyle(std::string = "default");
 	void setUserPresets(std::vector<std::string>);
-	void setTextAttributes(WORD attributes);
 	static Style& getInstance();
 private:
+	void setTextAttributes(WORD attributes);
 	int color;
 };
 

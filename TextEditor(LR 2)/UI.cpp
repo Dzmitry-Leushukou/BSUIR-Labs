@@ -232,6 +232,13 @@ void UI::fileMenu()
 			}
 			continue;
 		}
+
+		if (id == 1)
+		{
+			preview();
+			continue;
+		}
+
 		if (id == 2)
 		{
 			if (user->getPermission(file->getPath()) < 1)
@@ -294,6 +301,34 @@ void UI::fileMenu()
 			find(s);
 		}
 	}
+}
+
+void UI::preview()
+{
+	std::vector<std::string>text = file->to_string();
+	system("cls");
+	std::cout << "===Preview===\n";
+	for (auto& s : text)
+	{
+		styler.setTextStyle();
+		//check header
+		int ind = 0;
+		while (ind < s.size() && s[ind] == '#')
+			ind++;
+		if (ind == s.size())
+		{
+			std::cout << '\n';
+			continue;
+		}
+		if (ind >= 1 && ind <= 6 && s[ind] == ' ')
+			styler.setTextStyle("h" + std::to_string(ind)), ind++;
+		else
+			ind = 0;
+		while (ind < s.size())
+			std::cout << s[ind],ind++;
+		std::cout << '\n';
+	}
+	system("pause");
 }
 
 void UI::find(std::string s)

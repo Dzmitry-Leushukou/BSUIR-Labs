@@ -14,7 +14,6 @@ void Style::clear()
 
 void Style::setColor(std::string color)
 {
-	std::string cmd = "color " + color;
 	this->color = stoi(color);
 	setTextStyle();
 }
@@ -49,17 +48,29 @@ void Style::setTextStyle(std::string type)
 	{
 
 	}
-	if (type == "header1")
+	if (type == "h1")
 	{
-
+		setTextAttributes(BACKGROUND_RED);
 	}
-	if (type == "header2")
+	if (type == "h2")
 	{
-
+		setTextAttributes(BACKGROUND_BLUE);
 	}
-	if (type == "header3")
+	if (type == "h3")
 	{
-
+		setTextAttributes(BACKGROUND_GREEN);
+	}
+	if (type == "h4")
+	{
+		setTextAttributes(BACKGROUND_RED| BACKGROUND_BLUE);
+	}
+	if (type == "h5")
+	{
+		setTextAttributes(BACKGROUND_BLUE | BACKGROUND_GREEN);
+	}
+	if (type == "h6")
+	{
+		setTextAttributes(BACKGROUND_RED | BACKGROUND_GREEN);
 	}
 	if (type == "found")
 	{
