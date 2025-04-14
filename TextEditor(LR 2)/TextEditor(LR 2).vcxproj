@@ -136,6 +136,7 @@
     <ClCompile Include="JSONSaver.cpp" />
     <ClCompile Include="MDSaver.cpp" />
     <ClCompile Include="Serializer.cpp" />
+    <ClCompile Include="Style.cpp" />
     <ClCompile Include="TextEditor(LR 2).cpp" />
     <ClCompile Include="TXTSaver.cpp" />
     <ClCompile Include="UI.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="JSONSaver.h" />
     <ClInclude Include="MDSaver.h" />
     <ClInclude Include="Serializer.h" />
+    <ClInclude Include="Style.h" />
     <ClInclude Include="TXTSaver.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="User.h" />

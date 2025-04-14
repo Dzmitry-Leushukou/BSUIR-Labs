@@ -13,33 +13,11 @@ User::User(std::string s, std::vector<std::pair<std::string, char>> p[3], std::v
 	styles = st;
 }
 
-void User::setStyles()
-{
-	for (auto& i : styles)
-	{
-		try {
-			int fontSize = stoi(i);
-			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-			CONSOLE_FONT_INFOEX cfi;
-
-			cfi.cbSize = sizeof(cfi);
-			GetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
-
-			cfi.dwFontSize.Y = fontSize; // Set the font height
-			SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
-		}
-		catch (...)
-		{
-			system(i.c_str());
-		}
-		
-	}
-}
 
 void User::addStyle(std::string s)
 {
 	styles.push_back(s);
-	setStyles();
+	
 }
 
 User::User(std::string s)

@@ -52,7 +52,7 @@ void UI::userMenu()
 			users.erase(users.begin() + id);
 		}
 		else
-			user = users[id],user->setStyles();
+			user = users[id],styler.setUserPresets(user->getStyles());
 	}
 
 	Serializer::saveUsers(users, "users.txt");
@@ -132,6 +132,7 @@ void UI::changeFont()
 	int size = getNumber(1, 72);
 
 	user->addStyle(std::to_string(size));
+	styler.setUserPresets(user->getStyles());
 	Serializer::saveUsers(users, "users.txt");
 }
 
@@ -187,6 +188,7 @@ void UI::changeColor()
 	}
 	cmd = cmd + a + b;
 	user->addStyle(cmd);
+	styler.setUserPresets(user->getStyles());
 	Serializer::saveUsers(users, "users.txt");
 }
 
@@ -297,7 +299,30 @@ void UI::fileMenu()
 void UI::find(std::string s)
 {
 	std::string text = file->getRaw();
-	//slidin window
+	if (s.size() > text.size())
+		return;
+	int l = 0,r = -1;
+	
+	std::deque<char> target, now;
+	
+	for (auto& i : s)
+		target.push_back(i);
+	
+	for (; r < s.size(); r++)
+		now.push_back(s[r]);
+	r--;
+	
+	system("cls");
+
+	while (r < text.size())
+	{
+		if (now == target)
+		{
+
+			l = r + 1;
+		}
+	}
+
 }
 
 void UI::cutMenu()

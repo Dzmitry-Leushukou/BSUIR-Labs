@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <Windows.h>
 #include <limits>
+#include <deque>
 
 #include "User.h"
 #include "File.h"
@@ -14,6 +15,7 @@
 #include "XMLSaver.h"
 #include "FileSaver.h"
 #include "MDSaver.h"
+#include "Style.h"
 
 class UI
 {
@@ -48,6 +50,7 @@ private:
 	std::vector<User*>users;
 	User* user = nullptr;
 	std::vector<std::string> files;
+	Style& styler = Style::getInstance();
 //Savers
 	FileSaver* txt_saver = new TXTSaver();
 	FileSaver* json_saver = new JSONSaver();
