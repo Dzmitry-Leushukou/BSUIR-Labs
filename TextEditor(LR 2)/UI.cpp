@@ -234,7 +234,7 @@ void UI::fileMenu()
 		{
 			if (user->getPermission(file->getPath()) < 1)
 			{
-				std::cout << "You do not have permission to edit this file.\n";
+				std::cout << "You do not have permission to save this file.\n";
 				system("pause");
 				continue;
 			}
@@ -243,9 +243,9 @@ void UI::fileMenu()
 		}
 		if (id == 3)
 		{
-			if (user->getPermission(file->getPath()) < 1)
+			if (user->getPermission(file->getPath()) < 2)
 			{
-				std::cout << "You do not have permission to edit this file.\n";
+				std::cout << "You do not have permission to save as this file.\n";
 				system("pause");
 				continue;
 			}
@@ -276,7 +276,7 @@ void UI::fileMenu()
 		{
 			if (user->getPermission(file->getPath()) < 1)
 			{
-				std::cout << "You do not have permission to edit this file.\n";
+				std::cout << "You do not have permission to cut text in this file.\n";
 				system("pause");
 				continue;
 			}

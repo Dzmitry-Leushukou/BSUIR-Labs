@@ -4,3 +4,4 @@ Console .6091948f/
 *.txt
 packages/
 Tests/x64/
+vcpkg/
