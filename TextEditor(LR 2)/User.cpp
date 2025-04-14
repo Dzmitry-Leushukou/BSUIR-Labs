@@ -17,7 +17,6 @@ User::User(std::string s, std::vector<std::pair<std::string, char>> p[3], std::v
 void User::addStyle(std::string s)
 {
 	styles.push_back(s);
-	
 }
 
 User::User(std::string s)

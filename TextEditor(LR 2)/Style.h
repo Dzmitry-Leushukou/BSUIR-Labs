@@ -10,10 +10,11 @@ public:
 	void clear();
 	void setColor(std::string);
 	void setFontSize(int);
-	void targetText();
+	void setTextStyle(std::string = "default");
 	void setUserPresets(std::vector<std::string>);
+	void setTextAttributes(WORD attributes);
 	static Style& getInstance();
 private:
-	
+	int color;
 };
 

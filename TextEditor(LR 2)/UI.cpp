@@ -306,23 +306,45 @@ void UI::find(std::string s)
 	std::deque<char> target, now;
 	
 	for (auto& i : s)
-		target.push_back(i);
-	
-	for (; r < s.size(); r++)
-		now.push_back(s[r]);
-	r--;
+		target.push_back(i);	
 	
 	system("cls");
-
-	while (r < text.size())
+	while (r < (int)text.size())
 	{
 		if (now == target)
 		{
-
-			l = r + 1;
+			styler.setTextStyle("found");
+			while (l <= r)
+			{
+				std::cout << text[l];
+				l++;
+			}
+			styler.setTextStyle();
 		}
+		if (l > r)
+		{
+			r = l;
+			now.clear();
+			for (; r-l < s.size(); r++)
+				now.push_back(text[r]);
+			r--;
+			continue;
+		}
+		std::cout << text[l];
+		l++;
+		now.pop_front();
+		r++;
+		if (r < text.size())
+			now.push_back(text[r]);
+	}
+	while(l<text.size())
+	{
+		std::cout << text[l];
+		l++;
 	}
 
+	std::cout << "\n";
+	system("pause");
 }
 
 void UI::cutMenu()
