@@ -30,48 +30,55 @@ void Style::setFontSize(int size)
 	SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
 }
 
+void Style::setTextStyle(int b, int u, int i,int h)
+{
+	
+	if (b == 0 && u == 0 && i == 0 && h == 0)
+	{
+		setTextStyle();
+		return;
+	}
+	
+	int result = 0;
+	if (h > 0)
+		result |= headerColor(h);
+	else
+		result |= color / 10;
+	if (b > 0&&h==0)
+		result |= 1;
+	if (u > 0)
+		result |= 2;
+	if (i > 0)
+		result |= 4;
+	setTextAttributes(result);
+}
+
+int Style::headerColor(int h)
+{
+	switch (h)
+	{
+	case 1:
+		return BACKGROUND_RED;
+	case 2:
+		return (BACKGROUND_BLUE);
+	case 3:
+		return (BACKGROUND_GREEN);
+	case 4:
+		return (BACKGROUND_RED | BACKGROUND_BLUE);
+	case 5:
+		return (BACKGROUND_BLUE | BACKGROUND_GREEN);
+	case 6:
+		return (BACKGROUND_RED | BACKGROUND_GREEN);
+	}
+}
+
 void Style::setTextStyle(std::string type)
 {
 	if (type == "default")
 	{
 		setTextAttributes(color);
 	}
-	if (type == "bold")
-	{
 
-	}
-	if (type == "underline")
-	{
-
-	}
-	if (type == "italic")
-	{
-
-	}
-	if (type == "h1")
-	{
-		setTextAttributes(BACKGROUND_RED);
-	}
-	if (type == "h2")
-	{
-		setTextAttributes(BACKGROUND_BLUE);
-	}
-	if (type == "h3")
-	{
-		setTextAttributes(BACKGROUND_GREEN);
-	}
-	if (type == "h4")
-	{
-		setTextAttributes(BACKGROUND_RED| BACKGROUND_BLUE);
-	}
-	if (type == "h5")
-	{
-		setTextAttributes(BACKGROUND_BLUE | BACKGROUND_GREEN);
-	}
-	if (type == "h6")
-	{
-		setTextAttributes(BACKGROUND_RED | BACKGROUND_GREEN);
-	}
 	if (type == "found")
 	{
 		setTextAttributes(BACKGROUND_GREEN | BACKGROUND_RED | FOREGROUND_BLUE);

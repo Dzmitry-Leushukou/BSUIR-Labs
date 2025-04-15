@@ -5,3 +5,4 @@ Console .6091948f/
 packages/
 Tests/x64/
 vcpkg/
+tests/

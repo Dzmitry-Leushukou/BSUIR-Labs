@@ -306,11 +306,20 @@ void UI::fileMenu()
 void UI::preview()
 {
 	std::vector<std::string>text = file->to_string();
+
 	system("cls");
 	std::cout << "===Preview===\n";
+
+	int bold = 0;
+	int underline = 0;
+	int italic = 0;
+
+	std::string tmp;
+	styler.setTextStyle();
 	for (auto& s : text)
 	{
-		styler.setTextStyle();
+		tmp = "";
+		int h = 0;
 		//check header
 		int ind = 0;
 		while (ind < s.size() && s[ind] == '#')
@@ -321,11 +330,62 @@ void UI::preview()
 			continue;
 		}
 		if (ind >= 1 && ind <= 6 && s[ind] == ' ')
-			styler.setTextStyle("h" + std::to_string(ind)), ind++;
+			ind++, h = ind - 1;
 		else
 			ind = 0;
+
 		while (ind < s.size())
-			std::cout << s[ind],ind++;
+		{
+			styler.setTextStyle(bold, underline, italic, h);
+			if (tmp.size() == 9)
+				std::cout<<tmp.front(),tmp = tmp.substr(1);
+
+			tmp += s[ind];
+			ind++;
+
+			if (tmp == "</strong>")
+			{
+				bold--;
+				tmp = "";
+				styler.setTextStyle(bold, underline, italic,h);
+			}
+			if (tmp.find("<strong>")<tmp.size())
+			{
+				bold++;
+				std::cout << tmp.substr(0, tmp.find("<strong>"));
+				styler.setTextStyle(bold, underline, italic,h);
+				tmp = "";
+			}
+			if (tmp.find("<u>") < tmp.size())
+			{
+				underline++;
+				std::cout << tmp.substr(0, tmp.find("<u>"));
+				styler.setTextStyle(bold, underline, italic,h);
+				tmp = "";
+			}
+			if (tmp.find("</u>")<tmp.size())
+			{
+				underline--;
+				std::cout << tmp.substr(0, tmp.find("</u>"));
+				styler.setTextStyle(bold, underline, italic, h);
+				tmp = "";
+			}
+			if (tmp.find("<em>") < tmp.size())
+			{
+				italic++;
+				std::cout << tmp.substr(0, tmp.find("<em>"));
+				styler.setTextStyle(bold, underline, italic, h);
+				tmp = "";
+			}
+			if (tmp.find("</em>") < tmp.size())
+			{
+				italic--;
+				std::cout << tmp.substr(0, tmp.find("</em>"));
+				styler.setTextStyle(bold, underline, italic,h);
+				tmp = "";
+			}
+		}
+		std::cout << tmp;
 		std::cout << '\n';
 	}
 	system("pause");
