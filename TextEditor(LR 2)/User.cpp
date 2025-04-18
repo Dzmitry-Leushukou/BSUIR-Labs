@@ -2,9 +2,9 @@
 
 void User::addPermission(char type, std::string path, char st)
 {
+	deleteFile({ path,st });
 	if (type == -1)
 	{
-		deleteFile({ path,st });
 		return;
 	}
 	permissions[type].push_back({ path,st });

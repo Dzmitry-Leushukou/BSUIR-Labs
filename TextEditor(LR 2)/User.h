@@ -9,7 +9,7 @@ class User
 public:
 	User(std::string, std::vector<std::pair<std::string, char>>[3], std::vector<std::string>);
 	User(std::string);
-	void addPermission(char type, std::string path,char storage);
+	void addPermission(char type, std::string path, char storage);
 	std::vector<std::vector<std::pair<std::string, char>>> getPermissions();
 	std::string getName();
 	char getPermission(std::string);

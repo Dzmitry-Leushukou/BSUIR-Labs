@@ -17,6 +17,7 @@
 #include "MDSaver.h"
 #include "Style.h"
 #include "CloudService.h"
+#include "History.h"
 
 class UI
 {

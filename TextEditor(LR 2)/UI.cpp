@@ -252,6 +252,9 @@ void UI::open()
 	}
 	file = new File(files[id]);
 
+	system("cls");
+	std::cout << History::getNotify(file->getPath());
+		system("pause");
 	fileMenu();
 }
 
@@ -316,7 +319,7 @@ void UI::fileMenu()
 				user->addPermission(2,filename , 1);
 				Serializer::saveUsers(users, "users.txt");
 			}
-				
+			History::savedFile(user->getName(), file->getPath());
 			continue;
 		}
 		if (id == 3)
@@ -678,7 +681,7 @@ void UI::create()
 	user->addPermission(2, filepath, 0);
 	system("pause");
 	std::cin.ignore();
-
+	History::createdFile(user->getName(), file->getPath());
 	Serializer::saveUsers(users,"users.txt");
 }
 
