@@ -16,6 +16,7 @@
 #include "FileSaver.h"
 #include "MDSaver.h"
 #include "Style.h"
+#include "CloudService.h"
 
 class UI
 {
@@ -31,6 +32,7 @@ private:
 	void process(std::string);
 	void help();
 	void simulateConsoleInput(const std::string& text);
+	void deleteFile();
 //Menu methods
 	int getStorageType();
 	std::string getFilePath(bool);
@@ -45,6 +47,7 @@ private:
 	void cutMenu();
 	void find(std::string s);
 	void preview();
+	void getPerm();
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;

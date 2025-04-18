@@ -111,7 +111,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Programming\BSUIR\BSUIR-Labs\TextEditor(LR 2)\vcpkg_installed\x64-windows\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>user32.lib;tinyxml2.lib</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;tinyxml2.lib;libcurl.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CloudService.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileSaver.cpp" />
     <ClCompile Include="JSONSaver.cpp" />
@@ -144,6 +145,7 @@
     <ClCompile Include="XMLSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CloudService.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="FileSaver.h" />
     <ClInclude Include="JSONSaver.h" />

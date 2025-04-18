@@ -17,9 +17,8 @@ public:
 	std::string getPath() const;
 	void cut(int, int, int, int);
 	std::string getRaw();
-private:
 	std::string replaceExtension(std::string new_ext);
-
+private:
 	std::string path;
 	std::vector<std::string> text;
 };

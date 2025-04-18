@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "dependencies": [
     "nlohmann-json",
-    "tinyxml2"
+    "tinyxml2",
+    "curl"
   ],
 "builtin-baseline": "b02e341c927f16d991edbd915d8ea43eac52096c"
 }

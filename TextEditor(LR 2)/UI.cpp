@@ -103,12 +103,56 @@ void UI::process(std::string s)
 			style();
 			return;
 		}
+
+		if (s == "delete")
+		{
+			deleteFile();
+			return;
+		}
 		wrong();
 	}
 	catch (const std::exception& e)
 	{
 		wrong(e.what());
 	}
+}
+
+void UI::getPerm()
+{
+	
+}
+
+void UI::deleteFile()
+{
+	show(2);
+	std::cout << "Choose id of file or write -1 to go back\n";
+	int id = getNumber(-1, files.size() - 1);
+	if (id == -1)
+		return;
+
+	std::pair<std::string, char>del = user->getFile(id);
+
+	if (del.second == 0)
+	{
+		const char * path = del.first.c_str();
+
+		if (remove(path) != 0)
+		{
+			std::cout << "Can`t remove this file\n";
+			return;
+		}
+		for (auto& i : users)
+		{
+			i->deleteFile(del);
+		}
+		Serializer::saveUsers(users, "users.txt");
+	}
+	else
+	{
+		std::cout << "Can`t delete file on cloud\n";
+		system("pause");
+	}
+
 }
 
 void UI::style()
@@ -200,7 +244,12 @@ void UI::open()
 	int id = getNumber(-1, files.size() - 1);
 	if (id == -1)
 		return;
-	
+	std::pair<std::string, char>del = user->getFile(id);
+	if (del.second == 1)
+	{
+		std::cout << "Can`t open file on cloud\n";
+		return;
+	}
 	file = new File(files[id]);
 
 	fileMenu();
@@ -218,8 +267,8 @@ void UI::fileMenu()
 			std::cout << i << "\n";
 
 		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n4. Cut\n"<<
-					 "5. Find\n-1. Exit\n";
-		id = getNumber(-1, 5);
+					 "5. Find\n6. Get permission\n-1. Exit\n";
+		id = getNumber(-1, 6);
 
 		if (id == 0)
 		{
@@ -247,7 +296,27 @@ void UI::fileMenu()
 				system("pause");
 				continue;
 			}
-			file->save();
+			std::cout << "Choose storage type:\n0. Local\n1. Cloud\nType: ";
+			int type = getNumber(0,1);
+			if (type == 0)
+				file->save();
+			else
+			{
+				CloudService::save(file->getPath());
+				std::string filename = file->getPath();
+				int i = filename.size() - 1;
+				std::string tmp;
+				while (filename[i] != '/' && i >= 0)
+				{
+					tmp += filename[i];
+					i--;
+				}
+				std::reverse(tmp.begin(), tmp.end());
+				filename = tmp;
+				user->addPermission(2,filename , 1);
+				Serializer::saveUsers(users, "users.txt");
+			}
+				
 			continue;
 		}
 		if (id == 3)
@@ -260,24 +329,30 @@ void UI::fileMenu()
 			}
 			std::cout << "Choose save format:\n0. txt\n1. md\n2. json\n3. xml\n-1. cancel\n";
 			int n = getNumber(-1, 3);
+			std::string filepath="";
 			switch (n)
 			{
 			case -1:
 				break;
 			case 0:
 				file->saveAs(txt_saver,"txt");
+				filepath = file->replaceExtension("txt");
 				break;
 			case 1:
 				file->saveAs(md_saver,"md");
+				filepath = file->replaceExtension("md");
 				break;
 			case 2:
 				file->saveAs(json_saver, "json");
+				filepath = file->replaceExtension("json");
 				break;
 			case 3:
 				file->saveAs(xml_saver, "xml");
+				filepath = file->replaceExtension("xml");
 				break;
 			}
-
+			if(filepath!="")
+				user->addPermission(2, filepath, user->getStorage(file->getPath())), Serializer::saveUsers(users, "users.txt");
 			continue;
 		}
 
@@ -299,6 +374,33 @@ void UI::fileMenu()
 			std::string s;
 			std::cin >> s;
 			find(s);
+			continue;
+		}
+		if (id == 6)
+		{
+			if (user->getPermission(file->getPath()) != 2)
+			{
+				std::cout << "You do not have permission to get permission.\n";
+				system("pause");
+				continue;
+			}
+			system("cls");
+			int numb = 0;
+			for (auto& i : users)
+			{
+				std::cout << numb << ". " << i->getName()<<'\n';
+				numb++;
+			}
+			std::cout << "Choose user: ";
+			int ind = getNumber(0, users.size() - 1);
+			std::cout << "2. Admin\n";
+			std::cout << "1. Editor\n";
+			std::cout << "0. Viewer\n";
+			std::cout << "-1. Don`t see file (NO PERMISSIONS)\n";
+			std::cout << "Choose level permission: ";
+			int perm = getNumber(-1, 2);
+			users[ind]->addPermission(perm, file->getPath(), 0);
+			Serializer::saveUsers(users, "users.txt");
 		}
 	}
 }
@@ -531,6 +633,7 @@ void UI::help()
 	std::cout << "\"open\" - id of file to open it (to edit you also need open the file)\n";
 	std::cout << "\"style\" - to set color or font\n";
 	std::cout << "\"help\" - to show this menu again\n";
+	std::cout << "\"delete\" - to delete file\n";
 	system("pause");
 }
 
@@ -568,17 +671,13 @@ void UI::simulateConsoleInput(const std::string& text)
 
 void UI::create()
 {
-	short n = getStorageType();
-	if (n == 0)
-	{
-		std::string filepath = getFilePath(false);
-		std::ofstream cr(filepath);
-		cr.close();
-		std::cout << "File("<<filepath<<") created successfully\n";
-		user->addPermission(2, filepath, 0);
-		system("pause");
-		std::cin.ignore();
-	}
+	std::string filepath = getFilePath(false);
+	std::ofstream cr(filepath);
+	cr.close();
+	std::cout << "File("<<filepath<<") created successfully\n";
+	user->addPermission(2, filepath, 0);
+	system("pause");
+	std::cin.ignore();
 
 	Serializer::saveUsers(users,"users.txt");
 }
