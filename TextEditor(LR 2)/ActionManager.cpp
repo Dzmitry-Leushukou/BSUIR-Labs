@@ -2,7 +2,7 @@
 
 void ActionManager::redo()
 {
-	if (ind == action.size() - 1)
+	if (ind == action.size() - 1||action.size()==0)
 		throw std::runtime_error("Nothing to redo");
 	ind++;
 
