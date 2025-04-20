@@ -117,11 +117,6 @@ void UI::process(std::string s)
 	}
 }
 
-void UI::getPerm()
-{
-	
-}
-
 void UI::deleteFile()
 {
 	show(2);
@@ -254,7 +249,9 @@ void UI::open()
 
 	system("cls");
 	std::cout << History::getNotify(file->getPath());
-		system("pause");
+	system("pause");
+
+	act->clear(file->getRaw());
 	fileMenu();
 }
 
@@ -270,8 +267,8 @@ void UI::fileMenu()
 			std::cout << i << "\n";
 
 		std::cout << "====================================\nChoose type of operations:\n0. Edit\n1. Preview (good for markdown)\n2. Save\n3. Save as\n4. Cut\n"<<
-					 "5. Find\n6. Get permission\n-1. Exit\n";
-		id = getNumber(-1, 6);
+					 "5. Find\n6. Get permission\n7. Redo\n8. Undo\n-1. Exit\n";
+		id = getNumber(-1, 8);
 
 		if (id == 0)
 		{
@@ -302,7 +299,7 @@ void UI::fileMenu()
 			std::cout << "Choose storage type:\n0. Local\n1. Cloud\nType: ";
 			int type = getNumber(0,1);
 			if (type == 0)
-				file->save();
+				act->add(file->getRaw()), file->save();
 			else
 			{
 				CloudService::save(file->getPath());
@@ -358,7 +355,6 @@ void UI::fileMenu()
 				user->addPermission(2, filepath, user->getStorage(file->getPath())), Serializer::saveUsers(users, "users.txt");
 			continue;
 		}
-
 		if (id == 4) 
 		{
 			if (user->getPermission(file->getPath()) < 1)
@@ -370,7 +366,6 @@ void UI::fileMenu()
 			cutMenu();
 			continue;
 		}
-
 		if (id == 5)//find
 		{
 			std::cout << "Write what you wanna find (find operation work with raw text (\\n = *\\\\n*): ";
@@ -404,6 +399,30 @@ void UI::fileMenu()
 			int perm = getNumber(-1, 2);
 			users[ind]->addPermission(perm, file->getPath(), 0);
 			Serializer::saveUsers(users, "users.txt");
+		}
+		if (id == 7)
+		{
+			try {
+				act->redo();
+				file->update(act->get());
+			}
+			catch (...)
+			{
+				std::cout << "Nothing to redo\n";
+				system("pause");
+			}
+		}
+		if (id == 8)
+		{
+			try {
+				act->undo();
+				file->update(act->get());
+			}
+			catch (...)
+			{
+				std::cout << "Nothing to undo\n";
+				system("pause");
+			}
 		}
 	}
 }
@@ -681,7 +700,7 @@ void UI::create()
 	user->addPermission(2, filepath, 0);
 	system("pause");
 	std::cin.ignore();
-	History::createdFile(user->getName(), file->getPath());
+	History::createdFile(user->getName(), filepath);
 	Serializer::saveUsers(users,"users.txt");
 }
 

@@ -18,6 +18,7 @@
 #include "Style.h"
 #include "CloudService.h"
 #include "History.h"
+#include "ActionManager.h"
 
 class UI
 {
@@ -48,7 +49,6 @@ private:
 	void cutMenu();
 	void find(std::string s);
 	void preview();
-	void getPerm();
 //Fields
 	File * file = nullptr;
 	unsigned char mode = 0;
@@ -61,5 +61,7 @@ private:
 	FileSaver* json_saver = new JSONSaver();
 	FileSaver* xml_saver = new XMLSaver();
 	FileSaver* md_saver = new MDSaver();
+//Undo/Redo
+	ActionManager* act = new ActionManager();
 };
 

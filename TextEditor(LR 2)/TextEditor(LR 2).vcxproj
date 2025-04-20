@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActionManager.cpp" />
     <ClCompile Include="CloudService.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileSaver.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="XMLSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActionManager.h" />
     <ClInclude Include="CloudService.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="FileSaver.h" />
