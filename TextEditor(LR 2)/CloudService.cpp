@@ -1,6 +1,6 @@
 #include "CloudService.h"
 
-std::string CloudService::access_token = "sl.u.AFqmGJxbrCMLA_a_q9y5cKiOb0idfIZxnSjUwjujoLeY12zlnrpDdgAJyeZc2Vtn2pHWC0U6qJTZvKZlU2Oiujc8bnqINewxU9BpdTb14OEBeczp-ZtoOt5BEH9bPEFuVghpAlky1MzpLRObQeY9m4ySqHJcIhoWbJn4dtUkZSm2EXPC8pXOP2um_MheFU55IzWTrem7Z_N1c3-hpHtNXZeMrDiGflzjudmXd6cal8KS0Wydvb84low9glH12obj8yv8rVKY2PxsmrzKarMbuK_wSfTMwTFKfBZsp88AU7vu4UAo3KhJl7SoNsVBfgu9fYM9rdADo9bJtB4keylBjmPm2iH82IDSU_9A4zVmz6UvYopEFkKq2PT1muhwDUDEAgPLjRU7zj05HGLPQdhL2UZi5VTslthmvKa4wTagwIc27azUh0qpE_WhhYwDe00shQoOm6-aA-ybXVQp7ao44YKG-r1deb-Oiio9NYTW6slAWYybkNbPOy1rvXSIWceNbNS5dhiwLbd5oqROqd-LogRNjjamF_cYYzHfkdB_rIpeN04d6Q_jbIlz2lMMMPnpAy1Hw7uW53cElklw1im9HgFONxSdQSAQP7xlCrVS4qtWQkIEf7J7bF7i82uNe7EFTNdlorvOe97lc3UEHiiwWSn85D0b2GOaiz5Zz8EjZRsWdWpnb3uE82OAflJrCkS0X5xa1VdryxzvFJcm7diqESL-2BJOD6bWjU6rV7nxPTA4ToMbYQfnyxVmeC7_YOzonea1UQf8-5vPVMXZs1_Ro6CC_EOC9NCWk9XHrwtfAZ6NIdD7yIj_Vvb0OHj6FbQFaqK8bU_YAXt6Brnlur6oZlBa_bf9necpqLviB0HxWfaxtg8RXmutYG-o4ycosiEf3PGP57nGt92pEixd6EdBtTJ-7pwOd1ctqwf9w_UhsK7di_kBAc2ZeIfdy08OSXV30IOunuP_U4uHcr2PNBo0dCFcEykCSu_qP5yxOFkH8KHVPmYm1mJhD9lFd3ezpaVW7RmGSnJjSLAcqNiGa5UtQds8CVYLRCyCW9wyIhPEJNIBKVd72sXeTY9P-mqJBmEY9VN8J0v4hrx5pE1P-h1JBNTeFcDcrV87PfDEbs1obcbgnCeJcroIRJfY9ASWDZ9beBmHyP_C1pooberYq6LlVGt3rlfBfUP2xCORngyslc6rtQfmb4ixLeXX7NTGuwQDgZFgqo7nu8WqYDkKASlmH88l9Z4IphwR81k_cvVoP8pux62924JRgv5QmRmPMWPblYVNRnpxALKhD6R3Sqs8w82W8C-LNHXNOVepYHUrh_OfLXiHeOGXfVmqXXO66wVDGKj2M8WiIk2ilsw51X_PMlt0hemirz33-w1I41QfcktVOJho6sHdIuT-AvqKH6pCl5XBkaauhtiU8ciGrTcspU9r6FJjJCxiUo-H7BtZpMj_Rg";
+std::string CloudService::access_token = "sl.u.AFrDNZSpppVAsg0Lk1_sfx4GnFdPhy3p4d9o7QaMKE9UPs-KPondCVi4G0PyCnp4hVaUFpG_L22abEGqyCkqI6VbsLz-2GemhC7igz6nbvWxkQl0FmvCOJBwwWqxuPuTanFy4s3or8-NkbR6vFemRUhUWGjgLL7YJ-NOKVUzdrgPwT6wfwIMs1kfG9EBM13ANjyo9rvNT1kwZ3TW_CIQNhRzleFlaK_qHuGHAUZpybB5uycITuIF6tJSTraAYjkSA9lodUJsbOGgPSN7G3O3GcomOG92iyCGrUzvGq5LArlRx1tT47BE1t9mhac0m6zD0BgkwGJlYP7AwXgIlWf49xBhoLOlykuxlyysmfvrq9mQYSlMevldwLDiM_Uo5hvRM3Hv3CSIzM2kPEEeaAdMHNqwiIhKYw055vws4yWbCy1l9qAdXBmaGC77H3jljGG5dcs4Nm0l-ycULWxdaNar0J3GtQUY1ZZgKy1nKhXeKqxbr0bCVRLRTvbYpxmx1321hf7oNZMejfLnd9Ud8GiG2p2u0saZUWAQZ1AsXD2f6bSbpMgMRvXOaXNi2R4HVuk8tUzqp9_f47F9fHuCBEr1bwwHhuHoboALv9_Jxd1lJNxziWppMrF-a7-80g6lxQiZKnJxRA8mzpklKX_exH0x-33M2nh_aklMRutLZQ9iSpeNijedVrhv71mA_Jy7RBPLfM3AUhAjbCxF-vRKEDJ9YWxhYPgxi1-0S8j21YJEjKB3NvhrRaOZLWfbsGcn9MtayIf6bhWinP7dTfjts0PAWdqxAJhKX9_AUjSPELXBvtKktTHoEiM2pWAU7On45_CRWzC_Ivwd-jA8EuZRREAAvFoypw5LsW1aqhrfGbhwrIzvvDyEVrAoqhISqh6G-ZcZIulk31lPyONuOCiSbPT6xbMyPMhBSEsAUCBPnDEz3L9pFGz0u5BKBY6DIWKrv3EmUKMojB1uQkmWu-pQRRv-G0S_2XAkPWBzCLdajhzznvuiX3t8QTFvOnRdfoXWrjEWWnLXmaQlLN-mR9jwIyS1_MlBs9iJH_wBnI-dBN5icXAvNyqU0Pd5BUQ7iTsccRHbFqt5EBXLCGxDvG6yKppY8bOqfzlrxpNB7ZoBD8TaRIyv1Om2b6oGLDnS4llTrNk4CR_gP7c-P4aT-A03LFp0WIOtVHQudE0EPy2IdgbV6H4g2JgvWQ4U21bb7aoKbtOprnAYbop9ftCBoo1HcU5MjGnTNw5aSfB9PJoF9O73H_xCs5rqcvHeVS6N43Tuaz-iMmznHWzOPdxJja1A1nRM45Te4VrWM5ulthP8LWYNPv5lHtay1yTx6yFK5t__9xg0zIWN6ytWH1lJqBaeoofilRSu-ewrBj4N72DSbGC1i2G00-uvKb6Yn2cgX2fAKO2Ekq7fPSY29WMsp-IRBdEljSOU-oNotqUWDYCHhn0m8D1fKA";
 void CloudService::save(std::string filename)
 {
     CURL* curl;
@@ -23,12 +23,13 @@ void CloudService::save(std::string filename)
 
         int i = filename.size() - 1;
         std::string tmp;
-        while(filename[i]!='/'&&i>=0)
+        while(i >= 0&&filename[i]!='/')
         {
             tmp += filename[i];
             i--;
         }
         std::reverse(tmp.begin(), tmp.end());
+        
         filename = tmp;
         curl_easy_setopt(curl, CURLOPT_URL, "https://content.dropboxapi.com/2/files/upload");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());

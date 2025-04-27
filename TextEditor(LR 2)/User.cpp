@@ -27,7 +27,14 @@ void User::deleteFile(std::pair<std::string, char>f)
 
 std::pair<std::string, char>User::getFile(int id)
 {
-	return permissions[2][id];
+	for(int j=0;j<3;j++)
+		for (int i = 0; i < permissions[j].size(); i++)
+		{
+			id--;
+			if (id == 0)
+				return permissions[j][i];
+		}
+	
 }
 
 char User::getStorage(std::string filepath)

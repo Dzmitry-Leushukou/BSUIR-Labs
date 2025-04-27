@@ -233,26 +233,28 @@ void UI::changeColor()
 
 void UI::open()
 {
-	system("cls");
-	show(0);
-	std::cout << "Choose id of file or write -1 to go back\n";
-	int id = getNumber(-1, files.size() - 1);
-	if (id == -1)
-		return;
-	std::pair<std::string, char>del = user->getFile(id);
-	if (del.second == 1)
-	{
-		std::cout << "Can`t open file on cloud\n";
-		return;
-	}
-	file = new File(files[id]);
+		system("cls");
+		show(0);
+		std::cout << "Choose id of file or write -1 to go back\n";
+		int id = getNumber(-1, files.size() - 1);
+		if (id == -1)
+			return;
+		std::pair<std::string, char>del = user->getFile(id);
+		if (del.second == 1)
+		{
+			std::cout << "Can`t open file on cloud\n";
+			return;
+		}
+		file = new File(files[id]);
 
-	system("cls");
-	std::cout << History::getNotify(file->getPath());
-	system("pause");
+		system("cls");
+		std::cout << History::getNotify(file->getPath());
+		system("pause");
 
-	act->clear(file->getRaw());
-	fileMenu();
+		act->clear(file->getRaw());
+		fileMenu();
+		delete file;
+		file = nullptr;
 }
 
 void UI::fileMenu()
@@ -306,7 +308,7 @@ void UI::fileMenu()
 				std::string filename = file->getPath();
 				int i = filename.size() - 1;
 				std::string tmp;
-				while (filename[i] != '/' && i >= 0)
+				while (i >= 0&&filename[i] != '/')
 				{
 					tmp += filename[i];
 					i--;
@@ -424,6 +426,8 @@ void UI::fileMenu()
 				system("pause");
 			}
 		}
+		if (id == -1)
+			break;
 	}
 }
 
