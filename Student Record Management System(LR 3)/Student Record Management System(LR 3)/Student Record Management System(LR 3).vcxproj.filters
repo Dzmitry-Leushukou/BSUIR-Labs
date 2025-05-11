@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{925c5581-307e-40d1-abd7-de68580dd6a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Access">
+      <UniqueIdentifier>{61887718-38f9-4fb0-860a-a31f8c3060c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Domain">
+      <UniqueIdentifier>{a6135144-ad23-4477-82e1-d688b16a547c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PresentationLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputProcesser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Application.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Data Access\FileService.cpp">
+      <Filter>Data Access</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\Checker.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\DataObject.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\DataObjectFactory.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\Student.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\StudentDTO.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="Domain\StudentFactory.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="StudentRepository.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="AddStudentCommand.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Invoker.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="ShowStudentsCommand.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PresentationLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputProcesser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Data Access\FileService.h">
+      <Filter>Data Access</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\Checker.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\DataObject.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\DataObjectFactory.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\Student.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\StudentDTO.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="Domain\StudentFactory.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="StudentRepository.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="AddStudentCommand.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Invoker.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowStudentsCommand.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

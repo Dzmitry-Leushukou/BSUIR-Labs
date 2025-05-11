@@ -1,0 +1,43 @@
+# Build outputs
+**/x64/
+**/x86/
+**/Debug/
+**/Release/
+
+# Visual Studio files and folders
+.vs/
+*.suo
+*.user
+*.vcxproj.user
+*.sln.docstates
+*.build.txt
+*.dbmdl
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.obj
+*.ilk
+*.pdb
+*.tlog
+*.ipch/
+[Bb]in/
+[Oo]bj/
+
+# NuGet Packages
+**/packages/
+packages/
+
+# vcpkg
+**/vcpkg/
+vcpkg/
+
+# Other
+*.exe
+*.dll
+*.lib
+*.ncb
+*.log
+*.tmp
+_ReSharper*/
