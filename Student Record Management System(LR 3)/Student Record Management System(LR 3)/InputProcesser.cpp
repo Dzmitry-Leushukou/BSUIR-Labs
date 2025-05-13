@@ -22,32 +22,19 @@ std::pair<std::string, std::pair<std::vector<std::string>, std::vector<std::stri
 	//help
 	if (s == "h")
 	{
-		std::string res = "Command | Description\nc - create new student\nstudent_id - to choose user\n+ - add mark\n";
-		res += "e - edit student data\n* - edit student mark\n";
+		std::string res = "Command | Description\nc - create new student\nstudent_id - to choose user\n";
 		res+="P.S.\nFor edit user data you MUST firstly choose student\n";
 
 		return { res,{{"cls"},{"pause","cls"}}};
 	}
-	if (s == "+")
-	{
-		//add mark
-	}
-	if (s == "e")
-	{
-		//edit user data
-	}
-	if (s == "*")
-	{
-		//edit student marks
-	}
 	try 
 	{
 		//check user exist
-		throw std::exception("govno");
+		return { editUserMenu(std::stoi(s),app->getStudentData(std::stoi(s))) ,{{},{"pause","cls"}} };
 	}
 	catch (const std::exception& e)
 	{
-		return { e.what(),{{}, { "pause","cls" }} };
+		return { "Wrong command/id",{{}, {"pause","cls"}}};
 	}
 }
 
@@ -59,4 +46,58 @@ std::string InputProcesser::getUsername()
 	if (s == "_-1_")
 		throw std::exception("INTERRUPT");
 	return s;
+}
+
+std::string InputProcesser::editUserMenu(int id,std::vector < std::string>data)
+{
+	try {
+		system("cls");
+		std::cout << "Name: ";
+		simulateConsoleInput(data.at(0));
+		std::string new_name;
+		std::getline(std::cin, new_name);
+		std::cout << "Marks (divide by ,): ";
+		simulateConsoleInput(data.at(1));
+		std::string new_marks;
+		std::getline(std::cin, new_marks);
+		app->updateStudent(id, new_name, new_marks);
+	}
+	catch (...)
+	{
+		return "Something went wrong";
+	}
+	return "Data was update";
+}
+
+
+void InputProcesser::simulateConsoleInput(const std::string& text)
+{
+	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+	if (hInput == INVALID_HANDLE_VALUE)
+	{
+		std::cerr << "Error: GetStdHandle(STD_INPUT_HANDLE)" << std::endl;
+		return;
+	}
+	std::vector<INPUT_RECORD> records;
+	for (char c : text)
+	{
+		INPUT_RECORD rec = { 0 };
+		rec.EventType = KEY_EVENT;
+
+		rec.Event.KeyEvent.bKeyDown = TRUE;
+		rec.Event.KeyEvent.wRepeatCount = 1;
+		rec.Event.KeyEvent.wVirtualKeyCode = 0; // Unicode
+		rec.Event.KeyEvent.uChar.UnicodeChar = c;
+		records.push_back(rec);
+
+		rec.Event.KeyEvent.bKeyDown = FALSE;
+		records.push_back(rec);
+	}
+
+	DWORD written;
+	if (!WriteConsoleInput(hInput, records.data(), (DWORD)records.size(), &written))
+	{
+		std::cerr << "WriteConsoleInput failed, error: " << GetLastError() << std::endl;
+	}
+
 }

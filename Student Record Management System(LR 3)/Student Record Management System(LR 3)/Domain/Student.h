@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "DataObject.h"
 class Student:public DataObject
 {
 public:
 	Student() = default;
 	Student(int, std::string);
+	Student(int, std::string,std::string);
 	Student(int, std::string, std::vector<int>);
 	std::string getName() const;
 	std::vector<int> getMarks() const;
@@ -15,6 +17,7 @@ public:
 	void setMarks(std::vector<int>);
 	void setId(int);
 	std::string to_string()const;
+	std::vector<std::string>to_vector()const;
 private:
 	int id;
 	std::string name;

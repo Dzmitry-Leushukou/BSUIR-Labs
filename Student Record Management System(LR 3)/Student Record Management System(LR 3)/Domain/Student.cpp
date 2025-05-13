@@ -44,3 +44,44 @@ std::string Student::to_string()const
 	}
 	return s;
 }
+std::vector<std::string>Student::to_vector()const
+{
+	std::vector<std::string>v;
+	v.push_back(name);
+	std::string m;
+	for (auto& i : marks)
+	{
+		m += std::to_string(i) + ",";
+	}
+	if(!m.empty())
+		m.pop_back();
+	v.push_back(m);
+	return v;
+}
+Student::Student(int id, std::string name, std::string marks)
+{
+	this->id = id;
+	this->name = name;
+	std::vector<int>v;
+	std::string tmp;
+	for (auto& i : marks)
+	{
+		if (i == ',')
+		{
+			if (tmp == "")
+				throw std::invalid_argument("Wrong marks string");
+			v.push_back(std::stoi(tmp));
+			tmp = "";
+		}
+		else
+			if (i >= '0' && i <= '9')
+			{
+				tmp += i;
+			}
+			else
+				throw std::invalid_argument("Wrong marks string");
+	}
+	if (tmp != "")
+		v.push_back(std::stoi(tmp));
+	this->marks = v;
+}

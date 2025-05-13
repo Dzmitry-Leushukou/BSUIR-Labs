@@ -12,6 +12,6 @@ private:
 	void output(std::pair<std::string, std::pair<std::vector<std::string>, std::vector<std::string>>>data);
 	void operations(const std::vector<std::string> op);
 	void showStudents();
-	std::vector<std::string>usersHeader;
+	
 };
 
