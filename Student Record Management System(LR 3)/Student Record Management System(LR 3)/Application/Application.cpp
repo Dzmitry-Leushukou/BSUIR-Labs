@@ -38,17 +38,11 @@ Application::~Application()
 	invoker = nullptr;
 }
 
-void Application::updateStudent(int id, std::string name, std::string marks)
+void Application::updateStudent(StudentDTO obj)
 {
-	std::vector<Student>data=FileService::load();
-	Student s(id, name, marks);
-	for (auto& i : data)
-	{
-		if (i.getId() == id)
-		{
-			i = s;
-			break;
-		}
-	}
-	FileService::save(data);
+	UpdateStudentCommand* c = new UpdateStudentCommand(obj);
+	invoker->setCommand(c);
+	invoker->executeCommand();
+	delete c;
+	c = nullptr;
 }

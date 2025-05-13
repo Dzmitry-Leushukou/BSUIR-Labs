@@ -10,7 +10,14 @@ void StudentRepository::add(StudentDTO obj)
 }
 void StudentRepository::update(StudentDTO obj)
 {
-	students.at(obj.getId()) = Student(obj.getId(), obj.getName(), obj.getMarks());
+	for (auto& i : students)
+	{
+		if (i.getId() == obj.getId())
+		{
+			i = Student(obj.getId(), obj.getName(), obj.getMarks());
+			break;
+		}
+	}
 }
 std::vector<Student>StudentRepository::get()
 {

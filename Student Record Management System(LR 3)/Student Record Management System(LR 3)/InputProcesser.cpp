@@ -60,7 +60,7 @@ std::string InputProcesser::editUserMenu(int id,std::vector < std::string>data)
 		simulateConsoleInput(data.at(1));
 		std::string new_marks;
 		std::getline(std::cin, new_marks);
-		app->updateStudent(id, new_name, new_marks);
+		app->updateStudent(StudentDTO(id, new_name, new_marks));
 	}
 	catch (...)
 	{

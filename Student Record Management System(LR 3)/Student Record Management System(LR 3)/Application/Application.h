@@ -4,6 +4,7 @@
 #include "../Invoker.h"
 #include "../ShowStudentsCommand.h"
 #include "../AddStudentCommand.h"
+#include "../UpdateStudentCommand.h"
 class Application
 {
 public:
@@ -11,7 +12,7 @@ public:
 	std::string getStudents();
 	~Application();
 	std::vector<std::string>getStudentData(int);
-	void updateStudent(int, std::string, std::string);
+	void updateStudent(StudentDTO obj);
 private:
 	Invoker * invoker = new Invoker();
 	Student st;

@@ -68,6 +68,9 @@
     <ClCompile Include="ShowStudentsCommand.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="UpdateStudentCommand.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PresentationLayer.h">
@@ -103,9 +106,6 @@
     <ClInclude Include="StudentRepository.h">
       <Filter>Domain</Filter>
     </ClInclude>
-    <ClInclude Include="AddStudentCommand.h">
-      <Filter>Application</Filter>
-    </ClInclude>
     <ClInclude Include="Command.h">
       <Filter>Application</Filter>
     </ClInclude>
@@ -113,6 +113,12 @@
       <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="ShowStudentsCommand.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="AddStudentCommand.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateStudentCommand.h">
       <Filter>Application</Filter>
     </ClInclude>
   </ItemGroup>
