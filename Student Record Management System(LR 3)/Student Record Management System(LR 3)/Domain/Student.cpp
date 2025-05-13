@@ -85,3 +85,12 @@ Student::Student(int id, std::string name, std::string marks)
 		v.push_back(std::stoi(tmp));
 	this->marks = v;
 }
+Student::Student(std::vector<std::string>v)
+{
+	id = stoi(v.at(0));
+	name = v.at(1);
+	std::vector<int>mk;
+	for (int i = 2; i < v.size(); i++)
+		mk.push_back(std::stoi(v.at(i)));
+	marks = mk;
+}

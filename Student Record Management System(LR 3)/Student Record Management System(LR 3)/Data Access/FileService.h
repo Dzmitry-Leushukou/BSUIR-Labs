@@ -3,7 +3,7 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <iostream>
-#include "Student.h"
+#include "StudentFactory.h"
 class FileService
 {
 public:
@@ -12,4 +12,5 @@ public:
 	static void createDataFile();
 private:
 	static const std::string path;
+	static StudentFactory*sf;
 };

@@ -1,7 +1,7 @@
 #include "FileService.h"
 
 const std::string FileService::path = "data.json";
-
+StudentFactory* FileService::sf = new StudentFactory();
 void FileService::save(std::vector<Student>v)
 {
 	nlohmann::json obj;
@@ -33,9 +33,18 @@ std::vector<Student> FileService::load()
 	try {
 		std::vector<Student>ans;
 		nlohmann::json j = nlohmann::json::parse(json_string);
-		for (auto& [key, value] : j.items()) {
-			Student tmp(stoi(key),value[0].get<std::string>(),value[1].get<std::vector<int>>());
-			ans.push_back(tmp);
+		for (auto& [key, value] : j.items()) 
+		{
+			std::vector<std::string>a;
+			a.push_back(key);
+			a.push_back(value[0].get<std::string>());
+			std::vector<int>m=(value[1].get<std::vector<int>>());
+			for (auto val : m)
+				a.push_back(std::to_string(val));
+
+			DataObject* obj = sf->CreateObject(a);
+			Student* tmpPtr = dynamic_cast<Student*>(obj); 
+			ans.push_back(*tmpPtr);
 		}
 		return ans;
 	}

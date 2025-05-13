@@ -1,6 +1,6 @@
 #include "StudentFactory.h"
 
-DataObject* StudentFactory::CreateObject(std::vector<std::string>)
+DataObject* StudentFactory::CreateObject(std::vector<std::string>v)
 {
-	return nullptr;
+	return new Student(v);
 }

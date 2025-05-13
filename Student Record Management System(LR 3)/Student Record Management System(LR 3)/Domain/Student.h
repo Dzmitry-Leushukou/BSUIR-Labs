@@ -10,6 +10,7 @@ public:
 	Student(int, std::string);
 	Student(int, std::string,std::string);
 	Student(int, std::string, std::vector<int>);
+	Student(std::vector<std::string>);
 	std::string getName() const;
 	std::vector<int> getMarks() const;
 	int getId();
