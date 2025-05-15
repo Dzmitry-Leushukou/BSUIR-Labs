@@ -30,7 +30,7 @@ QuoteDTO * Application::addStudent(StudentDTO obj)
 	invoker->executeCommand();
 	delete c;
 	c = nullptr;
-	return API::get();
+	return qa->getQuote();
 }
 
 Application::~Application()

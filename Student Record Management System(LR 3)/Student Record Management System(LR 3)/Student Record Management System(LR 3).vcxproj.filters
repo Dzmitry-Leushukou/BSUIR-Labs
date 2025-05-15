@@ -80,6 +80,12 @@
     <ClCompile Include="QuoteFactory.cpp">
       <Filter>Domain</Filter>
     </ClCompile>
+    <ClCompile Include="IQuote.cpp">
+      <Filter>Data Access</Filter>
+    </ClCompile>
+    <ClCompile Include="QuoteAdapter.cpp">
+      <Filter>Data Access</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PresentationLayer.h">
@@ -138,6 +144,12 @@
     </ClInclude>
     <ClInclude Include="QuoteFactory.h">
       <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="IQuote.h">
+      <Filter>Data Access</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteAdapter.h">
+      <Filter>Data Access</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

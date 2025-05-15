@@ -5,7 +5,7 @@
 #include "../ShowStudentsCommand.h"
 #include "../AddStudentCommand.h"
 #include "../UpdateStudentCommand.h"
-#include "../API.h"
+#include "../QuoteAdapter.h"
 class Application
 {
 public:
@@ -17,5 +17,6 @@ public:
 private:
 	Invoker * invoker = new Invoker();
 	Student st;
+	QuoteAdapter* qa=new QuoteAdapter();
 };
 

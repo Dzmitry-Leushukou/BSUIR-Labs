@@ -148,8 +148,10 @@
     <ClCompile Include="Domain\StudentFactory.cpp" />
     <ClCompile Include="InputProcesser.cpp" />
     <ClCompile Include="Invoker.cpp" />
+    <ClCompile Include="IQuote.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PresentationLayer.cpp" />
+    <ClCompile Include="QuoteAdapter.cpp" />
     <ClCompile Include="QuoteDTO.cpp" />
     <ClCompile Include="QuoteFactory.cpp" />
     <ClCompile Include="ShowStudentsCommand.cpp" />
@@ -170,7 +172,9 @@
     <ClInclude Include="Domain\StudentFactory.h" />
     <ClInclude Include="InputProcesser.h" />
     <ClInclude Include="Invoker.h" />
+    <ClInclude Include="IQuote.h" />
     <ClInclude Include="PresentationLayer.h" />
+    <ClInclude Include="QuoteAdapter.h" />
     <ClInclude Include="QuoteDTO.h" />
     <ClInclude Include="QuoteFactory.h" />
     <ClInclude Include="ShowStudentsCommand.h" />
