@@ -5,10 +5,11 @@
 #include "../ShowStudentsCommand.h"
 #include "../AddStudentCommand.h"
 #include "../UpdateStudentCommand.h"
+#include "../API.h"
 class Application
 {
 public:
-	void addStudent(StudentDTO obj);
+	QuoteDTO * addStudent(StudentDTO obj);
 	std::string getStudents();
 	~Application();
 	std::vector<std::string>getStudentData(int);

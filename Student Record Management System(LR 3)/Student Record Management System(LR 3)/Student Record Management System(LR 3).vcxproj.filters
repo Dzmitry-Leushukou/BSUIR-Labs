@@ -71,6 +71,15 @@
     <ClCompile Include="UpdateStudentCommand.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="API.cpp">
+      <Filter>Data Access</Filter>
+    </ClCompile>
+    <ClCompile Include="QuoteDTO.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="QuoteFactory.cpp">
+      <Filter>Domain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PresentationLayer.h">
@@ -120,6 +129,15 @@
     </ClInclude>
     <ClInclude Include="UpdateStudentCommand.h">
       <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="API.h">
+      <Filter>Data Access</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteDTO.h">
+      <Filter>Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="QuoteFactory.h">
+      <Filter>Domain</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

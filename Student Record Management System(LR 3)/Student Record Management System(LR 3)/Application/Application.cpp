@@ -23,13 +23,14 @@ std::vector<std::string> Application::getStudentData(int id)
 	throw std::invalid_argument("User with id = "+std::to_string(id)+" doesn`t exist");
 }
 
-void Application::addStudent(StudentDTO obj)
+QuoteDTO * Application::addStudent(StudentDTO obj)
 {
 	AddStudentCommand* c = new AddStudentCommand(obj);
 	invoker->setCommand(c);
 	invoker->executeCommand();
 	delete c;
 	c = nullptr;
+	return API::get();
 }
 
 Application::~Application()

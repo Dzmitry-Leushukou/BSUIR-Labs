@@ -11,12 +11,12 @@ std::pair<std::string, std::pair<std::vector<std::string>, std::vector<std::stri
 		{
 			std::string username = getUsername();
 			StudentDTO tmp(username, {});
-			app->addStudent(tmp);
-			return { "Student: "+username+" succesfully create!\n",{{"cls"},{"pause","cls"}} };
+			std::string ans = app->addStudent(tmp)->to_string();
+			return { "Student: "+username+" succesfully create!\n"+ans+"\n",{{"cls"},{"pause","cls"}}};
 		}
-		catch (...)
+		catch (const std::exception& e)
 		{
-			return { "",{{},{"cls"}} };
+			return { e.what(),{{},{"pause","cls"}}};
 		}
 	}
 	//help

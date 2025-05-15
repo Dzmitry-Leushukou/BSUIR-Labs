@@ -114,8 +114,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Programming\BSUIR\BSUIR-Labs\Student Record Management System(LR 3)\vcpkg_installed\x64-windows\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\Programming\BSUIR\BSUIR-Labs\Student Record Management System(LR 3)\vcpkg_installed\x64-windows\lib\libcurl.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AddStudentCommand.cpp" />
+    <ClCompile Include="API.cpp" />
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Data Access\FileService.cpp" />
@@ -149,12 +150,15 @@
     <ClCompile Include="Invoker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PresentationLayer.cpp" />
+    <ClCompile Include="QuoteDTO.cpp" />
+    <ClCompile Include="QuoteFactory.cpp" />
     <ClCompile Include="ShowStudentsCommand.cpp" />
     <ClCompile Include="StudentRepository.cpp" />
     <ClCompile Include="UpdateStudentCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddStudentCommand.h" />
+    <ClInclude Include="API.h" />
     <ClInclude Include="Application\Application.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="Data Access\FileService.h" />
@@ -167,6 +171,8 @@
     <ClInclude Include="InputProcesser.h" />
     <ClInclude Include="Invoker.h" />
     <ClInclude Include="PresentationLayer.h" />
+    <ClInclude Include="QuoteDTO.h" />
+    <ClInclude Include="QuoteFactory.h" />
     <ClInclude Include="ShowStudentsCommand.h" />
     <ClInclude Include="StudentRepository.h" />
     <ClInclude Include="UpdateStudentCommand.h" />
