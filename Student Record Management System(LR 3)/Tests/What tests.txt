@@ -1,0 +1,14 @@
+class Application
+{
+std::vector<std::string>getStudentData(int);+
+};
+
+class API
+{
+static QuoteDTO* get();+
+};
+class Checker
+{
+static bool checkId(std::string);
+};
+Student::Student(int id, std::string name, std::string marks)	
