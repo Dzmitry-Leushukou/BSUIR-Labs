@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Lab_5_6.ViewModels"
+             x:DataType="vm:AddOrderViewModel"
+             x:Class="Lab_5_6.Pages.AddOrderPage"
+             Title="Add Order">
+    <VerticalStackLayout Padding="20">
+        <Entry Placeholder="Order Name" Text="{Binding Name}"/>
+        <Button Text="Save" Command="{Binding SaveOrderCommand}"/>
+    </VerticalStackLayout>
+</ContentPage>
