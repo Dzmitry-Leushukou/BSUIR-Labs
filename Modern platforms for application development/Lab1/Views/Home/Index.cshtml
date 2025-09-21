@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+    
+}
+
+<h2>Список</h2>
+
+<div class="mb-4">
+    <label class="form-label fw-bold">Обычный список</label>
+    <ul class="mb-0">
+        <li>Пункт списка 1</li>
+        <li>Пункт списка 2</li>
+        <li>Пункт списка 3</li>
+    </ul>
+</div>
+
+<form method="get" action="#" class="needs-validation" novalidate>
+    <ol type="A">
+        <h2>Форма</h2>
+        <li class="mb-3">
+            <div class="row align-items-center">
+                <label for="fio" class="col-sm-3 col-form-label">ФИО</label>
+                <div class="col-sm-6">
+                    <input type="text" id="fio" name="fio" class="form-control" placeholder="Иванов И.И." required />
+                    <div class="invalid-feedback">Заполните ФИО.</div>
+                </div>
+            </div>
+        </li>
+
+        <li class="mb-3">
+            <div class="row">
+                <label class="col-sm-3 col-form-label">Пол</label>
+                <div class="col-sm-6">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Мужской</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female">
+                        <label class="form-check-label" for="genderFemale">Женский</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li class="mb-3">
+            <div class="row">
+                <label class="col-sm-3 col-form-label">Интересы</label>
+                <div class="col-sm-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="interest" value="development">
+                        <label class="form-check-label">Разработка</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="interest" value="design">
+                        <label class="form-check-label">Дизайн</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="interest" value="testing">
+                        <label class="form-check-label">Тестирование</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li class="mb-3">
+            <div class="row">
+                <label for="comment" class="col-sm-3 col-form-label">Комментарий</label>
+                <div class="col-sm-6">
+                    <textarea id="comment" name="comment" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
+                </div>
+            </div>
+        </li>
+    </ol>
+
+    <div class="row mt-4">
+        <div class="col-sm-9 offset-sm-3">
+            <button type="submit" class="btn btn-primary">Отправить</button>
+            <button type="reset" class="btn btn-secondary ms-2">Сброс</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(
+        function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })
+    </script>
+}
