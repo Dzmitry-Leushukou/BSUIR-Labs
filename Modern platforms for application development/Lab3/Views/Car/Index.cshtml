@@ -1,0 +1,119 @@
+@model Lab1.Domain.Models.ListModel<Lab1.Domain.Entities.Car>
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Каталог Авто";
+
+    var request = ViewContext.HttpContext.Request;
+    var returnUrl = request.Path + request.QueryString.ToUriComponent();
+
+    var categories = ViewBag.Categories as List<Lab1.Domain.Entities.Category> ?? new List<Lab1.Domain.Entities.Category>();
+
+    string? category = request.Query["category"].ToString();
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="container">
+    <h1>Каталог Авто</h1>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    @ViewBag.CurrentCategory
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Car" asp-route-category="" asp-route-pageNo="1">
+                            Все Авто
+                        </a>
+                    </li>
+                    @foreach (var cat in categories)
+                    {
+                        <li>
+                            <a class="dropdown-item" asp-controller="Car" asp-route-category="@cat.NormalizedName"
+                               asp-route-pageNo="1">
+                                @cat.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3" id="carContainer">
+        @foreach (var item in Model.Items)
+        {
+            <div class="col-sm-6 col-md-4 mb-4">
+                <div class="card h-100">
+                    <!-- Контейнер для изображения с фиксированной высотой -->
+                    <div class="card-img-container" style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <img src="@item.ImagePath"
+                             class="card-img-top"
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             alt="@item.Name"
+                             onerror="this.onerror=null; this.src='/images/placeholder.png'; this.alt='Изображение не найдено'" />
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fs-5 fw-bold">@item.Name</h5>
+                        <p class="card-text flex-grow-1">@item.Description</p>
+                        <p class="card-text fw-bold">Цена: @item.Price $</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id" asp-route-returnurl="@returnUrl"
+                           class="btn btn-primary">
+                            Добавить в корзину
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-controller="Car" asp-action="Index" asp-route-category="@category"
+                   asp-route-pageNo="@(currentPage - 1)" aria-label="Previous">
+                    Предыдущая
+                </a>
+            </li>
+
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" asp-controller="Car" asp-action="Index" asp-route-category="@category"
+                       asp-route-pageNo="@i">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-controller="Car" asp-action="Index" asp-route-category="@category"
+                   asp-route-pageNo="@(currentPage + 1)" aria-label="Next">
+                    Следующая
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    .card-img-container {
+        background-color: #f8f9fa; /* Светлый фон на случай, если изображение не загрузится */
+    }
+
+    /* Дополнительные стили для улучшения внешнего вида карточек */
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+</style>
