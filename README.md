@@ -1,2 +1,3 @@
 ### First semester (2023)
 - [Fundamentals of algorithmization and programming (С++)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_1/Fundamentals%20of%20algorithmization%20and%20programming%20(C%2B%2B)) (Lecturer: [ Uladymtsau Vadzim](https://github.com/Vadimohka) )
+- [Fundamentals of Computer Graphics](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_1/Fundamentals%20of%20Computer%20Graphics%20programming%20(C%2B%2B)) (Lecturer: Omelkovich Elena)
