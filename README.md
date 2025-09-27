@@ -28,6 +28,6 @@
 - [Fundamentals of Information Security](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Fundamentals%20of%20Information%20Security)
 - [Modern platforms for application development](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Modern%20platforms%20for%20application%20development)  (Lecturer: Glamazdin Igor)
 - [Operating environments and system programming](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Operating%20environments%20and%20system%20programming)
-- [Software verification](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Software%20verification)d
+- [Software verification](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Software%20verification)
 
 
