@@ -27,12 +27,12 @@ public class GetListOfCarsHandler : IRequestHandler<GetListOfCars, ResponseData<
         if (request.pageSize > _maxPageSize)
             request = request with { pageSize = _maxPageSize };
 
-        var query = _db.Cars.Include(d => d.Category).AsQueryable();
+        var query = _db.Cars.Include(c => c.Category).AsQueryable(); // исправлено на c
 
         // Фильтрация по категории, если указана
         if (!string.IsNullOrEmpty(request.categoryNormalizedName))
         {
-            query = query.Where(d => d.Category.NormalizedName == request.categoryNormalizedName);
+            query = query.Where(c => c.Category.NormalizedName == request.categoryNormalizedName); // исправлено на c
         }
 
         // Получаем общее количество записей для пагинации
@@ -40,20 +40,19 @@ public class GetListOfCarsHandler : IRequestHandler<GetListOfCars, ResponseData<
         var totalPages = (int)Math.Ceiling(totalCount / (double)request.pageSize);
 
         // Применяем пагинацию
-        var Cars = await query
+        var cars = await query // исправлено на cars
             .Skip((request.pageNo - 1) * request.pageSize)
             .Take(request.pageSize)
             .ToListAsync(cancellationToken);
 
-        // Создаем модель списка (используем инициализатор свойств)
+        // Создаем модель списка
         var listModel = new ListModel<Car>
         {
-            Items = Cars,
+            Items = cars, // исправлено на cars
             CurrentPage = request.pageNo,
             TotalPages = totalPages
         };
 
-        // Возвращаем успешный результат
         return ResponseData<ListModel<Car>>.Success(listModel);
     }
 }

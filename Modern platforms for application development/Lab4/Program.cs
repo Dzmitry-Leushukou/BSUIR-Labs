@@ -1,8 +1,20 @@
+using Lab1;
 using Lab1.Extensions;
+using Lab1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var uriData = builder.Configuration.GetSection("UriData").Get<UriData>();
+builder.Services.AddSingleton(uriData);
+
+// Регистрация HttpClient для CarService
+builder.Services.AddHttpClient<ICarService, ApiCarService>(opt =>
+    opt.BaseAddress = new Uri(uriData.ApiUri + "cars/"));
+
+// Регистрация HttpClient для CategoryService
+builder.Services.AddHttpClient<ICategoryService, ApiCategoryService>(opt =>
+    opt.BaseAddress = new Uri(uriData.ApiUri + "categories/"));
 builder.Services.AddControllersWithViews();
 builder.RegisterCustomServices();
 
