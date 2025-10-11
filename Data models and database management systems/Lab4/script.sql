@@ -5,13 +5,13 @@ CREATE DATABASE carsharing_db;
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
     role_name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'banned'))
 );
 
-CREATE TABLE IF NOT EXISTS photos (
+CREATE TABLE photos (
     id SERIAL PRIMARY KEY,
     object_type VARCHAR(50) NOT NULL CHECK (object_type IN ('driver', 'car', 'document')),
     object_id INT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS photos (
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS driver_licenses (
+CREATE TABLE driver_licenses (
     driver_id SERIAL PRIMARY KEY,
     license_number VARCHAR(40) UNIQUE NOT NULL,
     issued_by VARCHAR(255) NOT NULL,
@@ -42,9 +42,9 @@ CREATE TABLE IF NOT EXISTS driver_licenses (
     status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected'))
 );
 
-ALTER TABLE users ADD COLUMN IF NOT EXISTS driver_id INT UNIQUE REFERENCES driver_licenses(driver_id) ON DELETE CASCADE;
+ALTER TABLE users ADD COLUMN driver_id INT UNIQUE REFERENCES driver_licenses(driver_id) ON DELETE CASCADE;
 
-CREATE TABLE IF NOT EXISTS cars (
+CREATE TABLE cars (
     id SERIAL PRIMARY KEY,
     vin VARCHAR(17) UNIQUE NOT NULL,
     plate_number VARCHAR(10) UNIQUE NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS cars (
     position geometry(Point, 4326)
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,9 +62,9 @@ CREATE TABLE IF NOT EXISTS sessions (
     ip INET
 );
 
-ALTER TABLE users ADD COLUMN IF NOT EXISTS session_id INT REFERENCES sessions(id) ON DELETE CASCADE;
+ALTER TABLE users ADD COLUMN session_id INT REFERENCES sessions(id) ON DELETE CASCADE;
 
-CREATE TABLE IF NOT EXISTS car_states (
+CREATE TABLE car_states (
     id SERIAL PRIMARY KEY,
     car_id INT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
     checked_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS car_states (
     comment TEXT
 );
 
-CREATE TABLE IF NOT EXISTS rentals (
+CREATE TABLE rentals (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     car_id INT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS rentals (
     status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled'))
 );
 
-CREATE TABLE IF NOT EXISTS maintenance_requests (
+CREATE TABLE maintenance_requests (
     request_id SERIAL PRIMARY KEY,
     car_id INT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
     reported_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     description TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS payment_logs (
+CREATE TABLE payment_logs (
     id SERIAL PRIMARY KEY,
     rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS payment_logs (
     ip INET
 );
 
-CREATE TABLE IF NOT EXISTS logs (
+CREATE TABLE logs (
     id SERIAL PRIMARY KEY,
     actor_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(255) NOT NULL,

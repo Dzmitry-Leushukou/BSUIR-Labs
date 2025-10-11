@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "people-age-app"
+version = "0.1.0"
+description = "Console app that reads people and prints stats"
+authors = [{name="You"}]
+
+[tool.pytest.ini_options]
+addopts = "-q"

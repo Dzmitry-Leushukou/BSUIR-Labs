@@ -1,0 +1,54 @@
+Авторизация и сессии
+	ensure_core_roles() — создать базовые роли admin, user, manager (идемпотентно).
+
+register_user(p_email, p_password, p_name, p_surname) RETURNS INT — регистрация обычного пользователя (+хеш пароля).
+
+login(p_email, p_password, p_ip) RETURNS TABLE(session_id INT, user_id INT) — проверка пароля, создание сессии.
+
+logout(p_user_id) — завершить активную сессию.
+
+change_password(p_user_id, p_old_password, p_new_password) — смена пароля.
+
+touch_session(p_session_id, p_ip) — продлить/пометить сессию активной (обновить updated_at и IP).
+
+Управление пользователями и ролями (админ)
+
+admin_create_user(p_actor_id, p_email, p_temp_password, p_name, p_surname, p_role_name) RETURNS INT
+
+admin_delete_user(p_actor_id, p_user_id, p_hard BOOLEAN DEFAULT FALSE) — бан или жёсткое удаление.
+
+admin_set_role(p_actor_id, p_user_id, p_role_name)
+
+admin_ban_user(p_actor_id, p_user_id) / admin_unban_user(p_actor_id, p_user_id)
+
+admin_list_users(p_search TEXT DEFAULT NULL) — поиск/листинг (email/имя/фамилия/статус).
+
+get_my_profile(p_user_id) — безопасный профиль для клиента (без хеша пароля).
+
+Журналирование (лог)
+
+log_action(p_actor_user_id, p_action_type, p_target_id, p_ip) — явная запись в журнал.
+
+Универсальный триггер audit_write() + привязки к таблицам (users, cars, rentals, maintenance_requests, payment_logs, …).
+
+Автомобильный парк и аренды (примерный слой доменных функций)
+
+car_create(p_actor_id, p_vin, p_plate, p_model) RETURNS INT
+
+car_update_status(p_actor_id, p_car_id, p_status)
+
+car_update_position(p_actor_id, p_car_id, p_lon DOUBLE PRECISION, p_lat DOUBLE PRECISION)
+
+rental_start(p_actor_id, p_user_id, p_car_id, p_started_at TIMESTAMP) RETURNS INT
+
+rental_end(p_actor_id, p_rental_id, p_ended_at TIMESTAMP, p_price NUMERIC)
+
+Техобслуживание и платежи (пример)
+
+maintenance_open(p_actor_id, p_car_id, p_description TEXT) RETURNS INT
+
+maintenance_progress(p_actor_id, p_request_id)
+
+maintenance_resolve(p_actor_id, p_request_id)
+
+payment_add(p_actor_id, p_rental_id, p_user_id, p_pay_type, p_price, p_ip)
