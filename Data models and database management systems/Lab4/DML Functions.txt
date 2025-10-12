@@ -1,0 +1,67 @@
+---==DML==---
+
+#USER#
+Create
+update status
+Update driver_id
+update cashback
+Update role_id
+Update name, surname
+Update password
+Update email
+Delete
+
+#Roles#
+Create
+Update role_name, description
+Delete
+
+#Driver license#
+create
+update license_number, issued_by, expiration_date, document_photo_id
+update status
+Delete
+
+#Cars#
+Create
+Delete
+Update vin, model
+Update plate_number
+Update status
+Update position
+
+#Car_states#
+Create
+Delete
+Update all car_id | checked_by | checked_at | verified | comment 
+
+#Photos#
+Create
+Delete
+Update object_type | object_id | url | uploaded_by | uploaded_at 
+
+#Rentals#
+Create
+Delete
+Update status
+Update price
+Update ended_at
+
+#Logs#
+Create
+Delete
+
+#Sessions#
+Create
+Delete
+Update updated_at
+
+#Maintenance Requests#
+Create
+Delete
+Update  resolved_at | status | description
+
+#Payment_logs#
+Create
+Delete
+
