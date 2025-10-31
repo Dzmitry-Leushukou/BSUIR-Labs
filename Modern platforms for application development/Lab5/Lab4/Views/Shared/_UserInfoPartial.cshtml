@@ -1,0 +1,28 @@
+@{
+    var userName = User?.Identity?.IsAuthenticated == true ? User.Identity!.Name : "user@gmail.com";
+    var avatarUrl = Url.Content("~/images/default-profile-picture.png"); // <-- путь от корня
+}
+
+@await Component.InvokeAsync("Cart")
+
+<div class="dropdown ms-4">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+            data-bs-toggle="dropdown" aria-expanded="false">
+        @userName
+        <img src="@avatarUrl" width="30" alt="User" class="rounded" asp-append-version="true" />
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <li>
+            <span class="dropdown-item-text d-flex align-items-center gap-2">
+                <img src="@avatarUrl" width="50" alt="User" class="rounded" asp-append-version="true" />
+                @userName
+            </span>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    </ul>
+</div>

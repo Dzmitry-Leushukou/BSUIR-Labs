@@ -1,0 +1,63 @@
+﻿@page
+@model Lab1.Areas.Admin.Pages.Car.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create Car</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorText))
+{
+    <div class="alert alert-danger">@Model.ErrorText</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Car.Name" class="control-label"></label>
+                <input asp-for="Car.Name" class="form-control" />
+                <span asp-validation-for="Car.Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Car.Description" class="control-label"></label>
+                <input asp-for="Car.Description" class="form-control" />
+                <span asp-validation-for="Car.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Car.Price" class="control-label"></label>
+                <input asp-for="Car.Price" class="form-control" />
+                <span asp-validation-for="Car.Price" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Category</label>
+                <select asp-for="SelectedCategoryId" asp-items="Model.CategoryItems" class="form-control">
+                    <option value="">-- choose --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Image" class="control-label">Image</label>
+                <input asp-for="Image" type="file" class="form-control" />
+            </div>
+
+            <div class="form-group mt-3">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-page="./Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

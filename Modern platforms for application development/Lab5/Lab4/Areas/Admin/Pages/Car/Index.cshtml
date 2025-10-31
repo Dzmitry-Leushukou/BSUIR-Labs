@@ -1,0 +1,58 @@
+﻿@page
+@model Lab1.Areas.Admin.Pages.Car.IndexModel
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="m-0">Cars (page @Model.PageNo)</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary"
+           asp-page="./Index" asp-route-pageNo="@(Model.PageNo > 1 ? Model.PageNo - 1 : 1)">
+            Prev
+        </a>
+        <a class="btn btn-outline-secondary"
+           asp-page="./Index" asp-route-pageNo="@(Model.PageNo + 1)">
+            Next
+        </a>
+        <a class="btn btn-primary" asp-page="./Create">Create</a>
+    </div>
+</div>
+
+@if (Model.Cars != null && Model.Cars.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Cars)
+            {
+                <tr>
+                    <td>
+                        <img src="@(string.IsNullOrWhiteSpace(item.ImagePath) ? "/images/noimage.jpg" : item.ImagePath)"
+                             alt="car" style="max-width:120px; max-height:80px; object-fit:cover" />
+                    </td>
+                    <td>@item.Name</td>
+                    <td>@item.Category?.Name</td>
+                    <td>@item.Description</td>
+                    <td>@item.Price</td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No cars yet.</p>
+    <a class="btn btn-primary" asp-page="./Create">Add Car</a>
+}
