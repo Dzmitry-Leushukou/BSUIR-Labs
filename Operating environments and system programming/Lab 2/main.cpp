@@ -30,14 +30,14 @@ public:
 
         std::vector<char> buffer(file_size_);
         DWORD bytesRead;
-        if (!ReadFile(hFile, buffer.data(), file_size_, &bytesRead, NULL)) {
+        if (!ReadFile(hFile, buffer.data(), (DWORD)file_size_, &bytesRead, NULL)) {
             std::cerr << "Read failed" << std::endl;
             CloseHandle(hFile);
             return -1;
         }
         CloseHandle(hFile);
 
-        process_data(buffer.data(), buffer.size(), 0, buffer.size());
+        process_data(buffer.data(), 0, buffer.size());
 
         hFile = CreateFileA(filename_.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE) {
@@ -46,7 +46,7 @@ public:
         }
 
         DWORD bytesWritten;
-        if (!WriteFile(hFile, buffer.data(), file_size_, &bytesWritten, NULL)) {
+        if (!WriteFile(hFile, buffer.data(), (DWORD)file_size_, &bytesWritten, NULL)) {
             std::cerr << "Write failed" << std::endl;
             CloseHandle(hFile);
             return -1;
@@ -68,7 +68,7 @@ public:
 
         std::vector<char> buffer(file_size_);
         DWORD bytesRead;
-        if (!ReadFile(hFile, buffer.data(), file_size_, &bytesRead, NULL)) {
+        if (!ReadFile(hFile, buffer.data(), (DWORD)file_size_, &bytesRead, NULL)) {
             std::cerr << "Read failed" << std::endl;
             CloseHandle(hFile);
             return -1;
@@ -83,7 +83,7 @@ public:
             size_t end_idx = (i == num_threads_ - 1) ? file_size_ : start_idx + chunk_size;
 
             threads.emplace_back([this, &buffer, start_idx, end_idx]() {
-                process_data(buffer.data(), buffer.size(), start_idx, end_idx);
+                process_data(buffer.data(), start_idx, end_idx);
                 });
         }
 
@@ -98,7 +98,7 @@ public:
         }
 
         DWORD bytesWritten;
-        if (!WriteFile(hFile, buffer.data(), file_size_, &bytesWritten, NULL)) {
+        if (!WriteFile(hFile, buffer.data(), (DWORD)file_size_, &bytesWritten, NULL)) {
             std::cerr << "Write failed" << std::endl;
             CloseHandle(hFile);
             return -1;
@@ -118,14 +118,14 @@ public:
             return -1;
         }
 
-        HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, file_size_, NULL);
+        HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, (DWORD)file_size_, NULL);
         if (hMapping == NULL) {
             std::cerr << "Cannot create file mapping" << std::endl;
             CloseHandle(hFile);
             return -1;
         }
 
-        char* mapped_data = static_cast<char*>(MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, file_size_));
+        char* mapped_data = static_cast<char*>(MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, (SIZE_T)file_size_));
         if (mapped_data == NULL) {
             std::cerr << "Cannot map view of file" << std::endl;
             CloseHandle(hMapping);
@@ -133,7 +133,7 @@ public:
             return -1;
         }
 
-        process_data(mapped_data, file_size_, 0, file_size_);
+        process_data(mapped_data, 0, file_size_);
 
         UnmapViewOfFile(mapped_data);
         CloseHandle(hMapping);
@@ -152,14 +152,14 @@ public:
             return -1;
         }
 
-        HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, file_size_, NULL);
+        HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, (DWORD)file_size_, NULL);
         if (hMapping == NULL) {
             std::cerr << "Cannot create file mapping" << std::endl;
             CloseHandle(hFile);
             return -1;
         }
 
-        char* mapped_data = static_cast<char*>(MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, file_size_));
+        char* mapped_data = static_cast<char*>(MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, (SIZE_T)file_size_));
         if (mapped_data == NULL) {
             std::cerr << "Cannot map view of file" << std::endl;
             CloseHandle(hMapping);
@@ -175,7 +175,7 @@ public:
             size_t end_idx = (i == num_threads_ - 1) ? file_size_ : start_idx + chunk_size;
 
             threads.emplace_back([this, mapped_data, start_idx, end_idx]() {
-                process_data(mapped_data, file_size_, start_idx, end_idx);
+                process_data(mapped_data, start_idx, end_idx);
                 });
         }
 
@@ -192,7 +192,7 @@ public:
     }
 
 private:
-    void process_data(char* data, size_t total_size, size_t start, size_t end) {
+    void process_data(char* data, size_t start, size_t end) {
         const char key = 0xAA;
         for (size_t i = start; i < end; ++i) {
             data[i] ^= key;
@@ -219,10 +219,10 @@ bool create_test_file_fast(const std::string& filename, size_t size) {
 
     size_t remaining = size;
     while (remaining > 0) {
-        size_t chunk_size = min(BUFFER_SIZE, remaining);
+        size_t chunk_size = (BUFFER_SIZE < remaining) ? BUFFER_SIZE : remaining;
         DWORD bytesWritten;
 
-        if (!WriteFile(hFile, buffer.data(), chunk_size, &bytesWritten, NULL)) {
+        if (!WriteFile(hFile, buffer.data(), (DWORD)chunk_size, &bytesWritten, NULL)) {
             std::cerr << "Write failed" << std::endl;
             CloseHandle(hFile);
             return false;
@@ -243,7 +243,7 @@ bool verify_data_integrity(const std::string& filename, size_t expected_size) {
 
     std::vector<char> buffer(expected_size);
     DWORD bytesRead;
-    if (!ReadFile(hFile, buffer.data(), expected_size, &bytesRead, NULL)) {
+    if (!ReadFile(hFile, buffer.data(), (DWORD)expected_size, &bytesRead, NULL)) {
         CloseHandle(hFile);
         return false;
     }
@@ -278,26 +278,28 @@ int main() {
 
     for (int threads : thread_counts) {
         CopyFileA(original_filename.c_str(), test_filename.c_str(), FALSE);
-        FileProcessor processor(test_filename, file_size, threads);
+        FileProcessor processor1(test_filename, file_size, threads);
+        double time = processor1.traditional_multi_thread();
 
         if (threads == 1) {
-            double time = processor.traditional_single_thread();
             base_time = time;
             std::cout << std::left << std::setw(25) << "Traditional"
                 << std::setw(10) << threads
                 << std::setw(15) << std::fixed << std::setprecision(3) << time
                 << std::setw(15) << "1.00x" << std::endl;
         }
+        else {
+            std::cout << std::left << std::setw(25) << "Traditional"
+                << std::setw(10) << threads
+                << std::setw(15) << std::fixed << std::setprecision(3) << time
+                << std::setw(15) << std::fixed << std::setprecision(2) << (base_time / time) << "x" << std::endl;
+        }
 
+        // Memory Mapped
         CopyFileA(original_filename.c_str(), test_filename.c_str(), FALSE);
-        double time = processor.traditional_multi_thread();
-        std::cout << std::left << std::setw(25) << "Traditional"
-            << std::setw(10) << threads
-            << std::setw(15) << std::fixed << std::setprecision(3) << time
-            << std::setw(15) << std::fixed << std::setprecision(2) << (base_time / time) << "x" << std::endl;
+        FileProcessor processor2(test_filename, file_size, threads);
+        time = processor2.memory_mapped_multi_thread();
 
-        CopyFileA(original_filename.c_str(), test_filename.c_str(), FALSE);
-        time = processor.memory_mapped_multi_thread();
         std::cout << std::left << std::setw(25) << "Memory Mapped"
             << std::setw(10) << threads
             << std::setw(15) << std::fixed << std::setprecision(3) << time
