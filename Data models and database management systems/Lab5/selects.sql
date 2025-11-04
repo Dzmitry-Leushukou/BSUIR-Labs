@@ -1,9 +1,8 @@
 \c carsharing_db;
-SET TIME ZONE 'UTC';
+SET TIME ZONE 'Europe/Minsk';
 
 -- -----------------------------------------------------------------------------
--- 1) Активные пользователи с их ролью (INNER JOIN) + сложные условия
---    Функция ЛР1: просмотр каталога пользователей
+-- 1) Просмотр каталога пользователей
 SELECT u.id, u.email, u.name, u.surname, r.name AS role_name, u.cashback
 FROM users u
 JOIN roles r ON r.id = u.role_id
@@ -12,8 +11,7 @@ WHERE u.status = 'active'
 ORDER BY u.cashback DESC, u.created_at DESC;
 
 -- -----------------------------------------------------------------------------
--- 2) Доступные сейчас машины (NOT EXISTS активной аренды) — [СЛОЖНЫЙ]
---    Функция ЛР1: найти свободные авто для старта аренды
+-- 2) Доступные сейчас машины
 SELECT c.id, c.plate_number, c.model, c.status
 FROM cars c
 WHERE c.status = 'available'
@@ -26,8 +24,7 @@ WHERE c.status = 'available'
 ORDER BY c.updated_at DESC;
 
 -- -----------------------------------------------------------------------------
--- 3) Текущие активные аренды с пользователем и авто (множественные JOIN)
---    Функция ЛР1: мониторинг активных аренд
+-- 3) Текущие активные аренды с пользователем и авто
 SELECT r.id AS rental_id, r.started_at, u.email, CONCAT(u.name,' ',u.surname) AS user_fullname,
        c.plate_number, c.model
 FROM rentals r
@@ -37,8 +34,7 @@ WHERE r.status = 'active'
 ORDER BY r.started_at DESC;
 
 -- -----------------------------------------------------------------------------
--- 4) Кол-во аренд по модели авто (GROUP BY + агрегат)
---    Функция ЛР1: аналитика использования автопарка
+-- 4) Кол-во аренд по модели авто
 SELECT c.model, COUNT(*) AS rentals_cnt
 FROM rentals r
 JOIN cars c ON c.id = r.car_id
@@ -46,7 +42,7 @@ GROUP BY c.model
 ORDER BY rentals_cnt DESC, c.model;
 
 -- -----------------------------------------------------------------------------
--- 5) Модели с более чем 10 аренд (HAVING)
+-- 5) Модели с более чем 10 аренд
 SELECT c.model, COUNT(*) AS rentals_cnt
 FROM rentals r
 JOIN cars c ON c.id = r.car_id
@@ -55,8 +51,7 @@ HAVING COUNT(*) > 10
 ORDER BY rentals_cnt DESC;
 
 -- -----------------------------------------------------------------------------
--- 6) Выручка по пользователям + ранжирование (SUM() OVER, RANK) — [СЛОЖНЫЙ]
---    Функция ЛР1: лидеры по оплатам
+-- 6) Выручка по пользователям + ранжирование
 WITH revenue AS (
   SELECT pl.user_id, SUM(pl.price) AS total_revenue
   FROM payment_logs pl
@@ -69,8 +64,7 @@ LEFT JOIN revenue rv ON rv.user_id = u.id
 ORDER BY revenue_rank, u.id;
 
 -- -----------------------------------------------------------------------------
--- 7) История аренд с разницей между поездками (LAG) — [СЛОЖНЫЙ]
---    Функция ЛР1: поведение пользователя
+-- 7) История аренд с разницей между поездками
 SELECT r.user_id, r.id AS rental_id, r.started_at,
        LAG(r.started_at) OVER (PARTITION BY r.user_id ORDER BY r.started_at) AS prev_started_at,
        EXTRACT(EPOCH FROM (r.started_at - LAG(r.started_at) OVER (PARTITION BY r.user_id ORDER BY r.started_at))) / 3600.0
@@ -79,7 +73,7 @@ FROM rentals r
 ORDER BY r.user_id, r.started_at;
 
 -- -----------------------------------------------------------------------------
--- 8) Каскадные платежи в рамках аренды + накопительный итог (SUM OVER) — [СЛОЖНЫЙ]
+-- 8) Каскадные платежи в рамках аренды + накопительный итог
 SELECT pl.rental_id, pl.id AS payment_id, pl.price,
        SUM(pl.price) OVER (PARTITION BY pl.rental_id ORDER BY pl.id
                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum_paid
@@ -87,8 +81,7 @@ FROM payment_logs pl
 ORDER BY pl.rental_id, pl.id;
 
 -- -----------------------------------------------------------------------------
--- 9) Уникальный список участников экосистемы (пользователи + заявители ТО) (UNION)
---    Функция ЛР1: коммуникации
+-- 9) Уникальный список участников экосистемы (пользователи + заявители ТО)
 SELECT DISTINCT u.email AS contact
 FROM users u
 UNION
@@ -98,14 +91,14 @@ JOIN users u2 ON u2.id = mr.reported_by
 ORDER BY contact;
 
 -- -----------------------------------------------------------------------------
--- 10) Пользователи с максимальным кэшбэком (скалярный подзапрос)
+-- 10) Пользователи с максимальным кэшбэком
 SELECT id, email, cashback
 FROM users
 WHERE cashback = (SELECT MAX(u2.cashback) FROM users u2)
 ORDER BY id;
 
 -- -----------------------------------------------------------------------------
--- 11) Пользователи без единой аренды (NOT EXISTS)
+-- 11) Пользователи без единой аренды 
 SELECT u.id, u.email
 FROM users u
 WHERE NOT EXISTS (
@@ -114,14 +107,14 @@ WHERE NOT EXISTS (
 ORDER BY u.id;
 
 -- -----------------------------------------------------------------------------
--- 12) Роли и пользователи (RIGHT JOIN) — показать роли даже без пользователей
+-- 12) Роли и пользователи — показать роли даже без пользователей
 SELECT r.name AS role, u.id AS user_id, u.email
 FROM users u
 RIGHT JOIN roles r ON r.id = u.role_id
 ORDER BY r.name, u.id NULLS LAST;
 
 -- -----------------------------------------------------------------------------
--- 13) Машины и последняя заявка на ТО (FULL OUTER JOIN + агрегат) — [СЛОЖНЫЙ]
+-- 13) Машины и последняя заявка на ТО 
 WITH last_m AS (
   SELECT car_id, MAX(created_at) AS last_created
   FROM maintenance_requests
@@ -133,7 +126,7 @@ FULL OUTER JOIN last_m lm ON lm.car_id = c.id
 ORDER BY car_id NULLS LAST;
 
 -- -----------------------------------------------------------------------------
--- 14) Ежедневное число аренд за последние 7 дней (CROSS JOIN generate_series) — [СЛОЖНЫЙ]
+-- 14) Ежедневное число аренд за последние 7 дней
 WITH days AS (
   SELECT generate_series::date AS d
   FROM generate_series((CURRENT_DATE - INTERVAL '6 days')::date, CURRENT_DATE, INTERVAL '1 day')
@@ -146,7 +139,7 @@ GROUP BY d.d
 ORDER BY d.d;
 
 -- -----------------------------------------------------------------------------
--- 15) Для каждой машины — последний техосмотр/заявка (LATERAL) — [СЛОЖНЫЙ]
+-- 15) Для каждой машины — последний техосмотр/заявка
 SELECT c.id AS car_id, c.plate_number, x.last_kind, x.last_time
 FROM cars c
 LEFT JOIN LATERAL (
@@ -159,14 +152,14 @@ LEFT JOIN LATERAL (
 ORDER BY c.id;
 
 -- -----------------------------------------------------------------------------
--- 16) Однофамильцы среди пользователей (SELF JOIN)
+-- 16) Однофамильцы среди пользователей
 SELECT u1.id AS user1_id, u2.id AS user2_id, u1.surname
 FROM users u1
 JOIN users u2 ON u2.surname = u1.surname AND u2.id > u1.id
 ORDER BY u1.surname, u1.id, u2.id;
 
 -- -----------------------------------------------------------------------------
--- 17) Классификация длительности аренды (CASE) — [СЛОЖНЫЙ]
+-- 17) Классификация длительности аренды
 SELECT r.id AS rental_id,
        EXTRACT(EPOCH FROM (COALESCE(r.ended_at, NOW()) - r.started_at))/3600.0 AS hours,
        CASE
@@ -178,7 +171,7 @@ FROM rentals r
 ORDER BY rental_id;
 
 -- -----------------------------------------------------------------------------
--- 18) Выручка по пользователям с разбивкой по типам оплаты (SUM CASE)
+-- 18) Выручка по пользователям с разбивкой по типам оплаты
 SELECT u.id, u.email,
        SUM(pl.price) FILTER (WHERE pl.pay_type = 'card')    AS pay_card,
        SUM(pl.price) FILTER (WHERE pl.pay_type = 'cashback') AS pay_cashback,
@@ -189,7 +182,7 @@ GROUP BY u.id, u.email
 ORDER BY total DESC NULLS LAST;
 
 -- -----------------------------------------------------------------------------
--- 19) Водительские удостоверения и фото документа (JOIN chain)
+-- 19) Водительские удостоверения и фото документа
 --    Функция ЛР1: модерация документов
 SELECT dl.driver_id, dl.license_number, dl.status,
        p.url AS document_photo_url,
@@ -200,8 +193,7 @@ JOIN users u  ON u.id = p.uploaded_by
 ORDER BY dl.driver_id;
 
 -- -----------------------------------------------------------------------------
--- 20) Ближайшая доступная машина к точке (гео) — [СЛОЖНЫЙ]
---    Используем SRID 4326; замените на свои координаты долготы/широты
+-- 20) Ближайшая доступная машина к точке (гео)
 SELECT c.id, c.plate_number, c.model,
        ST_DistanceSphere(c.position, ST_SetSRID(ST_MakePoint(37.6173,55.7558),4326)) AS dist_m
 FROM cars c
@@ -210,7 +202,7 @@ ORDER BY dist_m
 LIMIT 1;
 
 -- -----------------------------------------------------------------------------
--- 21) Перцентили/квартильные группы по цене аренды в разрезе модели (NTILE) — [СЛОЖНЫЙ]
+-- 21) Перцентили/квартильные группы по цене аренды в разрезе модели 
 SELECT c.model, r.id AS rental_id, r.price,
        NTILE(4) OVER (PARTITION BY c.model ORDER BY r.price) AS price_quartile
 FROM rentals r
@@ -218,7 +210,7 @@ JOIN cars c ON c.id = r.car_id
 ORDER BY c.model, r.price;
 
 -- -----------------------------------------------------------------------------
--- 22) Сводка выручки: по пользователю, по модели и общий итог (GROUPING SETS) — [СЛОЖНЫЙ]
+-- 22) Сводка выручки: по пользователю, по модели и общий итог
 WITH fees AS (
   SELECT r.id AS rental_id, r.user_id, r.car_id, COALESCE(r.price,0) AS price
   FROM rentals r
@@ -234,14 +226,14 @@ GROUP BY GROUPING SETS ((u.email, c.model), (u.email), (c.model), ())
 ORDER BY (u.email IS NULL), u.email, (c.model IS NULL), c.model;
 
 -- -----------------------------------------------------------------------------
--- 23) Последняя сессия пользователя (DISTINCT ON) — [СЛОЖНЫЙ]
+-- 23) Последняя сессия пользователя
 SELECT DISTINCT ON (s.user_id)
        s.user_id, s.id AS session_id, s.ip, s.created_at
 FROM sessions s
 ORDER BY s.user_id, s.created_at DESC;
 
 -- -----------------------------------------------------------------------------
--- 24) Минуты аренды по пользователю (коррелированный подзапрос)
+-- 24) Минуты аренды по пользователю
 SELECT u.id, u.email,
        (
          SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(r.ended_at, NOW()) - r.started_at)))/60.0,0)
@@ -251,7 +243,7 @@ FROM users u
 ORDER BY minutes_total DESC;
 
 -- -----------------------------------------------------------------------------
--- 25) Счётчики фотографий по типам (CASE в агрегатах)
+-- 25) Счётчики фотографий по типам
 SELECT u.id, u.email,
        SUM(CASE WHEN p.object_type = 'driver'   THEN 1 ELSE 0 END) AS driver_photos,
        SUM(CASE WHEN p.object_type = 'document' THEN 1 ELSE 0 END) AS document_photos,
@@ -262,8 +254,7 @@ GROUP BY u.id, u.email
 ORDER BY u.id;
 
 -- -----------------------------------------------------------------------------
--- 26) Недоплаты: аренды, где сумма платежей < price (LEFT JOIN + агрегат) — [СЛОЖНЫЙ]
---    Функция ЛР1: сверка оплат
+-- 26) Недоплаты: аренды, где сумма платежей < price
 WITH paid AS (
   SELECT rental_id, SUM(price) AS paid
   FROM payment_logs
@@ -277,7 +268,7 @@ WHERE COALESCE(p.paid,0) < r.price
 ORDER BY underpaid DESC;
 
 -- -----------------------------------------------------------------------------
--- 27) Скользящее среднее по дневным арендам (7-дневное окно) — [СЛОЖНЫЙ]
+-- 27) Скользящее среднее по дневным арендам
 WITH days AS (
   SELECT generate_series::date AS d
   FROM generate_series((CURRENT_DATE - INTERVAL '27 days')::date, CURRENT_DATE, INTERVAL '1 day')
@@ -295,8 +286,7 @@ FROM per_day
 ORDER BY day;
 
 -- -----------------------------------------------------------------------------
--- 28) Аккаунты, ожидающие верификации прав и имеющие загруженные документы (EXISTS)
---    Функция ЛР1: очередь модерации
+-- 28) Аккаунты, ожидающие верификации прав и имеющие загруженные документы 
 SELECT u.id, u.email
 FROM users u
 WHERE u.driver_id IS NOT NULL
@@ -311,7 +301,7 @@ WHERE u.driver_id IS NOT NULL
 ORDER BY u.id;
 
 -- -----------------------------------------------------------------------------
--- 29) Распределение пользователей по ролям с нулями (RIGHT JOIN + COALESCE)
+-- 29) Распределение пользователей по ролям с нулями
 SELECT r.name AS role_name, COALESCE(cnt.cnt,0) AS users_cnt
 FROM roles r
 LEFT JOIN (
@@ -322,7 +312,7 @@ LEFT JOIN (
 ORDER BY role_name;
 
 -- -----------------------------------------------------------------------------
--- 30) Активность по IP: число сессий на пользователя и последний визит (GROUP + MAX)
+-- 30) Активность по IP: число сессий на пользователя и последний визит 
 SELECT u.id, u.email,
        COUNT(s.id) AS sessions_cnt,
        MAX(s.created_at) AS last_seen
