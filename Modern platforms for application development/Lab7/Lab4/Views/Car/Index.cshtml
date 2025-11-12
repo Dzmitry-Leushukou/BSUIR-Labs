@@ -8,7 +8,6 @@
 <div class="container">
     <h1>Каталог Авто</h1>
 
-    <!-- КАТЕГОРИИ — ВНЕ carContainer -->
     <div class="row mb-4" id="categoryBar">
         <div class="col-md-4">
             <div class="dropdown">
@@ -38,7 +37,6 @@
         </div>
     </div>
 
-    <!-- Ajax-контейнер: сюда грузим только список + пейджер -->
     <div id="carContainer">
         @await Html.PartialAsync("_ListPartial", Model)
     </div>

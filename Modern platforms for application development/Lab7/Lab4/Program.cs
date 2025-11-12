@@ -49,7 +49,6 @@ builder.Services.AddRazorPages();
 var imagesDir = Path.Combine(builder.Environment.ContentRootPath ?? ".", "wwwroot", "images");
 if (!Directory.Exists(imagesDir)) Directory.CreateDirectory(imagesDir);
 
-// подробные логи
 IdentityModelEventSource.ShowPII = true;
 
 // ============= AUTH =============
@@ -57,7 +56,7 @@ builder.Services
  .AddAuthentication(o =>
  {
  o.DefaultScheme = "AppCookie";
- o.DefaultChallengeScheme = "keycloak"; // ВАЖНО: совпадает с вызовом Challenge в контроллере
+ o.DefaultChallengeScheme = "keycloak"; 
  })
  .AddCookie("AppCookie", o =>
  {
@@ -70,7 +69,6 @@ builder.Services
  })
  .AddOpenIdConnect("keycloak", options =>
  {
- // попробуем разные хосты (берём из конфигура, затем127.0.0.1, затем localhost)
  var hosts = new[]
  {
  kc.Host?.TrimEnd('/'),

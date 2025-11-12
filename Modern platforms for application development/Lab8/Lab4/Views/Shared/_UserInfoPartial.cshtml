@@ -1,0 +1,78 @@
+@using System.Text.Json
+@{
+ var isAuth = User?.Identity?.IsAuthenticated == true;
+ string name = isAuth
+ ? (User.Claims.FirstOrDefault(c => c.Type.Equals("preferred_username", StringComparison.OrdinalIgnoreCase))?.Value
+ ?? User.Identity!.Name
+ ?? "user")
+ : "Гость";
+
+ string avatar = Url.Content("~/images/default-avatar.svg");
+
+ if (isAuth)
+ {
+ var avatarClaim = User.Claims.FirstOrDefault(c => c.Type.Equals("avatar", StringComparison.OrdinalIgnoreCase))?.Value;
+ if (!string.IsNullOrEmpty(avatarClaim))
+ {
+ try
+ {
+ var trimmed = avatarClaim.Trim();
+ if (trimmed.StartsWith("["))
+ {
+ using var doc = JsonDocument.Parse(trimmed);
+ if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() >0)
+ {
+ var first = doc.RootElement[0].GetString();
+ if (!string.IsNullOrEmpty(first)) avatar = first!;
+ }
+ }
+ else
+ {
+ avatar = avatarClaim;
+ }
+ }
+ catch
+ {
+ avatar = avatarClaim;
+ }
+ }
+ }
+}
+
+@if (isAuth)
+{
+ @await Component.InvokeAsync("Cart")
+
+ <div class="dropdown ms-4">
+ <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+ data-bs-toggle="dropdown" aria-expanded="false">
+ @name
+ <img src="@avatar" width="30" alt="User" class="rounded" asp-append-version="true" />
+ </button>
+ <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+ <li>
+ <span class="dropdown-item-text d-flex align-items-center gap-2">
+ <img src="@avatar" width="50" alt="User" class="rounded" asp-append-version="true" />
+ @name
+ </span>
+ </li>
+ <li><hr class="dropdown-divider" /></li>
+ <li>
+ <form asp-controller="Account" asp-action="Logout" method="post">
+ <button type="submit" class="dropdown-item">Logout</button>
+ </form>
+ </li>
+ </ul>
+ </div>
+}
+else
+{
+ <ul class="navbar-nav ms-auto">
+ <li class="nav-item">
+ <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+ </li>
+ <li class="nav-item">
+ <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
+ </li>
+ </ul>
+}

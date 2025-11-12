@@ -1,0 +1,25 @@
+@{
+ Layout = "_Layout";
+}
+
+<div class="container mt-5">
+ <div class="row">
+ <div class="col-md-8 offset-md-2">
+ <div class="card border-danger">
+ <div class="card-body text-center">
+ <h1 class="display-4 text-danger">Доступ запрещён</h1>
+ <p class="lead">У вас нет прав для доступа к этой странице.</p>
+ <p>
+ Попробуйте войти с другой учётной записью, у которой есть права администратора.
+ </p>
+ <div class="mt-4">
+ <a class="btn btn-primary" href="/">На главную</a>
+ <a class="btn btn-outline-secondary" href="/Account/Login">Войти другой учётной записью</a>
+ </div>
+ <hr />
+ <p class="small text-muted">ReturnUrl: @Context.Request.Query["ReturnUrl"]</p>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
