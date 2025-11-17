@@ -5,6 +5,7 @@ using Lab1.Extensions; // <-- если расширение в другом name
 
 namespace Lab1.UI.Controllers
 {
+    [Route("Catalog")]
     public class CarController : Controller
     {
         private readonly ICarService _carService;
@@ -22,6 +23,8 @@ namespace Lab1.UI.Controllers
         }
 
         [HttpGet]
+        [Route("")]
+        [Route("{category?}")]
         public async Task<IActionResult> Index(string? category, int pageNo = 1)
         {
             var categoriesResponse = await _categoryService.GetCategoryListAsync();
