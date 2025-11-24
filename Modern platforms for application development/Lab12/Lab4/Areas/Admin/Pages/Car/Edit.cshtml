@@ -1,0 +1,72 @@
+﻿@page
+@model Lab1.Areas.Admin.Pages.Car.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit Car</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorText))
+{
+    <div class="alert alert-danger">@Model.ErrorText</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="Car.Id" />
+
+            <div class="form-group">
+                <label asp-for="Car.Name" class="control-label"></label>
+                <input asp-for="Car.Name" class="form-control" />
+                <span asp-validation-for="Car.Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Car.Description" class="control-label"></label>
+                <input asp-for="Car.Description" class="form-control" />
+                <span asp-validation-for="Car.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Car.Price" class="control-label"></label>
+                <input asp-for="Car.Price" class="form-control" />
+                <span asp-validation-for="Car.Price" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Category</label>
+                <select asp-for="SelectedCategoryId" asp-items="Model.CategoryItems" class="form-control">
+                    <option value="">-- choose --</option>
+                </select>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Car.ImagePath))
+            {
+                <div class="mb-2">
+                    <img src="@Model.Car.ImagePath" alt="current image" style="max-width:160px; max-height:120px; object-fit:cover" />
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="Image" class="control-label">New Image</label>
+                <input asp-for="Image" type="file" class="form-control" />
+            </div>
+
+            <div class="form-group mt-3">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-page="./Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

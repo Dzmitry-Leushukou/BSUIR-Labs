@@ -1,0 +1,77 @@
+@page "/cars-simple"
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Json
+@attribute [Authorize]
+@inject HttpClient Http
+@inject ILogger<CarsSimple> Logger
+
+<PageTitle>Автомобили</PageTitle>
+
+<div class="container py-4">
+ <h1>Список автомобилей</h1>
+
+    @if (loading)
+    {
+   <div class="alert alert-info" role="alert">
+       ?? Загрузка данных...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+  <div class="alert alert-danger" role="alert">
+<strong>Ошибка:</strong> @errorMessage
+        </div>
+    }
+else if (cars == null || cars.Count == 0)
+    {
+        <div class="alert alert-warning" role="alert">
+  Автомобили не найдены.
+   </div>
+    }
+    else
+    {
+ <div class="list-group">
+       @foreach (var car in cars)
+    {
+     <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+     <h5 class="mb-1">@car.Name</h5>
+           @if (car.Category != null)
+       {
+          <small class="text-muted">@car.Category.Name</small>
+                  }
+</div>
+     @if (!string.IsNullOrEmpty(car.Description))
+     {
+      <p class="mb-1">@car.Description</p>
+      }
+      <small>Цена: $@car.Price.ToString("F2")</small>
+    </a>
+  }
+  </div>
+    }
+</div>
+
+@code {
+    private List<Car>? cars;
+    private bool loading = true;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+    // Запрос к API для получения списка автомобилей
+     cars = await Http.GetFromJsonAsync<List<Car>>("api/cars") ?? new List<Car>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+          Logger.LogError(ex, "Ошибка при загрузке автомобилей");
+ }
+        finally
+     {
+      loading = false;
+        }
+    }
+}

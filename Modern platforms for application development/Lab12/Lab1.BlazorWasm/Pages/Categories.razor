@@ -1,0 +1,62 @@
+@page "/categories"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ILogger<Categories> Logger
+
+<PageTitle>Категории</PageTitle>
+
+<div class="container py-4">
+    <h1>?? Категории</h1>
+
+    @if (loading)
+    {
+    <div class="alert alert-info">?? Загрузка категорий...</div>
+    }
+else if (error)
+    {
+        <div class="alert alert-danger">
+            <strong>? Ошибка:</strong> @errorMessage
+        </div>
+    }
+    else if (categories == null || categories.Count == 0)
+    {
+        <div class="alert alert-warning">?? Категории не найдены.</div>
+    }
+    else
+    {
+   <div class="list-group">
+    @foreach (var category in categories)
+ {
+          <div class="list-group-item">
+  <h5>@category.Name</h5>
+    <p class="text-muted">?? ID: @category.Id | ??? Нормализованное имя: @category.NormalizedName</p>
+              </div>
+      }
+     </div>
+    }
+</div>
+
+@code {
+    private List<Category>? categories;
+    private bool loading = true;
+    private bool error = false;
+ private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+try
+        {
+        categories = await Http.GetFromJsonAsync<List<Category>>("api/categories") ?? new List<Category>();
+        }
+        catch (Exception ex)
+        {
+       error = true;
+     errorMessage = ex.Message;
+ Logger.LogError(ex, "Ошибка при загрузке категорий");
+    }
+        finally
+      {
+  loading = false;
+        }
+    }
+}

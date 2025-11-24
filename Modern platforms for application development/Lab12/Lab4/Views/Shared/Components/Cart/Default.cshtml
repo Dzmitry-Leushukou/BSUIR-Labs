@@ -1,0 +1,11 @@
+﻿@model Lab1.Domain.Models.Cart
+
+@{
+    var totalPrice = Model?.TotalPrice ?? 0;
+    var count = Model?.Count ?? 0;
+}
+
+<a asp-controller="Cart" asp-action="Index" class="navbar-text" title="Корзина заказов">
+    $@totalPrice.ToString("0.00")
+    <i class="bi bi-cart-fill"></i> (@count)
+</a>

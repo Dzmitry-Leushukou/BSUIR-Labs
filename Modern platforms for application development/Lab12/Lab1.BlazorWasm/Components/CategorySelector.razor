@@ -1,0 +1,46 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="mb-3">
+    <label for="categorySelect" class="form-label" style="font-weight: 600;">Выберите категорию:</label>
+    <select class="form-select" id="categorySelect" @onchange="OnCategoryChanged">
+        <option value="">-- Все категории --</option>
+        @if (DataService?.Categories != null)
+        {
+            @foreach (var category in DataService.Categories)
+         {
+        <option value="@category.NormalizedName">@category.Name</option>
+            }
+    }
+    </select>
+   @if (DataService?.SelectedCategory != null)
+    {
+        <small class="text-muted d-block mt-2" style="color: #6b7280;">
+  ? Выбранная категория: <strong>@DataService.SelectedCategory.Name</strong>
+        </small>
+    }
+</div>
+
+@code {
+    [Inject]
+ public IDataService DataService { get; set; } = default!;
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        string selectedValue = e.Value?.ToString() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(selectedValue))
+     {
+         DataService.SelectedCategory = null;
+        }
+        else
+        {
+    var category = DataService.Categories?.FirstOrDefault(c => c.NormalizedName == selectedValue);
+  if (category != null)
+    {
+       DataService.SelectedCategory = category;
+    }
+        }
+
+        await DataService.GetCarsListAsync(1);
+    }
+}

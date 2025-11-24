@@ -1,0 +1,54 @@
+﻿@page "/counter"
+@page "/counter/{InitialCount:int}"
+@rendermode InteractiveServer
+@using Lab1.Blazor.SSR.Models
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<hr />
+
+<EditForm Model="counterModel" OnValidSubmit="HandleValidSubmit" class="mt-4">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label for="counterInput" class="form-label">Set counter value (1-10):</label>
+        <InputNumber id="counterInput" class="form-control" @bind-Value="counterModel.CounterValue" />
+    </div>
+
+  <ValidationSummary class="alert alert-danger" role="alert" />
+
+ <button type="submit" class="btn btn-success">Установить</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int InitialCount { get; set; }
+
+    private int currentCount = 0;
+    private CounterModel counterModel = new();
+
+    protected override void OnInitialized()
+    {
+   if (InitialCount > 0)
+        {
+            currentCount = InitialCount;
+      }
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void HandleValidSubmit()
+    {
+  currentCount = counterModel.CounterValue;
+counterModel.CounterValue = 0;
+    }
+}

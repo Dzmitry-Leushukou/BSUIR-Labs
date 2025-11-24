@@ -1,0 +1,43 @@
+@model Lab1.Domain.Models.ListModel<Lab1.Domain.Entities.Car>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Каталог Авто";
+    var categories = ViewBag.Categories as List<Lab1.Domain.Entities.Category> ?? new();
+}
+
+<div class="container">
+    <h1>Каталог Авто</h1>
+
+    <div class="row mb-4" id="categoryBar">
+        <div class="col-md-4">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    @ViewBag.CurrentCategory
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Car" asp-route-category="" asp-route-pageNo="1">
+                            Все Авто
+                        </a>
+                    </li>
+                    @foreach (var cat in categories)
+                    {
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="Car"
+                               asp-route-category="@cat.NormalizedName"
+                               asp-route-pageNo="1">
+                                @cat.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="carContainer">
+        @await Html.PartialAsync("_ListPartial", Model)
+    </div>
+</div>

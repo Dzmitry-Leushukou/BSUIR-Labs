@@ -1,0 +1,32 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@if (cntx != null && (cntx.User.Identity?.IsAuthenticated ?? false))
+{
+    <div style="display: flex; align-items: center; gap: 1rem;">
+     <span style="color: #6b7280;">
+     Hello, <strong>@cntx.User.Identity?.Name</strong>
+ </span>
+        <a href="authentication/logout" class="btn btn-sm btn-outline-danger">
+            👋 Log out
+        </a>
+  </div>
+}
+else
+{
+  <a href="authentication/login" class="btn btn-sm btn-primary">
+        🔐 Log in
+    </a>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
+
+private AuthenticationState? cntx;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cntx = await authenticationStateTask;
+    }
+}

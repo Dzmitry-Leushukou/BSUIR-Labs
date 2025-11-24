@@ -1,0 +1,77 @@
+@page "/counter"
+@page "/counter/{InitialCount:int}"
+
+<PageTitle>Счётчик</PageTitle>
+
+<div class="container py-4">
+    <h1>?? Счётчик</h1>
+    
+    <p role="status" class="alert alert-info">
+Текущее значение: <strong>@currentCount</strong>
+    </p>
+
+    <button class="btn btn-primary" @onclick="IncrementCount">? Увеличить</button>
+    <button class="btn btn-secondary" @onclick="DecrementCount">? Уменьшить</button>
+    <button class="btn btn-warning" @onclick="ResetCount">?? Сброс</button>
+
+    <hr />
+
+    <div class="mt-4">
+  <h3>Установить значение счётчика</h3>
+        <EditForm Model="counterModel" OnValidSubmit="HandleValidSubmit" class="mt-3">
+     <DataAnnotationsValidator />
+
+       <div class="form-group mb-3">
+       <label for="counterInput" class="form-label">Установите значение счётчика (1-100):</label>
+ <InputNumber id="counterInput" class="form-control" @bind-Value="counterModel.CounterValue" />
+      </div>
+
+<ValidationSummary class="alert alert-danger" role="alert" />
+
+          <button type="submit" class="btn btn-success">? Установить</button>
+ </EditForm>
+    </div>
+</div>
+
+@code {
+  [Parameter]
+    public int InitialCount { get; set; }
+
+    private int currentCount = 0;
+    private CounterModel counterModel = new();
+
+    protected override void OnInitialized()
+    {
+        if (InitialCount > 0)
+      {
+     currentCount = InitialCount;
+        }
+    }
+
+ private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void DecrementCount()
+    {
+    if (currentCount > 0)
+        {
+currentCount--;
+  }
+    }
+
+  private void ResetCount()
+    {
+currentCount = 0;
+    }
+
+    private void HandleValidSubmit()
+  {
+        if (counterModel.CounterValue > 0 && counterModel.CounterValue <= 100)
+   {
+    currentCount = counterModel.CounterValue;
+  counterModel.CounterValue = 0;
+        }
+    }
+}
