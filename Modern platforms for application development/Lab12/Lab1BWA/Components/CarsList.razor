@@ -1,0 +1,71 @@
+@inject IDataService DataService
+@implements IDisposable
+
+<!-- Cars Table -->
+@if (DataService.Cars == null || DataService.Cars.Count == 0)
+{
+@if (DataService.Success)
+  {
+    <p><em>No cars found.</em></p>
+    }
+    else
+ {
+    <p><em>Loading...</em></p>
+    }
+}
+else
+{
+    <table class="table">
+    <thead>
+    <tr>
+  <th>Name</th>
+    <th>Description</th>
+        <th>Category</th>
+  <th>Price</th>
+  <th>Action</th>
+         </tr>
+        </thead>
+    <tbody>
+ @foreach (var car in DataService.Cars)
+   {
+  <tr>
+   <td>@car.Name</td>
+       <td>@car.Description</td>
+  <td>@car.Category?.Name</td>
+    <td>$@car.Price.ToString("F2")</td>
+   <td>
+     <button class="btn btn-sm btn-info" @onclick="() => OnDetailsClick(car.Id)" title="View Details">
+     <i class="fas fa-search"></i> Details
+         </button>
+     </td>
+     </tr>
+         }
+      </tbody>
+    </table>
+}
+
+<!-- Error Message -->
+@if (!DataService.Success && !string.IsNullOrEmpty(DataService.ErrorMessage))
+{
+    <div class="alert alert-danger">@DataService.ErrorMessage</div>
+}
+
+@code {
+    [Parameter]
+  public EventCallback<int> CarSelected { get; set; }
+
+    protected override void OnInitialized()
+    {
+   DataService.DataLoaded += StateHasChanged;
+    }
+
+    private async Task OnDetailsClick(int carId)
+    {
+      await CarSelected.InvokeAsync(carId);
+    }
+
+    public void Dispose()
+    {
+    DataService.DataLoaded -= StateHasChanged;
+    }
+}

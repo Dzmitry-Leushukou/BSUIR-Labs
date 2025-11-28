@@ -1,0 +1,43 @@
+@page "/cars"
+@inject IDataService DataService
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Cars</PageTitle>
+
+<h1>Cars</h1>
+
+<!-- Category Selector Component -->
+<CategorySelector />
+
+<!-- Cars List Component -->
+<CarsList CarSelected="OnCarSelected" />
+
+<!-- Pager Component -->
+<Pager />
+
+<!-- Car Details Component -->
+<CarDetails SelectedCar="SelectedCar" OnClose="OnDetailsClose" />
+
+@code {
+    private Car? SelectedCar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+      // Load categories first
+   await DataService.GetCategoryListAsync();
+
+   // Load cars
+  await DataService.GetCarListAsync();
+    }
+
+    private void OnCarSelected(int carId)
+    {
+        SelectedCar = DataService.Cars.FirstOrDefault(c => c.Id == carId);
+    }
+
+    private void OnDetailsClose()
+    {
+        SelectedCar = null;
+ }
+}

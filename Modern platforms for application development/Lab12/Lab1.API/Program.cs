@@ -20,22 +20,22 @@ var builder = WebApplication.CreateBuilder(args);
 var cs = builder.Configuration.GetConnectionString("SQLite") ?? "Data Source=menu.db";
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite(cs));
 
+// ---- CORS ----
+builder.Services.AddCors(options =>
+{
+ options.AddPolicy("AllowBlazorClient", policy =>
+ {
+        policy.WithOrigins("https://localhost:7225", "http://localhost:5293")
+      .AllowAnyMethod()
+    .AllowAnyHeader()
+        .AllowCredentials();
+    });
+});
+
 // ---- MVC + Swagger ----
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// ---- CORS ----
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("BlazorWasm", policy =>
-    {
-        policy.WithOrigins("https://localhost:50103", "http://localhost:5173")
-     .AllowAnyMethod()
-            .AllowAnyHeader()
-    .AllowCredentials();
-    });
-});
 
 // ---- MediatR v13 ----
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetListOfCars>());
@@ -210,6 +210,9 @@ builder.Services.AddAuthorization(opt =>
 
 var app = builder.Build();
 
+// Инициализация базы данных - ПЕРЕД использованием маршрутов
+await DbInitializer.SeedData(app);
+
 app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
@@ -218,7 +221,7 @@ if (app.Environment.IsDevelopment())
  app.UseSwaggerUI();
 }
 
-app.UseCors("BlazorWasm");
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -229,15 +232,16 @@ app.Use(async (context, next) =>
     var distributedCache = context.RequestServices.GetService<IDistributedCache>();
     if (distributedCache != null && context.Request.Path.StartsWithSegments("/api/cars"))
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-      
+     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+   
     var cacheType = distributedCache.GetType().Name;
-        logger.LogInformation("📦 Cache type in use: {CacheType}", cacheType);
+     logger.LogInformation("📦 Cache type in use: {CacheType}", cacheType);
     }
     
     await next();
 });
 
+app.MapCategoriesEndpoints();
 app.MapControllers();
 app.MapCarEndpoints();
 

@@ -1,0 +1,19 @@
+@page "/categories"
+@inject IDataService DataService
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Categories</PageTitle>
+
+<h1>Categories</h1>
+
+<!-- Categories List Component -->
+<CategoriesList />
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Load categories
+      await DataService.GetCategoryListAsync();
+    }
+}

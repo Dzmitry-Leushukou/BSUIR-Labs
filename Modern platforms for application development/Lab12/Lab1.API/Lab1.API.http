@@ -1,6 +1,22 @@
-@Lab1.API_HostAddress = http://localhost:5201
+@Lab1.API_HostAddress = http://localhost:5002
 
 GET {{Lab1.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Get all categories (without auth for testing)
+GET {{Lab1.API_HostAddress}}/api/categories
+Accept: application/json
+
+###
+
+# Get all cars
+GET {{Lab1.API_HostAddress}}/api/cars
+Accept: application/json
+
+###
+
+````````
+
+# Response

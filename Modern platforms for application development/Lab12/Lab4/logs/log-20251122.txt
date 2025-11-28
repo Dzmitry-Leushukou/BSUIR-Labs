@@ -1,0 +1,236 @@
+2025-11-22 08:35:51.024 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-11-22 08:35:51.645 +03:00 [INF] Now listening on: https://localhost:7001
+2025-11-22 08:35:51.648 +03:00 [INF] Now listening on: http://localhost:5001
+2025-11-22 08:35:51.808 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-11-22 08:35:51.811 +03:00 [INF] Hosting environment: Development
+2025-11-22 08:35:51.812 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab11\Lab4
+2025-11-22 08:35:52.214 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-11-22 08:35:52.438 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:35:54.027 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-11-22 08:35:54.039 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-11-22 08:35:54.095 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-11-22 08:35:54.227 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:35:54.645 +03:00 [INF] Executed ViewResult - view Index executed in 429.2938ms.
+2025-11-22 08:35:54.654 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 552.5463ms
+2025-11-22 08:35:54.656 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-11-22 08:35:54.699 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 2491.0503ms
+2025-11-22 08:35:54.738 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-11-22 08:35:54.738 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-11-22 08:35:54.756 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 18.0575ms
+2025-11-22 08:35:54.795 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 57.6733ms
+2025-11-22 08:36:02.419 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/login - null null
+2025-11-22 08:36:02.434 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:02.439 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-11-22 08:36:02.441 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.AccountController.Login (Lab1)'
+2025-11-22 08:36:02.459 +03:00 [INF] Route matched with {action = "Login", controller = "Account", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(System.String) on controller Lab1.UI.Controllers.AccountController (Lab1).
+2025-11-22 08:36:02.485 +03:00 [INF] Executing ChallengeResult with authentication schemes (["keycloak"]).
+2025-11-22 08:36:02.521 +03:00 [INF] AuthenticationScheme: keycloak was challenged.
+2025-11-22 08:36:02.524 +03:00 [INF] Executed action Lab1.UI.Controllers.AccountController.Login (Lab1) in 60.3527ms
+2025-11-22 08:36:02.527 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.AccountController.Login (Lab1)'
+2025-11-22 08:36:02.533 +03:00 [INF] ---> request /login returns 302
+2025-11-22 08:36:02.541 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/login - 302 0 null 122.389ms
+2025-11-22 08:36:07.776 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7001/signin-oidc - application/x-www-form-urlencoded 539
+2025-11-22 08:36:07.841 +03:00 [INF] Start processing HTTP request POST http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/token
+2025-11-22 08:36:07.849 +03:00 [INF] Sending HTTP request POST http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/token
+2025-11-22 08:36:08.191 +03:00 [INF] Received HTTP response headers after 335.0221ms - 200
+2025-11-22 08:36:08.194 +03:00 [INF] End processing HTTP request after 356.6358ms - 200
+2025-11-22 08:36:08.210 +03:00 [INF] Start processing HTTP request GET http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/userinfo
+2025-11-22 08:36:08.212 +03:00 [INF] Sending HTTP request GET http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/userinfo
+2025-11-22 08:36:08.252 +03:00 [INF] Received HTTP response headers after 36.9972ms - 200
+2025-11-22 08:36:08.255 +03:00 [INF] End processing HTTP request after 44.8771ms - 200
+2025-11-22 08:36:08.263 +03:00 [INF] AuthenticationScheme: AppCookie signed in.
+2025-11-22 08:36:08.270 +03:00 [INF] ---> request /signin-oidc returns 302
+2025-11-22 08:36:08.276 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7001/signin-oidc - 302 0 null 499.8015ms
+2025-11-22 08:36:08.284 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-11-22 08:36:08.300 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:08.308 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-11-22 08:36:08.312 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-11-22 08:36:08.321 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:36:08.393 +03:00 [INF] Executed ViewResult - view Index executed in 72.6677ms.
+2025-11-22 08:36:08.397 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 76.9559ms
+2025-11-22 08:36:08.403 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-11-22 08:36:08.407 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 122.9524ms
+2025-11-22 08:36:08.459 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-11-22 08:36:08.459 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/images/default-avatar.svg?v=ZNmab5mTeviwDZywqMqJXVxyVEU46M-uoKRE5L6POQw - null null
+2025-11-22 08:36:08.459 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-11-22 08:36:08.467 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 7.7879ms
+2025-11-22 08:36:08.479 +03:00 [INF] The file /images/default-avatar.svg was not modified
+2025-11-22 08:36:08.487 +03:00 [INF] ---> request /images/default-avatar.svg returns 304
+2025-11-22 08:36:08.490 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/images/default-avatar.svg?v=ZNmab5mTeviwDZywqMqJXVxyVEU46M-uoKRE5L6POQw - 304 null image/svg+xml 30.3524ms
+2025-11-22 08:36:08.497 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 37.7967ms
+2025-11-22 08:36:09.796 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-11-22 08:36:09.803 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:09.806 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:09.829 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:36:09.862 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:36:09.865 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:09.870 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:12.715 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-11-22 08:36:12.724 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:12.729 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:12.730 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:36:12.739 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:36:12.743 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:12.745 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:16.139 +03:00 [INF] Received HTTP response headers after 3392.2431ms - 200
+2025-11-22 08:36:16.141 +03:00 [INF] Received HTTP response headers after 6264.9096ms - 200
+2025-11-22 08:36:16.143 +03:00 [INF] End processing HTTP request after 3399.7749ms - 200
+2025-11-22 08:36:16.145 +03:00 [INF] End processing HTTP request after 6280.4637ms - 200
+2025-11-22 08:36:16.174 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:36:16.174 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:36:16.179 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:36:16.180 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:36:17.485 +03:00 [INF] Received HTTP response headers after 1296.9381ms - 200
+2025-11-22 08:36:17.485 +03:00 [INF] Received HTTP response headers after 1300.7888ms - 200
+2025-11-22 08:36:17.488 +03:00 [INF] End processing HTTP request after 1313.4121ms - 200
+2025-11-22 08:36:17.491 +03:00 [INF] End processing HTTP request after 1316.7998ms - 200
+2025-11-22 08:36:17.549 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:36:17.550 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:36:17.624 +03:00 [INF] Executed ViewResult - view Index executed in 76.1576ms.
+2025-11-22 08:36:17.624 +03:00 [INF] Executed ViewResult - view Index executed in 76.3709ms.
+2025-11-22 08:36:17.629 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 4893.3328ms
+2025-11-22 08:36:17.629 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 7795.7814ms
+2025-11-22 08:36:17.631 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:17.633 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:17.638 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 7842.1508ms
+2025-11-22 08:36:17.638 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 4923.3147ms
+2025-11-22 08:36:17.671 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-11-22 08:36:17.673 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-11-22 08:36:17.676 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 5.0886ms
+2025-11-22 08:36:17.687 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 14.6204ms
+2025-11-22 08:36:20.124 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=3 - null null
+2025-11-22 08:36:20.136 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:20.139 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:20.144 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:36:20.158 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:36:20.164 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:20.168 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:20.178 +03:00 [INF] Received HTTP response headers after 7.9795ms - 200
+2025-11-22 08:36:20.183 +03:00 [INF] End processing HTTP request after 19.1664ms - 200
+2025-11-22 08:36:20.187 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=3&pageSize=3
+2025-11-22 08:36:20.189 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=3&pageSize=3
+2025-11-22 08:36:20.209 +03:00 [INF] Received HTTP response headers after 16.416ms - 200
+2025-11-22 08:36:20.213 +03:00 [INF] End processing HTTP request after 26.4058ms - 200
+2025-11-22 08:36:20.222 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-11-22 08:36:20.225 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 3.0838ms.
+2025-11-22 08:36:20.227 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 75.6102ms
+2025-11-22 08:36:20.233 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:20.238 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-11-22 08:36:20.239 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=3 - 200 null text/html; charset=utf-8 114.6229ms
+2025-11-22 08:36:21.337 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=6 - null null
+2025-11-22 08:36:21.351 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:36:21.356 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:21.361 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:36:21.368 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:36:21.373 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:21.378 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:36:21.388 +03:00 [INF] Received HTTP response headers after 6.8332ms - 200
+2025-11-22 08:36:21.393 +03:00 [INF] End processing HTTP request after 20.6978ms - 200
+2025-11-22 08:36:21.399 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=6&pageSize=3
+2025-11-22 08:36:21.400 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=6&pageSize=3
+2025-11-22 08:36:21.413 +03:00 [INF] Received HTTP response headers after 7.1935ms - 200
+2025-11-22 08:36:21.416 +03:00 [INF] End processing HTTP request after 16.9528ms - 200
+2025-11-22 08:36:21.421 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-11-22 08:36:21.425 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 4.2282ms.
+2025-11-22 08:36:21.429 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 62.6964ms
+2025-11-22 08:36:21.432 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:36:21.435 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-11-22 08:36:21.437 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=6 - 200 null text/html; charset=utf-8 99.8057ms
+2025-11-22 08:37:05.849 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-11-22 08:37:06.393 +03:00 [INF] Now listening on: https://localhost:7001
+2025-11-22 08:37:06.396 +03:00 [INF] Now listening on: http://localhost:5001
+2025-11-22 08:37:06.539 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-11-22 08:37:06.543 +03:00 [INF] Hosting environment: Development
+2025-11-22 08:37:06.546 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab11\Lab4
+2025-11-22 08:37:06.692 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-11-22 08:37:06.905 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:37:07.121 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:37:07.193 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:37:07.254 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:37:07.268 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:37:07.281 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:37:09.985 +03:00 [INF] Received HTTP response headers after 2694.8671ms - 200
+2025-11-22 08:37:09.996 +03:00 [INF] End processing HTTP request after 2737.5239ms - 200
+2025-11-22 08:37:10.092 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:37:10.096 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:37:10.545 +03:00 [INF] Received HTTP response headers after 444.557ms - 200
+2025-11-22 08:37:10.550 +03:00 [INF] End processing HTTP request after 457.8346ms - 200
+2025-11-22 08:37:10.634 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:37:10.957 +03:00 [INF] Executed ViewResult - view Index executed in 331.5821ms.
+2025-11-22 08:37:10.963 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 3763.7569ms
+2025-11-22 08:37:10.966 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:37:11.015 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 4326.8692ms
+2025-11-22 08:37:11.068 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-11-22 08:37:11.068 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-11-22 08:37:11.089 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 20.2259ms
+2025-11-22 08:37:11.138 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 69.564ms
+2025-11-22 08:39:15.197 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-11-22 08:39:15.787 +03:00 [INF] Now listening on: https://localhost:7001
+2025-11-22 08:39:15.790 +03:00 [INF] Now listening on: http://localhost:5001
+2025-11-22 08:39:15.957 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-11-22 08:39:15.960 +03:00 [INF] Hosting environment: Development
+2025-11-22 08:39:15.962 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab11\Lab4
+2025-11-22 08:39:16.063 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-11-22 08:39:16.259 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-11-22 08:39:16.509 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:39:16.600 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-11-22 08:39:16.652 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-11-22 08:39:16.667 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:39:16.677 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-11-22 08:39:19.075 +03:00 [INF] Received HTTP response headers after 2390.2203ms - 200
+2025-11-22 08:39:19.083 +03:00 [INF] End processing HTTP request after 2426.3097ms - 200
+2025-11-22 08:39:19.152 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:39:19.155 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-11-22 08:39:19.851 +03:00 [INF] Received HTTP response headers after 693.1245ms - 200
+2025-11-22 08:39:19.854 +03:00 [INF] End processing HTTP request after 701.9491ms - 200
+2025-11-22 08:39:19.926 +03:00 [INF] Executing ViewResult, running view Index.
+2025-11-22 08:39:20.156 +03:00 [INF] Executed ViewResult - view Index executed in 240.2417ms.
+2025-11-22 08:39:20.162 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 3557.1502ms
+2025-11-22 08:39:20.164 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-11-22 08:39:20.209 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 4150.5552ms
+2025-11-22 08:39:20.270 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-11-22 08:39:20.281 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-11-22 08:39:20.303 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 31.9741ms
+2025-11-22 08:39:20.363 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 81.1071ms
+2025-11-22 09:09:44.049 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-11-22 09:09:44.540 +03:00 [INF] Now listening on: https://localhost:7001
+2025-11-22 09:09:44.542 +03:00 [INF] Now listening on: http://localhost:5001
+2025-11-22 09:09:44.680 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-11-22 09:09:44.683 +03:00 [INF] Hosting environment: Development
+2025-11-22 09:09:44.685 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab11\Lab4

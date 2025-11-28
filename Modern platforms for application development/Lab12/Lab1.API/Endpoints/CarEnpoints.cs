@@ -142,7 +142,7 @@ namespace Lab1.API.Endpoints
             })
             .WithName("GetCars")
             .WithOpenApi()
-            .RequireAuthorization();
+            .RequireAuthorization(); ;
 
             // ---------- GET by id (с категией) ----------
             group.MapGet("/{id:int}", async (int id, AppDbContext db) =>
@@ -158,7 +158,7 @@ namespace Lab1.API.Endpoints
             })
             .WithName("GetCarById")
             .WithOpenApi()
-            .RequireAuthorization();
+            .AllowAnonymous(); ;
 
             // ---------- POST: multipart (car + file) ----------
             group.MapPost("/", async (

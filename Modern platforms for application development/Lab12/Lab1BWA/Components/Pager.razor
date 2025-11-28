@@ -1,0 +1,71 @@
+@inject IDataService DataService
+@implements IDisposable
+
+<!-- Pagination -->
+@if (DataService.TotalPages > 1)
+{
+    <nav aria-label="Page navigation">
+   <ul class="pagination">
+     <!-- Previous Button -->
+            <li class="page-item @(DataService.CurrentPage == 1 ? "disabled" : "")">
+  <button class="page-link" @onclick="GoToPrevious" disabled="@(DataService.CurrentPage == 1)">
+  &laquo; Previous
+        </button>
+            </li>
+
+  <!-- Page Numbers -->
+   @for (int i = 1; i <= DataService.TotalPages; i++)
+            {
+     var pageNum = i;
+  <li class="page-item @(DataService.CurrentPage == pageNum ? "active" : "")">
+<button class="page-link" @onclick="() => GoToPage(pageNum)">
+         @pageNum
+           </button>
+       </li>
+            }
+
+   <!-- Next Button -->
+   <li class="page-item @(DataService.CurrentPage == DataService.TotalPages ? "disabled" : "")">
+           <button class="page-link" @onclick="GoToNext" disabled="@(DataService.CurrentPage == DataService.TotalPages)">
+          Next &raquo;
+     </button>
+     </li>
+    </ul>
+    </nav>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        DataService.DataLoaded += StateHasChanged;
+    }
+
+    private async Task GoToPage(int pageNum)
+    {
+     if (pageNum > 0 && pageNum <= DataService.TotalPages)
+     {
+   await DataService.GetCarListAsync(pageNum);
+        }
+    }
+
+    private async Task GoToPrevious()
+    {
+        if (DataService.CurrentPage > 1)
+    {
+          await DataService.GetCarListAsync(DataService.CurrentPage - 1);
+    }
+    }
+
+    private async Task GoToNext()
+    {
+ if (DataService.CurrentPage < DataService.TotalPages)
+ {
+            await DataService.GetCarListAsync(DataService.CurrentPage + 1);
+        }
+    }
+
+    public void Dispose()
+    {
+    DataService.DataLoaded -= StateHasChanged;
+    }
+}

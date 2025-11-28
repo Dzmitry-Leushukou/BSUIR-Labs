@@ -1,0 +1,75 @@
+@using Lab1.Domain.Entities
+
+<!-- Car Details Card -->
+@if (SelectedCar != null)
+{
+    <div class="card mt-5">
+        <div class="card-header bg-primary text-white">
+          <h5 class="card-title mb-0">@SelectedCar.Name</h5>
+        </div>
+<div class="card-body">
+     <div class="row">
+       <!-- Image -->
+    <div class="col-md-4">
+ @if (!string.IsNullOrEmpty(SelectedCar.ImagePath))
+          {
+ <img src="@SelectedCar.ImagePath" class="img-fluid rounded" alt="@SelectedCar.Name" />
+   }
+    else
+{
+   <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+   <span class="text-muted text-center">
+ <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+     <p>No Image</p>
+            </span>
+      </div>
+      }
+          </div>
+
+    <!-- Details -->
+   <div class="col-md-8">
+     <table class="table table-sm">
+    <tbody>
+<tr>
+  <th>Category:</th>
+      <td>@(SelectedCar.Category?.Name ?? "N/A")</td>
+   </tr>
+   <tr>
+         <th>Description:</th>
+         <td>@(SelectedCar.Description ?? "No description")</td>
+           </tr>
+   <tr>
+      <th>Price:</th>
+   <td>
+    <span class="badge bg-success" style="font-size: 1.1rem;">
+    $@SelectedCar.Price.ToString("F2")
+        </span>
+     </td>
+     </tr>
+     </tbody>
+       </table>
+
+    <!-- Action Buttons -->
+          <div class="mt-4">
+ <button class="btn btn-secondary" @onclick="ClearSelection">
+         <i class="fas fa-times"></i> Close
+   </button>
+       </div>
+     </div>
+       </div>
+      </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Car? SelectedCar { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task ClearSelection()
+    {
+     await OnClose.InvokeAsync();
+    }
+}

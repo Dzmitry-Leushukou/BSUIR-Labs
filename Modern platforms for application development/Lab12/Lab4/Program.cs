@@ -400,7 +400,9 @@ app.MapGet("/signout-callback-oidc", async ctx =>
 });
 
 app.MapRazorPages().RequireAuthorization("admin");
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 try
 {

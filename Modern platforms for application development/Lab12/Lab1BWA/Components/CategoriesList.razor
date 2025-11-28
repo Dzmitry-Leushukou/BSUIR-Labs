@@ -1,0 +1,53 @@
+@inject IDataService DataService
+@implements IDisposable
+
+<!-- Categories Table -->
+@if (DataService.Categories == null || DataService.Categories.Count == 0)
+{
+    @if (DataService.Success)
+    {
+        <p><em>No categories found.</em></p>
+ }
+    else
+    {
+        <p><em>Loading...</em></p>
+    }
+}
+else
+{
+  <table class="table">
+        <thead>
+      <tr>
+  <th>Name</th>
+        <th>Normalized Name</th>
+  </tr>
+        </thead>
+        <tbody>
+ @foreach (var category in DataService.Categories)
+  {
+       <tr>
+    <td>@category.Name</td>
+        <td>@category.NormalizedName</td>
+ </tr>
+  }
+        </tbody>
+    </table>
+}
+
+<!-- Error Message -->
+@if (!DataService.Success && !string.IsNullOrEmpty(DataService.ErrorMessage))
+{
+    <div class="alert alert-danger">@DataService.ErrorMessage</div>
+}
+
+@code {
+ protected override void OnInitialized()
+    {
+   DataService.DataLoaded += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+   DataService.DataLoaded -= StateHasChanged;
+    }
+}
