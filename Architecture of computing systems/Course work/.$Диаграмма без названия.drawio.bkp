@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
   <diagram name="Функциональная схема" id="czgtJsganqQRS0ohF7ID">
-    <mxGraphModel dx="35644" dy="20973" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="174950" dy="193261" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -38,57 +38,66 @@
           <mxGeometry x="-200" y="-440" width="390" height="30" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-23" value="Наблюдатель" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-          <mxGeometry x="-2140" y="-850" width="30" height="60" as="geometry" />
+          <mxGeometry x="-2100" y="-210" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-24" value="Разработчик" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-          <mxGeometry x="-2128" y="-570" width="30" height="60" as="geometry" />
+          <mxGeometry x="-2088" y="70" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-26" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="m_UfsqL4Xb1AJhy2xiqv-15" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-2100" y="-830" as="sourcePoint" />
-            <mxPoint x="-1980" y="-850" as="targetPoint" />
+            <mxPoint x="-2060" y="-190" as="sourcePoint" />
+            <mxPoint x="-1940" y="-210" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-27" value="" style="endArrow=open;html=1;rounded=0;entryX=0;entryY=0.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryDx=0;entryDy=0;dashed=1;dashPattern=8 8;endFill=0;" parent="1" source="m_UfsqL4Xb1AJhy2xiqv-15" target="m_UfsqL4Xb1AJhy2xiqv-17" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-1750" y="-865" as="sourcePoint" />
-            <mxPoint x="-1600" y="-876" as="targetPoint" />
+            <mxPoint x="-1710" y="-225" as="sourcePoint" />
+            <mxPoint x="-1560" y="-236" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-29" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="m_UfsqL4Xb1AJhy2xiqv-18" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-2100" y="-810" as="sourcePoint" />
-            <mxPoint x="-1950" y="-721" as="targetPoint" />
+            <mxPoint x="-2060" y="-170" as="sourcePoint" />
+            <mxPoint x="-1910" y="-81" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-30" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-2084" y="-560" as="sourcePoint" />
-            <mxPoint x="-1984" y="-621" as="targetPoint" />
+            <mxPoint x="-2044" y="80" as="sourcePoint" />
+            <mxPoint x="-1944" y="19" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m_UfsqL4Xb1AJhy2xiqv-32" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="m_UfsqL4Xb1AJhy2xiqv-21" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-2044" y="100" as="sourcePoint" />
+            <mxPoint x="-1944" y="139" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-33" value="Диаграмма вариантов использования системы мониторинга" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" parent="1" vertex="1">
-          <mxGeometry x="-1837" y="-1060" width="514" height="30" as="geometry" />
+          <mxGeometry x="-1797" y="-420" width="514" height="30" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-15" value="Просмотр текущего состояния системы" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1960" y="-885" width="220" height="50" as="geometry" />
+          <mxGeometry x="-1920" y="-245" width="220" height="50" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-17" value="Мониторинг расстояния руки от датчика" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1630" y="-885" width="220" height="50" as="geometry" />
+          <mxGeometry x="-1590" y="-245" width="220" height="50" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-18" value="Диагностика ошибок датчиков" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1960" y="-810" width="220" height="50" as="geometry" />
+          <mxGeometry x="-1920" y="-170" width="220" height="50" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-19" value="Калибровка параметров системы" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1984" y="-640" width="210" height="50" as="geometry" />
+          <mxGeometry x="-1944" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="m_UfsqL4Xb1AJhy2xiqv-21" value="Настройка промежутков времени" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-1944" y="80" width="210" height="50" as="geometry" />
         </mxCell>
         <mxCell id="m_UfsqL4Xb1AJhy2xiqv-22" value="Тестирование работы системы" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1984" y="-490" width="210" height="50" as="geometry" />
+          <mxGeometry x="-1944" y="150" width="210" height="50" as="geometry" />
         </mxCell>
         <mxCell id="JpXotp7G6AtOlcgovQIW-1" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="m_UfsqL4Xb1AJhy2xiqv-22" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-2084" y="-520" as="sourcePoint" />
-            <mxPoint x="-1984" y="-440.5" as="targetPoint" />
+            <mxPoint x="-2044" y="120" as="sourcePoint" />
+            <mxPoint x="-1944" y="199.5" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="eO-QH60lgyGMqk41ahim-24" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1" />
@@ -171,7 +180,7 @@
         <mxCell id="eO-QH60lgyGMqk41ahim-157" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1;strokeColor=#000000;" parent="1" edge="1" />
         <mxCell id="eO-QH60lgyGMqk41ahim-158" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1;strokeColor=#000000;" parent="1" edge="1" />
         <mxCell id="Vkww_7w4qpvyBNO-e9oC-7" value="&lt;pre style=&quot;font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-size-adjust: none; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-variant-emoji: normal; font-stretch: normal; font-size: 13px; line-height: 22px; font-family: Menlo, Monaco, Consolas, &amp;quot;Cascadia Mono&amp;quot;, &amp;quot;Ubuntu Mono&amp;quot;, &amp;quot;DejaVu Sans Mono&amp;quot;, &amp;quot;Liberation Mono&amp;quot;, &amp;quot;JetBrains Mono&amp;quot;, &amp;quot;Fira Code&amp;quot;, Cousine, &amp;quot;Roboto Mono&amp;quot;, &amp;quot;Courier New&amp;quot;, Courier, sans-serif, system-ui; overflow: auto; text-wrap-mode: wrap; word-break: break-all; padding: 16px; color: rgb(15, 17, 21); text-align: start; margin: 0px !important;&quot;&gt; &amp;lt;&amp;lt;include&amp;gt;&amp;gt;&lt;/pre&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="-1750" y="-890" width="120" height="30" as="geometry" />
+          <mxGeometry x="-1710" y="-250" width="120" height="30" as="geometry" />
         </mxCell>
         <mxCell id="Vkww_7w4qpvyBNO-e9oC-13" value="Блок питания 5В" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;" parent="1" vertex="1">
           <mxGeometry x="-600" y="-230" width="120" height="60" as="geometry" />
@@ -194,22 +203,22 @@
         <mxCell id="Vkww_7w4qpvyBNO-e9oC-19" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Шина I²C (SDA, SCL)&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="110" y="-230" width="150" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-1" value="" style="endArrow=open;html=1;rounded=0;entryX=1;entryY=0.5;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryDx=0;entryDy=0;endFill=0;startArrow=none;startFill=0;dashed=1;dashPattern=8 8;" parent="1" source="REvSeGA2_4ddegeYOq7i-2" edge="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-1" value="" style="endArrow=open;html=1;rounded=0;entryX=1;entryY=0.5;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryDx=0;entryDy=0;endFill=0;startArrow=none;startFill=0;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="REvSeGA2_4ddegeYOq7i-2">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-1710" y="-775" as="sourcePoint" />
-            <mxPoint x="-1740" y="-785" as="targetPoint" />
+            <mxPoint x="-1670" y="-135" as="sourcePoint" />
+            <mxPoint x="-1700" y="-145" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-2" value="Отображение ошибок по каждому датчику" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1650" y="-810" width="220" height="50" as="geometry" />
+        <mxCell id="REvSeGA2_4ddegeYOq7i-2" value="Отображение ошибок по каждому датчику" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-1610" y="-170" width="220" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-3" value="&lt;pre style=&quot;font: 400 13px / 22px Menlo, Monaco, Consolas, &amp;quot;Cascadia Mono&amp;quot;, &amp;quot;Ubuntu Mono&amp;quot;, &amp;quot;DejaVu Sans Mono&amp;quot;, &amp;quot;Liberation Mono&amp;quot;, &amp;quot;JetBrains Mono&amp;quot;, &amp;quot;Fira Code&amp;quot;, Cousine, &amp;quot;Roboto Mono&amp;quot;, &amp;quot;Courier New&amp;quot;, Courier, sans-serif, system-ui; margin: 0px !important; overflow: auto; white-space: pre-wrap; word-break: break-all; padding: 16px; color: rgb(15, 17, 21); letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt; &amp;lt;&amp;lt;extend&amp;gt;&amp;gt;&lt;/pre&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-1750" y="-835" width="140" height="80" as="geometry" />
+        <mxCell id="REvSeGA2_4ddegeYOq7i-3" value="&lt;pre style=&quot;font: 400 13px / 22px Menlo, Monaco, Consolas, &amp;quot;Cascadia Mono&amp;quot;, &amp;quot;Ubuntu Mono&amp;quot;, &amp;quot;DejaVu Sans Mono&amp;quot;, &amp;quot;Liberation Mono&amp;quot;, &amp;quot;JetBrains Mono&amp;quot;, &amp;quot;Fira Code&amp;quot;, Cousine, &amp;quot;Roboto Mono&amp;quot;, &amp;quot;Courier New&amp;quot;, Courier, sans-serif, system-ui; margin: 0px !important; overflow: auto; white-space: pre-wrap; word-break: break-all; padding: 16px; color: rgb(15, 17, 21); letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt; &amp;lt;&amp;lt;extend&amp;gt;&amp;gt;&lt;/pre&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-1710" y="-195" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-4" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Импульсы TRIG/ECHO (цифровые сигналы)&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;rotation=355;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-4" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Импульсы TRIG/ECHO (цифровые сигналы)&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;rotation=355;" vertex="1" parent="1">
           <mxGeometry x="-210.96242731200545" y="-165.0020332380426" width="170" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-5" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="Vkww_7w4qpvyBNO-e9oC-13" target="m_UfsqL4Xb1AJhy2xiqv-4" edge="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-5" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="Vkww_7w4qpvyBNO-e9oC-13" target="m_UfsqL4Xb1AJhy2xiqv-4">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="-420" y="-295" as="sourcePoint" />
             <mxPoint x="-300" y="-310" as="targetPoint" />
@@ -219,40 +228,40 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-6" value="Релейный модуль 5 В / 10 А" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-6" value="Релейный модуль 5 В / 10 А" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" vertex="1" parent="1">
           <mxGeometry x="160" y="-60" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-8" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="m_UfsqL4Xb1AJhy2xiqv-3" target="REvSeGA2_4ddegeYOq7i-6" edge="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-8" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="m_UfsqL4Xb1AJhy2xiqv-3" target="REvSeGA2_4ddegeYOq7i-6">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="150" y="-70" as="sourcePoint" />
             <mxPoint x="300" y="-70" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-9" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Сигнал управления насосом (цифровой выход)&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-9" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Сигнал управления насосом (цифровой выход)&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="190" y="-130" width="210" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-11" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="Vkww_7w4qpvyBNO-e9oC-13" target="REvSeGA2_4ddegeYOq7i-6" edge="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-11" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="Vkww_7w4qpvyBNO-e9oC-13" target="REvSeGA2_4ddegeYOq7i-6">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="-370" y="-65" as="sourcePoint" />
             <mxPoint x="-250" y="-80" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-12" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Питание 5В&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-12" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Питание 5В&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="-380" y="-60" width="150" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-13" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Питание 5В&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-13" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Питание 5В&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="-390" y="-330" width="150" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-14" value="Погружной насос" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-14" value="Погружной насос" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" vertex="1" parent="1">
           <mxGeometry x="450" y="-60" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-15" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="REvSeGA2_4ddegeYOq7i-6" target="REvSeGA2_4ddegeYOq7i-14" edge="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-15" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="REvSeGA2_4ddegeYOq7i-6" target="REvSeGA2_4ddegeYOq7i-14">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="560" y="-160" as="sourcePoint" />
             <mxPoint x="710" y="-160" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="REvSeGA2_4ddegeYOq7i-16" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Коммутация питания насоса&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="REvSeGA2_4ddegeYOq7i-16" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Коммутация питания насоса&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="330" y="-80" width="110" height="30" as="geometry" />
         </mxCell>
       </root>
