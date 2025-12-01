@@ -18,13 +18,20 @@ const unsigned long PUMP_DURATION = 2000;
 
 bool pumpOn = false;
 unsigned long pumpStartTime = 0;
-bool sensor1OK = true;
-bool sensor2OK = true;
-bool lastSensor1State = false;
-bool lastSensor2State = false;
-bool lastPumpState = false;
 
-// ===== HELPER FUNCTIONS FOR OLED =====
+bool sensor1OK = false;
+bool sensor2OK = false;
+
+uint8_t sensor1BadCount = 0;
+uint8_t sensor2BadCount = 0;
+uint8_t sensor1GoodCount = 0;
+uint8_t sensor2GoodCount = 0;
+
+bool sensorErrorEver = false;
+bool sensorsEverAllOK = false;
+
+const uint8_t BAD_THRESHOLD  = 10;
+const uint8_t GOOD_THRESHOLD = 3;
 
 void showLines(const String &l1 = "",
                const String &l2 = "",
@@ -40,14 +47,108 @@ void showLines(const String &l1 = "",
   display.display();
 }
 
-void showStatus(long dist1, bool hand1, long dist2, bool hand2, bool pumpOn) {
-  String s1 = "S1: " + String(dist1) + "cm " + (hand1 ? "[ON]" : "[OFF]");
-  String s2 = "S2: " + String(dist2) + "cm " + (hand2 ? "[ON]" : "[OFF]");
-  String s3 = String("Pump: ") + (pumpOn ? "ON" : "OFF");
-  showLines("RUN MODE", s1, s2, s3);
+void showStatus(long dist1, long dist2, bool pumpOn) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  display.println("RUN MODE");
+
+  display.print("S1: ");
+  display.print(dist1);
+  display.println(" cm");
+
+  display.print("S2: ");
+  display.print(dist2);
+  display.println(" cm");
+
+  display.print("Pump: ");
+  display.println(pumpOn ? "ON" : "OFF");
+
+  if (sensorErrorEver) {
+    display.println("Reboot after error");
+  }
+
+  display.display();
 }
 
-// ===== MAIN CODE =====
+void showSensorError(long dist1, long dist2) {
+  String line2;
+
+  if (!sensor1OK && !sensor2OK) {
+    line2 = "Sensor 1 & 2 error";
+  } else if (!sensor1OK) {
+    line2 = "Sensor 1 error";
+  } else if (!sensor2OK) {
+    line2 = "Sensor 2 error";
+  }
+
+  String line3 = "S1:" + String(dist1) + " S2:" + String(dist2);
+  showLines("SENSOR ERROR", line2, line3, "Reconnect & reboot");
+}
+
+void testSensorPins() {
+  showLines("--- D5-D6 TEST ---", "D5 (Trig): HIGH");
+
+  pinMode(5, OUTPUT);
+  digitalWrite(5, HIGH);
+  delay(100);
+  digitalWrite(5, LOW);
+  showLines("--- D5-D6 TEST ---", "D5 (Trig): LOW");
+  delay(500);
+
+  pinMode(6, INPUT);
+  int echoState = digitalRead(6);
+
+  showLines("--- D5-D6 TEST ---",
+            "D6 (Echo) state:",
+            String(echoState),
+            "--- TEST DONE ---");
+  delay(1000);
+}
+
+long readDistance(int trigPin, int echoPin) {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH, 20000);
+  if (duration == 0) return 999;
+
+  long distance = duration * 0.034 / 2;
+
+  if (distance > 400) return 999;
+
+  return distance;
+}
+
+void updateSensorHealth(long dist1, long dist2) {
+  bool s1GoodNow = (dist1 != 999 && dist1 > 0 && dist1 < 400);
+  bool s2GoodNow = (dist2 != 999 && dist2 > 0 && dist2 < 400);
+
+  if (s1GoodNow) {
+    if (sensor1GoodCount < GOOD_THRESHOLD) sensor1GoodCount++;
+    sensor1BadCount = 0;
+  } else {
+    if (sensor1BadCount < BAD_THRESHOLD) sensor1BadCount++;
+    sensor1GoodCount = 0;
+  }
+
+  if (sensor1GoodCount >= GOOD_THRESHOLD) sensor1OK = true;
+  if (sensor1BadCount >= BAD_THRESHOLD)   sensor1OK = false;
+
+  if (s2GoodNow) {
+    if (sensor2GoodCount < GOOD_THRESHOLD) sensor2GoodCount++;
+    sensor2BadCount = 0;
+  } else {
+    if (sensor2BadCount < BAD_THRESHOLD) sensor2BadCount++;
+    sensor2GoodCount = 0;
+  }
+
+  if (sensor2GoodCount >= GOOD_THRESHOLD) sensor2OK = true;
+  if (sensor2BadCount >= BAD_THRESHOLD)   sensor2OK = false;
+}
 
 void setup() {
   pinMode(trigPin1, OUTPUT);
@@ -60,95 +161,19 @@ void setup() {
   digitalWrite(relayPin, HIGH);
   pumpOn = false;
 
-  // OLED init
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    // If display is not found - freeze
-    for (;;);
+    for (;;) {}
   }
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
 
   showLines("=== SYSTEM STARTED ===", "Diag: D5-D6 test");
-  delay(1500);
+  delay(1000);
 
   testSensorPins();
+  showLines("WAITING SENSORS", "Connect HC-SR04");
   delay(1000);
-}
-
-void testSensorPins() {
-  showLines("--- D5-D6 TEST ---", "D5 (Trig): HIGH");
-
-  // Test pin D5 (Trig)
-  pinMode(5, OUTPUT);
-  digitalWrite(5, HIGH);
-  delay(100);
-  digitalWrite(5, LOW);
-  showLines("--- D5-D6 TEST ---", "D5 (Trig): LOW");
-  delay(500);
-
-  // Test pin D6 (Echo) - input
-  pinMode(6, INPUT);
-  int echoState = digitalRead(6);
-
-  showLines("--- D5-D6 TEST ---",
-            "D6 (Echo) state:",
-            String(echoState),
-            "--- TEST DONE ---");
-  delay(1500);
-}
-
-bool checkSensor(int trigPin, int echoPin, String sensorName) {
-  String header = "Check " + sensorName;
-
-  for (int i = 0; i < 3; i++) {
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-
-    long duration = pulseIn(echoPin, HIGH, 25000);
-
-    if (duration > 0) {
-      long distance = duration * 0.034 / 2;
-      if (distance < 500) {
-        showLines(header,
-                  "OK",
-                  "Dist: " + String(distance) + "cm");
-        delay(700);
-        return true;
-      }
-    }
-    showLines(header, "Attempt " + String(i + 1), "No signal");
-    delay(200);
-  }
-
-  showLines(header, "NO SIGNAL", "Limited mode");
-  delay(1200);
-  return false;
-}
-
-void checkSensors() {
-  sensor1OK = checkSensor(trigPin1, echoPin1, "Sensor 1");
-  sensor2OK = checkSensor(trigPin2, echoPin2, "Sensor 2");
-
-  if (!sensor1OK || !sensor2OK) {
-    showLines("WARNING!", "Sensor issue", "Limited mode");
-    delay(1500);
-  }
-}
-
-long readDistance(int trigPin, int echoPin) {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  long duration = pulseIn(echoPin, HIGH, 30000);
-  if (duration == 0) return 999;
-  return duration * 0.034 / 2;
 }
 
 void loop() {
@@ -158,61 +183,58 @@ void loop() {
     lastBlink = millis();
   }
 
-  static unsigned long lastCheck = 0;
-  if (millis() - lastCheck > 5000) {
-    checkSensors();
-    lastCheck = millis();
-  }
-
   long dist1 = readDistance(trigPin1, echoPin1);
   long dist2 = readDistance(trigPin2, echoPin2);
 
-  bool hand1 = (dist1 <= maxDistance && dist1 > 0);
-  bool hand2 = (dist2 <= maxDistance && dist2 > 0);
+  updateSensorHealth(dist1, dist2);
 
-  bool atLeastOneSensorWorking = (dist1 < 500 || dist2 < 500);
+  bool allSensorsOK = sensor1OK && sensor2OK;
 
-  if (!atLeastOneSensorWorking) {
+  if (allSensorsOK) {
+    sensorsEverAllOK = true;
+  }
+
+  if (!allSensorsOK) {
+    if (sensorsEverAllOK) {
+      sensorErrorEver = true;
+    }
+
     if (pumpOn) {
       digitalWrite(relayPin, HIGH);
       pumpOn = false;
-      showLines("ERROR!", "No sensors", "Pump OFF");
-      delay(1500);
     }
-    showLines("WAITING...", "No active sensors");
-    delay(1000);
+    showSensorError(dist1, dist2);
+    delay(100);
     return;
   }
 
+  bool hand1 = (dist1 > 0 && dist1 <= maxDistance);
+  bool hand2 = (dist2 > 0 && dist2 <= maxDistance);
+
   if (pumpOn) {
-    // Pump is running
     if (!hand1 && !hand2) {
       digitalWrite(relayPin, HIGH);
       pumpOn = false;
       showLines("ACTIVATION", "CANCELLED", "Pump OFF");
-      delay(1000);
+      delay(200);
     }
     else if (millis() - pumpStartTime >= PUMP_DURATION) {
       digitalWrite(relayPin, HIGH);
       pumpOn = false;
       showLines("Pump OFF", "2 seconds passed");
-      delay(800);
+      delay(200);
+    }
+  } else {
+    if (hand1 && hand2) {
+      digitalWrite(relayPin, LOW);
+      pumpOn = true;
+      pumpStartTime = millis();
+      showLines("BOTH HANDS", "Pump ON", "for 2 sec");
+      delay(150);
     }
   }
-  else if (hand1 && hand2) {
-    // Both sensors active -> start pump
-    digitalWrite(relayPin, LOW);
-    pumpOn = true;
-    pumpStartTime = millis();
-    showLines("BOTH HANDS", "Pump ON", "for 2 sec");
-    delay(500);
-  }
 
-  static unsigned long lastPrint = 0;
-  if (millis() - lastPrint > 1000) {
-    showStatus(dist1, hand1, dist2, hand2, pumpOn);
-    lastPrint = millis();
-  }
+  showStatus(dist1, dist2, pumpOn);
 
-  delay(100);
+  delay(20);
 }
