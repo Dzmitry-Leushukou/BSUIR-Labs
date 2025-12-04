@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой профиль - Carsharing App</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <!-- Подключаем Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
     <div class="profile-container">
@@ -23,7 +25,7 @@
                     <div class="info-row">
                         <label>Имя:</label>
                         <span id="profile-name">Иван</span>
-                    </div>
+                    </div>Показ всех машин на карте
                     
                     <div class="info-row">
                         <label>Фамилия:</label>
@@ -45,12 +47,14 @@
                         <span id="profile-role">Пользователь</span>
                     </div>
                 </div>
-            </div>
             
             <div class="profile-actions">
                 <button class="btn edit-profile-btn">Редактировать профиль</button>
                 <button class="btn change-password-btn">Сменить пароль</button>
             </div>
+            
+            <!-- Карта для отображения всех машин -->
+            <div id="map" style="height: 400px; margin-top: 20px; border-radius: 10px;"></div>
         </div>
     </div>
     
@@ -110,8 +114,10 @@
                 </div>
             </form>
         </div>
-    </div>
     
+    <!-- Подключаем Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="/static/profile.js"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>

@@ -29,13 +29,13 @@ def create_car(car: CarCreate):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     if car.position:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status, position) 
+            """INSERT INTO cars (vin, plate_number, model, status, position)
                VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326)) RETURNING *""",
             (car.vin, car.plate_number, car.model, car.status, car.position)
         )
     else:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status) 
+            """INSERT INTO cars (vin, plate_number, model, status)
                VALUES (%s, %s, %s, %s) RETURNING *""",
             (car.vin, car.plate_number, car.model, car.status)
         )
@@ -91,3 +91,20 @@ def delete_car(car_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Car not found")
     return {"message": "Car deleted successfully"}
+
+def get_all_cars_positions():
+    """Возвращает все машины с их позициями"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT id, vin, plate_number, model, status,
+               ST_AsText(position) as position_text,
+               ST_X(position::geometry) as longitude,
+               ST_Y(position::geometry) as latitude
+        FROM cars
+        WHERE position IS NOT NULL
+    """)
+    cars = cur.fetchall()
+    cur.close()
+    conn.close()
+    return cars

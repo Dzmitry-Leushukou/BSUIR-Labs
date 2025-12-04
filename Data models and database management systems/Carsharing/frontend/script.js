@@ -1,6 +1,7 @@
 // Инициализация карты
 let map;
 let marker;
+let carMarkers = []; // Массив для хранения маркеров машин
 
 // Функция для получения текущего местоположения пользователя
 function getCurrentLocation() {
@@ -14,17 +15,26 @@ function getCurrentLocation() {
                 
                 // Добавление маркера на карту
                 addMarker(latitude, longitude);
+                
+                // Показать машины на карте
+                showCarsOnMap();
             },
             (error) => {
                 console.error('Ошибка получения местоположения:', error);
                 // Используем Минск как fallback
                 initMap(53.904133, 27.557541);
+                
+                // Показать машины на карте
+                showCarsOnMap();
             }
         );
     } else {
         console.error('Геолокация не поддерживается браузером');
         // Используем Минск как fallback
         initMap(53.904133, 27.557541);
+        
+        // Показать машины на карте
+        showCarsOnMap();
     }
 }
 
@@ -50,6 +60,58 @@ function addMarker(lat, lng) {
     
     marker = L.marker([lat, lng]).addTo(map);
     marker.bindPopup('Ваше текущее местоположение').openPopup();
+}
+
+// Показать все машины на карте
+async function showCarsOnMap() {
+    // Очистить предыдущие маркеры машин
+    clearCarMarkers();
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        console.error('Пользователь не авторизован');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/cars/all/positions', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const cars = await response.json();
+            
+            // Добавить маркеры для каждой машины
+            cars.forEach(car => {
+                if (car.latitude && car.longitude) {
+                    const carMarker = L.marker([car.latitude, car.longitude]).addTo(map);
+                    carMarker.bindPopup(`
+                        <b>Машина: ${car.model}</b><br>
+                        Номер: ${car.plate_number}<br>
+                        Статус: ${car.status}
+                    `).openPopup();
+                    
+                    carMarkers.push(carMarker);
+                }
+            });
+        } else {
+            console.error('Ошибка при получении позиций машин:', response.status);
+        }
+    } catch (error) {
+        console.error('Ошибка при запросе позиций машин:', error);
+    }
+}
+
+// Очистить маркеры машин с карты
+function clearCarMarkers() {
+    carMarkers.forEach(marker => {
+        map.removeLayer(marker);
+    });
+    carMarkers = [];
 }
 
 // Проверка статуса авторизации пользователя
@@ -200,6 +262,9 @@ document.querySelector('.login-btn').addEventListener('click', () => {
                         userData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
                     }
                     updateAuthStatus(true, userData);
+                    
+                    // После успешного входа обновляем карту с машинами
+                    showCarsOnMap();
                 } else {
                     const errorData = await response.json();
                     alert(`Ошибка входа: ${errorData.detail || 'Неверный email или пароль'}`);
@@ -278,6 +343,9 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                     if (userData.token) {
                         updateAuthStatus(true, userData);
                         alert('Регистрация и вход прошли успешно!');
+                        
+                        // После успешной регистрации и входа обновляем карту с машинами
+                        showCarsOnMap();
                     } else {
                         // Fallback: try to login after registration
                         const loginResponse = await fetch('/users/login', {
@@ -296,6 +364,9 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                             }
                             updateAuthStatus(true, loginData);
                             alert('Регистрация и вход прошли успешно!');
+                            
+                            // После успешной регистрации и входа обновляем карту с машинами
+                            showCarsOnMap();
                         } else {
                             const errorData = await loginResponse.json();
                             alert(`Ошибка входа после регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
@@ -342,6 +413,9 @@ document.querySelector('.logout-btn').addEventListener('click', () => {
     // В реальном приложении здесь будет вызов API для завершения сессии
     // и обновление статуса авторизации
     updateAuthStatus(false);
+    
+    // После выхода очищаем маркеры машин
+    clearCarMarkers();
 });
 
 // Инициализация при загрузке страницы

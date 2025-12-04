@@ -24,3 +24,18 @@ def update_car_endpoint(car_id: int, car: CarUpdate):
 @router.delete("/{car_id}")
 def delete_car_endpoint(car_id: int):
     return delete_car(car_id)
+
+class CarPosition(BaseModel):
+    id: int
+    vin: str
+    plate_number: str
+    model: str
+    status: str
+    position_text: Optional[str] = None
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
+
+@router.get("/all/positions", response_model=List[CarPosition])
+def get_all_cars_positions_endpoint():
+    """Возвращает все машины с их позициями"""
+    return get_all_cars_positions()

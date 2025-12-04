@@ -76,16 +76,26 @@ def populate_cars():
     cur = conn.cursor()
     
     cars = [
-        ("1HGBH41JXMN109186", "1234 AB-1", "Toyota Camry", "available", "POINT(-122.4194 37.7749)"),
-        ("2T1BURHE5JC012345", "5678 CD-2", "Honda Civic", "available", "POINT(-122.4184 37.7759)"),
-        ("WBAVA33598NL67890", "9012 EF-3", "BMW X3", "rented", "POINT(-122.4174 37.7769)"),
-        ("1FTFW1E83GKD12345", "3456 GH-4", "Ford F-150", "available", "POINT(-122.4164 37.7779)"),
-        ("JH4NA21691T000123", "7890 IJ-5", "Acura TLX", "maintenance", "POINT(-122.4154 37.7789)"),
-        ("KMHDH4AE2CU456789", "2345 JK-6", "Hyundai Sonata", "available", "POINT(-122.4144 37.7799)"),
-        ("1C4RJFAG4FC123456", "6789 KL-7", "Jeep Cherokee", "available", "POINT(-122.4134 37.7809)"),
-        ("WBAVA53589NL78901", "1011 LM-7", "BMW 3 Series", "rented", "POINT(-122.4124 37.7819)"),
-        ("2T1BURHE6JC023456", "1213 MN-7", "Honda Accord", "available", "POINT(-122.4114 37.7829)"),
-        ("1HGBH41JXMN110197", "1415 OP-1", "Toyota Corolla", "available", "POINT(-122.4104 37.7839)")
+        ("1HGBH41JXMN109186", "1234 AB-1", "Toyota Camry", "available", "POINT(27.5615 53.9041)"),  # Минск
+        ("2T1BURHE5JC012345", "5678 CD-2", "Honda Civic", "available", "POINT(27.5575 53.9025)"), # Минск
+        ("WBAVA33598NL67890", "9012 EF-3", "BMW X3", "rented", "POINT(27.5634 53.9062)"),  # Минск
+        ("1FTFW1E83GKD12345", "3456 GH-4", "Ford F-150", "available", "POINT(27.5598 53.9012)"),  # Минск
+        ("JH4NA21691T000123", "7890 IJ-5", "Acura TLX", "maintenance", "POINT(27.5651 53.9038)"),  # Минск
+        ("KMHDH4AE2CU456789", "2345 JK-6", "Hyundai Sonata", "available", "POINT(27.587 53.9056)"),  # Минск
+        ("1C4RJFAG4FC123456", "6789 KL-7", "Jeep Cherokee", "available", "POINT(27.5623 53.9071)"),  # Минск
+        ("WBAVA53589NL78901", "1011 LM-7", "BMW 3 Series", "rented", "POINT(27.5569 53.9021)"),  # Минск
+        ("2T1BURHE6JC023456", "1213 MN-7", "Honda Accord", "available", "POINT(27.5642 53.9049)"),  # Минск
+        ("1HGBH41JXMN110197", "1415 OP-1", "Toyota Corolla", "available", "POINT(27.578 53.9067)"), # Минск
+        ("1HGBH41JXMN109187", "1234 AB-2", "Toyota Camry", "available", "POINT(-122.4194 37.7749)"),
+        ("2T1BURHE5JC012346", "5678 CD-3", "Honda Civic", "available", "POINT(-122.4184 37.759)"),
+        ("WBAVA33598NL67891", "9012 EF-4", "BMW X3", "rented", "POINT(-122.4174 37.769)"),
+        ("1FTFW1E83GKD12346", "3456 GH-5", "Ford F-150", "available", "POINT(-122.4164 37.7779)"),
+        ("JH4NA21691T000124", "7890 IJ-6", "Acura TLX", "maintenance", "POINT(-122.4154 37.789)"),
+        ("KMHDH4AE2CU456790", "2345 JK-7", "Hyundai Sonata", "available", "POINT(-122.4144 37.7799)"),
+        ("1C4RJFAG4FC123457", "6789 KL-8", "Jeep Cherokee", "available", "POINT(-122.4134 37.7809)"),
+        ("WBAVA53589NL78902", "1011 LM-8", "BMW 3 Series", "rented", "POINT(-122.4124 37.7819)"),
+        ("2T1BURHE6JC023457", "1213 MN-8", "Honda Accord", "available", "POINT(-122.414 37.7829)"),
+        ("1HGBH41JXMN110198", "1415 OP-2", "Toyota Corolla", "available", "POINT(-122.4104 37.7839)")
     ]
     
     for car in cars:
