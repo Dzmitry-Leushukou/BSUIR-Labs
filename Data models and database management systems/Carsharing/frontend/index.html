@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carsharing App</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключение Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="account-panel">
+        <div class="user-info" id="user-info">
+            <img src="https://via.placeholder.com/40" alt="User Avatar" class="avatar" id="user-avatar">
+            <div class="user-details">
+                <span class="user-name" id="user-name">Иван Петров</span>
+                <span class="cashback" id="user-cashback">Кэшбэк: 150 BYN</span>
+            </div>
+        </div>
+        
+        <div class="auth-buttons" id="auth-buttons" style="display: none;">
+            <button class="btn login-btn">Войти</button>
+            <button class="btn register-btn">Регистрация</button>
+        </div>
+        
+        <div class="logout-button" id="logout-button" style="display: none;">
+            <button class="btn logout-btn">Выйти</button>
+        </div>
+    </div>
+
+    <!-- Подключение Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
