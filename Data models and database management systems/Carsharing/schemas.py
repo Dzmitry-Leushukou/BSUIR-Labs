@@ -28,8 +28,10 @@ class UserBase(BaseModel):
     role_id: int
     status: Optional[str] = "active"
 
+from pydantic import BaseModel, EmailStr
+
 class UserRegistration(BaseModel):
-    email: str
+    email: EmailStr
     password: str  # plain text password
     name: str
     surname: str
@@ -42,7 +44,7 @@ class UserLogin(BaseModel):
     password: str
 
 class UserCreate(UserBase):
-    pass
+    role_id: int = 2  # по умолчанию (user role)
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None

@@ -35,11 +35,18 @@ async function loadProfileInfo() {
             document.getElementById('profile-email').textContent = userData.email;
             document.getElementById('profile-cashback').textContent = `${userData.cashback} BYN`;
             
-            // Определяем роль пользователя
-            const roleName = userData.role_id === 1 ? 'Пользователь' :
-                           userData.role_id === 2 ? 'Администратор' :
-                           userData.role_id === 3 ? 'Менеджер' : 'Неизвестная роль';
-            document.getElementById('profile-role').textContent = roleName;
+            // Получаем информацию о роли пользователя из базы данных
+            const roleResponse = await fetch(`/roles/${userData.role_id}`);
+            if (roleResponse.ok) {
+                const roleData = await roleResponse.json();
+                document.getElementById('profile-role').textContent = roleData.name;
+            } else {
+                // В случае ошибки используем резервный вариант
+                const roleName = userData.role_id === 1 ? 'Администратор' :
+                               userData.role_id === 2 ? 'Пользователь' :
+                               userData.role_id === 3 ? 'Менеджер' : 'Неизвестная роль';
+                document.getElementById('profile-role').textContent = roleName;
+            }
             
             // Обновляем токен, если он был возвращен с сервера
             if (userData.token) {

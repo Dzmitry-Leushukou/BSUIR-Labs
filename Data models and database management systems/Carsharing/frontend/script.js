@@ -303,7 +303,24 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                     }
                 } else {
                     const errorData = await response.json();
-                    alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    if (typeof errorData.detail === 'string') {
+                        alert(`Ошибка регистрации: ${errorData.detail}`);
+                    } else if (Array.isArray(errorData.detail)) {
+                        // Обработка ошибок валидации Pydantic
+                        const validationErrors = errorData.detail.map(error => {
+                            if (typeof error.msg === 'string') {
+                                return error.msg;
+                            } else {
+                                return JSON.stringify(error.msg);
+                            }
+                        }).join(', ');
+                        alert(`Ошибка регистрации: ${validationErrors}`);
+                    } else if (typeof errorData.detail === 'object' && errorData.detail !== null) {
+                        // Обработка ошибки, когда detail является объектом
+                        alert(`Ошибка регистрации: ${JSON.stringify(errorData.detail)}`);
+                    } else {
+                        alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка при попытке регистрации:', error);

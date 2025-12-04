@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import random
+import bcrypt
 
 load_dotenv()
 
@@ -46,16 +47,16 @@ def populate_users():
     roles = {name: id for id, name in cur.fetchall()}
     
     users = [
-        ("admin@example.com", "hashed_password_1", "Admin", "User", 0.0, roles["admin"], "active"),
-        ("john.doe@example.com", "hashed_password_2", "John", "Doe", 15.50, roles["user"], "active"),
-        ("jane.smith@example.com", "hashed_password_3", "Jane", "Smith", 25.00, roles["user"], "active"),
-        ("bob.johnson@example.com", "hashed_password_4", "Bob", "Johnson", 10.75, roles["user"], "active"),
-        ("alice.brown@example.com", "hashed_password_5", "Alice", "Brown", 30.25, roles["user"], "active"),
-        ("charlie.wilson@example.com", "hashed_password_6", "Charlie", "Wilson", 5.50, roles["user"], "active"),
-        ("diana.miller@example.com", "hashed_password_7", "Diana", "Miller", 40.00, roles["manager"], "active"),
-        ("eve.taylor@example.com", "hashed_password_8", "Eve", "Taylor", 22.30, roles["user"], "banned"),
-        ("frank.moore@example.com", "hashed_password_9", "Frank", "Moore", 18.90, roles["user"], "active"),
-        ("grace.lee@example.com", "hashed_password_10", "Grace", "Lee", 35.75, roles["user"], "active")
+        ("admin@example.com", bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Admin", "User", 0.0, roles["admin"], "active"),
+        ("john.doe@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "John", "Doe", 15.50, roles["user"], "active"),
+        ("jane.smith@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Jane", "Smith", 25.00, roles["user"], "active"),
+        ("bob.johnson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Bob", "Johnson", 10.75, roles["user"], "active"),
+        ("alice.brown@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Alice", "Brown", 30.25, roles["user"], "active"),
+        ("charlie.wilson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Charlie", "Wilson", 5.50, roles["user"], "active"),
+        ("diana.miller@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Diana", "Miller", 40.00, roles["manager"], "active"),
+        ("eve.taylor@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Eve", "Taylor", 22.30, roles["user"], "banned"),
+        ("frank.moore@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Frank", "Moore", 18.90, roles["user"], "active"),
+        ("grace.lee@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Grace", "Lee", 35.75, roles["user"], "active")
     ]
     
     for user in users:

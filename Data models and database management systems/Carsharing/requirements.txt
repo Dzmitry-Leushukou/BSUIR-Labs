@@ -3,7 +3,7 @@ uvicorn
 psycopg2-binary
 sqlalchemy
 asyncpg
-pydantic
+pydantic[email]
 pydantic-settings
 alembic
 python-dotenv
