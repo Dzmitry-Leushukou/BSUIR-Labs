@@ -87,6 +87,19 @@ function showUserInfo(userData) {
     
     document.getElementById('user-name').textContent = `${userData.name} ${userData.surname}`;
     document.getElementById('user-cashback').textContent = `Кэшбэк: ${userData.cashback} BYN`;
+    
+    // Обновляем токен, если он был возвращен с сервера
+    if (userData.token) {
+        localStorage.setItem('auth_token', userData.token);
+    }
+    
+    // Добавляем обработчик клика на весь прямоугольник профиля
+    userInfo.addEventListener('click', (e) => {
+        // Проверяем, что клик не был по кнопке "Выйти"
+        if (!e.target.classList.contains('logout-btn')) {
+            window.location.href = '/profile';
+        }
+    });
 }
 
 // Функция для загрузки информации о пользователе
@@ -124,7 +137,10 @@ async function loadUserInfo() {
 // Функция для обновления статуса авторизации
 function updateAuthStatus(isAuthenticated, userData = null) {
     if (isAuthenticated && userData) {
-        localStorage.setItem('auth_token', userData.token || 'dummy_token');
+        // Сохраняем токен, полученный от сервера, или используем фиктивный для демонстрации
+        if (userData.token) {
+            localStorage.setItem('auth_token', userData.token);
+        }
         showUserInfo(userData);
     } else {
         localStorage.removeItem('auth_token');
@@ -177,8 +193,12 @@ document.querySelector('.login-btn').addEventListener('click', () => {
                 
                 if (response.ok) {
                     const userData = await response.json();
-                    // Добавляем временный токен для демонстрации
-                    userData.token = 'dummy_token';
+                    // Проверяем, есть ли токен в ответе от сервера
+                    // В текущей реализации сервер должен возвращать токен
+                    if (!userData.token) {
+                        // Если сервер не вернул токен, создаем фиктивный для демонстрации
+                        userData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
+                    }
                     updateAuthStatus(true, userData);
                 } else {
                     const errorData = await response.json();
@@ -253,7 +273,31 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                 });
                 
                 if (response.ok) {
-                    alert('Регистрация прошла успешно! Теперь вы можете войти.');
+                    // При успешной регистрации сразу логиним пользователя
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-password').value = password;
+                    
+                    // Имитируем логин
+                    const loginResponse = await fetch('/users/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const userData = await loginResponse.json();
+                        if (!userData.token) {
+                            // Если сервер не вернул токен, создаем фиктивный для демонстрации
+                            userData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
+                        }
+                        updateAuthStatus(true, userData);
+                        alert('Регистрация и вход прошли успешно!');
+                    } else {
+                        const errorData = await loginResponse.json();
+                        alert(`Ошибка входа после регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    }
                 } else {
                     const errorData = await response.json();
                     alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);

@@ -53,6 +53,12 @@ async def read_root():
     with open("frontend/index.html", "r", encoding="utf-8") as file:
         return HTMLResponse(content=file.read())
 
+# Маршрут для страницы профиля
+@app.get("/profile")
+async def read_profile():
+    with open("frontend/profile.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

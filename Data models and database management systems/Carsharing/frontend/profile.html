@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - Carsharing App</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Мой профиль</h1>
+        </div>
+        
+        <div class="profile-content">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <img src="https://via.placeholder.com/100" alt="User Avatar" class="avatar-large">
+                </div>
+                
+                <div class="user-info-details">
+                    <div class="info-row">
+                        <label>Имя:</label>
+                        <span id="profile-name">Иван</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <label>Фамилия:</label>
+                        <span id="profile-surname">Петров</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <label>Email:</label>
+                        <span id="profile-email">ivan.petrov@example.com</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <label>Кэшбэк:</label>
+                        <span id="profile-cashback">150 BYN</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <label>Роль:</label>
+                        <span id="profile-role">Пользователь</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="btn edit-profile-btn">Редактировать профиль</button>
+                <button class="btn change-password-btn">Сменить пароль</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для редактирования профиля -->
+    <div id="edit-profile-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Редактировать профиль</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="edit-name">Имя:</label>
+                    <input type="text" id="edit-name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-surname">Фамилия:</label>
+                    <input type="text" id="edit-surname" name="surname" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-email">Email:</label>
+                    <input type="email" id="edit-email" name="email" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary cancel-edit">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/static/profile.js"></script>
+</body>
+</html>
