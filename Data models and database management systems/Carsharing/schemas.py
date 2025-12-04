@@ -28,6 +28,19 @@ class UserBase(BaseModel):
     role_id: int
     status: Optional[str] = "active"
 
+class UserRegistration(BaseModel):
+    email: str
+    password: str  # plain text password
+    name: str
+    surname: str
+    cashback: Optional[float] = 0
+    role_id: int = 1  # по умолчанию
+    status: Optional[str] = "active"
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 class UserCreate(UserBase):
     pass
 

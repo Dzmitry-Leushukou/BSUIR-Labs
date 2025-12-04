@@ -6,6 +6,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import bcrypt
 
 load_dotenv()
 
@@ -1165,6 +1166,15 @@ def delete_action_log(log_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Action log not found")
     return {"message": "Action log deleted successfully"}
+
+# Utility function for password hashing
+def hash_password(password: str) -> str:
+    """Хеширует пароль с использованием bcrypt"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Проверяет пароль, сравнивая его с хешем"""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 if __name__ == "__main__":
     import uvicorn
