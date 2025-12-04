@@ -1,3 +1,8 @@
+// Функция для возврата на предыдущую страницу
+function goBack() {
+    window.history.back();
+}
+
 // Загрузка информации о пользователе при загрузке страницы профиля
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProfileInfo();
