@@ -109,7 +109,7 @@ async function showCarsOnMap() {
                         <b>Машина: ${car.model}</b><br>
                         Номер: ${car.plate_number}<br>
                         Статус: ${car.status}
-                    `).openPopup();
+                    `);
                     
                     carMarkers.push(carMarker);
                 }

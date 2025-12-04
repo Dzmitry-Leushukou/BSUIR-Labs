@@ -13,6 +13,15 @@ def get_rentals(offset: int = 0, limit: int = 10):
     conn.close()
     return rentals
 
+def get_rentals_by_user_id(user_id: int, offset: int = 0, limit: int = 10):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM rentals WHERE user_id = %s ORDER BY id LIMIT %s OFFSET %s", (user_id, limit, offset))
+    rentals = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rentals
+
 def get_rental(rental_id: int):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
