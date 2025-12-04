@@ -71,8 +71,109 @@ document.querySelector('.edit-profile-btn').addEventListener('click', () => {
 
 // Обработчик для кнопки "Сменить пароль"
 document.querySelector('.change-password-btn').addEventListener('click', () => {
-    // Пока что просто выводим сообщение, в дальнейшем можно реализовать модальное окно смены пароля
-    alert('Функция смены пароля будет реализована позже');
+    openChangePasswordModal();
+});
+
+// Функция открытия модального окна смены пароля
+function openChangePasswordModal() {
+    // Очищаем форму
+    document.getElementById('change-password-form').reset();
+    
+    // Показываем модальное окно
+    document.getElementById('change-password-modal').style.display = 'block';
+}
+
+// Закрытие модального окна смены пароля при клике на крестик
+document.querySelector('.close-change-password').addEventListener('click', () => {
+    document.getElementById('change-password-modal').style.display = 'none';
+});
+
+// Закрытие модального окна смены пароля при клике на кнопку "Отмена"
+document.querySelector('.cancel-change-password').addEventListener('click', () => {
+    document.getElementById('change-password-modal').style.display = 'none';
+});
+
+// Закрытие модального окна смены пароля при клике вне его области
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById('change-password-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Обработчик отправки формы смены пароля
+document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-new-password').value;
+    
+    // Проверяем, совпадают ли новые пароли
+    if (newPassword !== confirmPassword) {
+        alert('Новые пароли не совпадают');
+        return;
+    }
+    
+    // Проверяем длину нового пароля
+    if (newPassword.length < 1) {
+        alert('Новый пароль должен содержать хотя бы 1 символ');
+        return;
+    }
+    
+    const formData = {
+        current_password: currentPassword,
+        new_password: newPassword
+    };
+    
+    try {
+        const response = await fetch('/users/change-password', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            // Закрываем модальное окно
+            document.getElementById('change-password-modal').style.display = 'none';
+            
+            alert('Пароль успешно изменен');
+        } else {
+            let errorMessage = 'Неизвестная ошибка';
+            try {
+                const errorData = await response.json();
+                // Исправляем получение сообщения об ошибке
+                if (errorData && typeof errorData === 'object') {
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else {
+                        // Если detail и message нет, преобразуем объект в строку
+                        errorMessage = JSON.stringify(errorData);
+                    }
+                } else {
+                    errorMessage = errorData || 'Неизвестная ошибка';
+                }
+            } catch (e) {
+                // Если не удалось распарсить JSON, используем текст ошибки
+                errorMessage = await response.text() || 'Ошибка при смене пароля';
+            }
+            alert(`Ошибка при смене пароля: ${errorMessage}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при смене пароля:', error);
+        alert('Ошибка при смене пароля');
+    }
 });
 
 // Функция открытия модального окна редактирования профиля

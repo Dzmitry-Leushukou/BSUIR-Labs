@@ -43,6 +43,10 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class UserPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
 class UserCreate(UserBase):
     role_id: int = 2  # по умолчанию (user role)
 

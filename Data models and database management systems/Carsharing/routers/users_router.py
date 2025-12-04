@@ -1,9 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from schemas import *
-from crud.users_crud import *
+from schemas import (
+    User, UserCreate, UserUpdate, UserLogin, UserRegistration,
+    UserPasswordChange
+)
+from crud.users_crud import get_user, get_users, create_user, update_user, delete_user, get_user_by_email
 from typing import List
 import bcrypt
+from database import get_db_connection
+from psycopg2.extras import RealDictCursor
 
 security = HTTPBearer()
 
@@ -11,7 +16,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Проверяет пароль, сравнивая его с хешем"""
     # Convert the hashed password string back to bytes for bcrypt
     try:
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        # Check if the hashed_password is already bytes
+        if isinstance(hashed_password, bytes):
+            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
+        else:
+            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
     except ValueError:
         # Handle case where hashed_password is already bytes or invalid
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password if isinstance(hashed_password, bytes) else hashed_password.encode('utf-8'))
@@ -92,6 +101,42 @@ def get_user_endpoint(user_id: int):
 @router.post("/", response_model=User)
 def create_user_endpoint(user: UserCreate):
     return create_user(user)
+
+@router.put("/change-password")
+def change_password_endpoint(password_change: UserPasswordChange, current_user: dict = Depends(get_current_user)):
+    # Получаем полную информацию о пользователе по ID, чтобы получить хешированный пароль
+    user = get_user(current_user['id'])
+    if not verify_password(password_change.current_password, user['hashed_password']):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Проверяем, совпадает ли новый пароль с текущим
+    if verify_password(password_change.new_password, user['hashed_password']):
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+    
+    # Хешируем новый пароль
+    hashed_new_password = hash_password(password_change.new_password)
+    
+    # Обновляем пароль в базе данных
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(
+        "UPDATE users SET hashed_password = %s WHERE id = %s RETURNING *",
+        (hashed_new_password, current_user['id'])
+    )
+    updated_user = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Удаляем hashed_password из ответа для безопасности
+    user_data = dict(updated_user)
+    if 'hashed_password' in user_data:
+        del user_data['hashed_password']
+    
+    return {"message": "Password changed successfully"}
 
 @router.put("/{user_id}", response_model=User)
 def update_user_endpoint(user_id: int, user: UserUpdate):
