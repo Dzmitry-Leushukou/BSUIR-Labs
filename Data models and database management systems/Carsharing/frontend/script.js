@@ -58,7 +58,15 @@ function addMarker(lat, lng) {
         map.removeLayer(marker);
     }
     
-    marker = L.marker([lat, lng]).addTo(map);
+    // Создаем маркер с пользовательской иконкой для местоположения пользователя
+    const userIcon = L.divIcon({
+        className: 'user-location-marker',
+        html: '<div style="background-color: #007bff; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">👤</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    
+    marker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
     marker.bindPopup('Ваше текущее местоположение').openPopup();
 }
 
@@ -88,7 +96,15 @@ async function showCarsOnMap() {
             // Добавить маркеры для каждой машины
             cars.forEach(car => {
                 if (car.latitude && car.longitude) {
-                    const carMarker = L.marker([car.latitude, car.longitude]).addTo(map);
+                    // Создаем иконку для маркера машины
+                    const carIcon = L.divIcon({
+                        className: 'car-marker',
+                        html: '<div style="background-color: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">🚗</div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    
+                    const carMarker = L.marker([car.latitude, car.longitude], {icon: carIcon}).addTo(map);
                     carMarker.bindPopup(`
                         <b>Машина: ${car.model}</b><br>
                         Номер: ${car.plate_number}<br>
@@ -418,8 +434,38 @@ document.querySelector('.logout-btn').addEventListener('click', () => {
     clearCarMarkers();
 });
 
+// Функция для перехода к местоположению пользователя на карте
+function goToUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                // Центрировать карту на текущем местоположении
+                map.setView([latitude, longitude], 15);
+                
+                // Обновить маркер местоположения пользователя
+                addMarker(latitude, longitude);
+            },
+            (error) => {
+                console.error('Ошибка получения местоположения:', error);
+                alert('Не удалось получить доступ к геолокации. Проверьте настройки браузера.');
+            }
+        );
+    } else {
+        console.error('Геолокация не поддерживается браузером');
+        alert('Ваш браузер не поддерживает геолокацию');
+    }
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     getCurrentLocation();
     checkAuthStatus();
+    
+    // Добавляем обработчик для кнопки "Мое местоположение"
+    const locateBtn = document.getElementById('locate-user-btn');
+    if (locateBtn) {
+        locateBtn.addEventListener('click', goToUserLocation);
+    }
 });
