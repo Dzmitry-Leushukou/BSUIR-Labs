@@ -34,7 +34,7 @@ class UserRegistration(BaseModel):
     name: str
     surname: str
     cashback: Optional[float] = 0
-    role_id: int = 1  # по умолчанию
+    role_id: int = 2  # по умолчанию (user role)
     status: Optional[str] = "active"
 
 class UserLogin(BaseModel):

@@ -27,16 +27,25 @@ def get_user(user_id: int):
 def create_user(user: UserCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute(
-        """INSERT INTO users (email, hashed_password, name, surname, cashback, role_id, status) 
-           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-        (user.email, user.hashed_password, user.name, user.surname, user.cashback, user.role_id, user.status)
-    )
-    new_user = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_user
+    try:
+        cur.execute(
+            """INSERT INTO users (email, hashed_password, name, surname, cashback, role_id, status)
+               VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+            (user.email, user.hashed_password, user.name, user.surname, user.cashback, user.role_id, user.status)
+        )
+        new_user = cur.fetchone()
+        conn.commit()
+        return new_user
+    except Exception as e:
+        conn.rollback()
+        # Check if the error is due to unique constraint violation
+        if "duplicate key value violates unique constraint" in str(e).lower():
+            raise HTTPException(status_code=400, detail="User with this email already exists")
+        else:
+            raise e
+    finally:
+        cur.close()
+        conn.close()
 
 def update_user(user_id: int, user: UserUpdate):
     conn = get_db_connection()

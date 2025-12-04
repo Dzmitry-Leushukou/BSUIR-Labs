@@ -9,7 +9,12 @@ security = HTTPBearer()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Проверяет пароль, сравнивая его с хешем"""
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    # Convert the hashed password string back to bytes for bcrypt
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except ValueError:
+        # Handle case where hashed_password is already bytes or invalid
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password if isinstance(hashed_password, bytes) else hashed_password.encode('utf-8'))
 
 def hash_password(password: str) -> str:
     """Хеширует пароль с использованием bcrypt"""
@@ -118,11 +123,16 @@ def login_user_endpoint(user_login: UserLogin):
     return user_data
 
 @router.post("/register")
-def register_user_endpoint(user: UserRegistration):
+async def register_user_endpoint(user: UserRegistration):
+    print(f"Registration attempt with email: {user.email}")
+    
     # Проверяем, существует ли уже пользователь с таким email
     existing_user = get_user_by_email(user.email)
     if existing_user:
+        print(f"User with email {user.email} already exists")
         raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    print(f"User with email {user.email} does not exist, proceeding with registration")
     
     # Хешируем пароль
     hashed_password = hash_password(user.password)
@@ -133,16 +143,34 @@ def register_user_endpoint(user: UserRegistration):
     # Удаляем plain text пароль из данных пользователя
     del user_data['password']
     
-    # Создаем пользователя в базе данных
-    created_user = create_user(UserCreate(**user_data))
+    print(f"Attempting to create user with data: {user_data}")
+    
+    try:
+        # Создаем пользователя в базе данных
+        created_user = create_user(UserCreate(**user_data))
+        print(f"User created successfully with ID: {created_user['id']}")
+    except Exception as e:
+        print(f"Error creating user: {str(e)}")
+        # Проверяем, возможно ли это связано с уникальным ограничением
+        # Дополнительная проверка на случай гонки
+        existing_user = get_user_by_email(user.email)
+        if existing_user:
+            print(f"User with email {user.email} exists after attempt")
+            raise HTTPException(status_code=400, detail="User with this email already exists")
+        else:
+            # Если ошибка другая, пробрасываем её
+            print(f"Other error occurred: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
     
     # Возвращаем информацию о пользователе без пароля, но с токеном
     user_response = dict(created_user)
-    del user_response['hashed_password']
+    if 'hashed_password' in user_response:
+        del user_response['hashed_password']
     
     # Добавляем временный токен для демонстрации
-    # В реальном приложении тут должен быть JWT-токен
+    # В реальном приложении токен должен быть JWT-токеном
     # Для демонстрации создадим токен в формате "user_id:token"
     user_response['token'] = f"{user_response['id']}:dummy_token"  # В реальном приложении токен должен быть сгенерирован
     
+    print(f"Registration successful for user ID: {user_response['id']}")
     return user_response

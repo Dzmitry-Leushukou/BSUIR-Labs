@@ -267,36 +267,39 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                         name,
                         surname,
                         cashback: 0,
-                        role_id: 1,  // по умолчанию
+                        role_id: 2,  // по умолчанию (user role)
                         status: "active"
                     })
                 });
                 
                 if (response.ok) {
-                    // При успешной регистрации сразу логиним пользователя
-                    document.getElementById('login-email').value = email;
-                    document.getElementById('login-password').value = password;
-                    
-                    // Имитируем логин
-                    const loginResponse = await fetch('/users/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ email, password })
-                    });
-                    
-                    if (loginResponse.ok) {
-                        const userData = await loginResponse.json();
-                        if (!userData.token) {
-                            // Если сервер не вернул токен, создаем фиктивный для демонстрации
-                            userData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
-                        }
+                    const userData = await response.json();
+                    // Registration endpoint now returns user data with token directly
+                    if (userData.token) {
                         updateAuthStatus(true, userData);
                         alert('Регистрация и вход прошли успешно!');
                     } else {
-                        const errorData = await loginResponse.json();
-                        alert(`Ошибка входа после регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                        // Fallback: try to login after registration
+                        const loginResponse = await fetch('/users/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ email, password })
+                        });
+                        
+                        if (loginResponse.ok) {
+                            const loginData = await loginResponse.json();
+                            if (!loginData.token) {
+                                // Если сервер не вернул токен, создаем фиктивный для демонстрации
+                                loginData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
+                            }
+                            updateAuthStatus(true, loginData);
+                            alert('Регистрация и вход прошли успешно!');
+                        } else {
+                            const errorData = await loginResponse.json();
+                            alert(`Ошибка входа после регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                        }
                     }
                 } else {
                     const errorData = await response.json();
