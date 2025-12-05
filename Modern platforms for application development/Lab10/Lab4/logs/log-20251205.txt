@@ -441,3 +441,21 @@ System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c
 2025-12-05 12:04:06.541 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
 2025-12-05 12:04:06.545 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 3.4742ms
 2025-12-05 12:04:06.546 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 4.8293ms
+2025-12-05 15:33:22.899 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-05 15:33:23.558 +03:00 [INF] Now listening on: https://localhost:7001
+2025-12-05 15:33:23.560 +03:00 [INF] Now listening on: http://localhost:5001
+2025-12-05 15:33:23.714 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-05 15:33:23.716 +03:00 [INF] Hosting environment: Development
+2025-12-05 15:33:23.717 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4
+2025-12-05 15:33:24.210 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 15:33:25.834 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 15:33:25.898 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 15:33:26.020 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 15:33:26.334 +03:00 [INF] Executed ViewResult - view Index executed in 324.3036ms.
+2025-12-05 15:33:26.346 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 442.2474ms
+2025-12-05 15:33:26.352 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 15:33:26.405 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 2199.1298ms
+2025-12-05 15:33:26.433 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 15:33:26.433 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 15:33:26.456 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 23.4314ms
+2025-12-05 15:33:26.526 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 92.866ms
