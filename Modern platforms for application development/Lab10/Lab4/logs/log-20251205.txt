@@ -1,0 +1,443 @@
+2025-12-05 11:46:22.275 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-05 11:46:22.924 +03:00 [INF] Now listening on: https://localhost:7001
+2025-12-05 11:46:22.976 +03:00 [INF] Now listening on: http://localhost:5001
+2025-12-05 11:46:23.181 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-05 11:46:23.229 +03:00 [INF] Hosting environment: Development
+2025-12-05 11:46:23.234 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4
+2025-12-05 11:46:26.594 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 11:46:27.813 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:46:38.576 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-12-05 11:46:38.584 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:46:38.654 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 11:46:38.810 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:46:39.442 +03:00 [INF] Executed ViewResult - view Index executed in 639.5163ms.
+2025-12-05 11:46:39.472 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 813.0446ms
+2025-12-05 11:46:39.479 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:46:39.563 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 12999.2518ms
+2025-12-05 11:46:39.707 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2025-12-05 11:46:39.707 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/font-awesome/css/all.min.css - null null
+2025-12-05 11:46:39.707 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/css/site.css?v=JoPpvJ6jynZs_lqwshSouCMJB-imV-dyGAx6JgxsRr4 - null null
+2025-12-05 11:46:39.721 +03:00 [INF] The file /lib/font-awesome/css/all.min.css was not modified
+2025-12-05 11:46:39.721 +03:00 [INF] The file /lib/bootstrap/dist/css/bootstrap.min.css was not modified
+2025-12-05 11:46:39.730 +03:00 [INF] The file /css/site.css was not modified
+2025-12-05 11:46:39.735 +03:00 [INF] ---> request /lib/font-awesome/css/all.min.css returns 304
+2025-12-05 11:46:39.736 +03:00 [INF] ---> request /lib/bootstrap/dist/css/bootstrap.min.css returns 304
+2025-12-05 11:46:39.742 +03:00 [INF] ---> request /css/site.css returns 304
+2025-12-05 11:46:39.745 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/font-awesome/css/all.min.css - 304 null text/css 37.6993ms
+2025-12-05 11:46:39.747 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css - 304 null text/css 39.7892ms
+2025-12-05 11:46:39.760 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/css/site.css?v=JoPpvJ6jynZs_lqwshSouCMJB-imV-dyGAx6JgxsRr4 - 304 null text/css 52.4534ms
+2025-12-05 11:46:39.764 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/jquery/dist/jquery.min.js - null null
+2025-12-05 11:46:39.770 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2025-12-05 11:46:39.779 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/js/site.js?v=yI9Wq3IouOs3n2m9O9lX7lBhOuYikX2a6pONjp05jFo - null null
+2025-12-05 11:46:39.815 +03:00 [INF] The file /lib/jquery/dist/jquery.min.js was not modified
+2025-12-05 11:46:39.823 +03:00 [INF] The file /lib/bootstrap/dist/js/bootstrap.bundle.min.js was not modified
+2025-12-05 11:46:39.829 +03:00 [INF] The file /js/site.js was not modified
+2025-12-05 11:46:39.831 +03:00 [INF] ---> request /lib/jquery/dist/jquery.min.js returns 304
+2025-12-05 11:46:39.835 +03:00 [INF] ---> request /lib/bootstrap/dist/js/bootstrap.bundle.min.js returns 304
+2025-12-05 11:46:39.837 +03:00 [INF] ---> request /js/site.js returns 304
+2025-12-05 11:46:39.841 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/jquery/dist/jquery.min.js - 304 null text/javascript 76.577ms
+2025-12-05 11:46:39.844 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 304 null text/javascript 73.5388ms
+2025-12-05 11:46:39.861 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/js/site.js?v=yI9Wq3IouOs3n2m9O9lX7lBhOuYikX2a6pONjp05jFo - 304 null text/javascript 80.9269ms
+2025-12-05 11:46:39.870 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:46:39.896 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:46:39.914 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 43.9458ms
+2025-12-05 11:46:40.038 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 141.2379ms
+2025-12-05 11:46:40.065 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/font-awesome/webfonts/fa-brands-400.woff2 - null null
+2025-12-05 11:46:40.073 +03:00 [INF] The file /lib/font-awesome/webfonts/fa-brands-400.woff2 was not modified
+2025-12-05 11:46:40.076 +03:00 [INF] ---> request /lib/font-awesome/webfonts/fa-brands-400.woff2 returns 304
+2025-12-05 11:46:40.079 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/font-awesome/webfonts/fa-brands-400.woff2 - 304 null font/woff2 13.798ms
+2025-12-05 11:46:40.151 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/favicon.ico - null null
+2025-12-05 11:46:40.159 +03:00 [INF] The file /favicon.ico was not modified
+2025-12-05 11:46:40.162 +03:00 [INF] ---> request /favicon.ico returns 304
+2025-12-05 11:46:40.165 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/favicon.ico - 304 null image/x-icon 14.1495ms
+2025-12-05 11:48:42.010 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-05 11:48:42.645 +03:00 [INF] Now listening on: https://localhost:7001
+2025-12-05 11:48:42.654 +03:00 [INF] Now listening on: http://localhost:5001
+2025-12-05 11:48:42.820 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-05 11:48:42.823 +03:00 [INF] Hosting environment: Development
+2025-12-05 11:48:42.826 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4
+2025-12-05 11:48:43.322 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 11:48:43.503 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:48:45.004 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-12-05 11:48:45.023 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:48:45.077 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 11:48:45.154 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:48:45.477 +03:00 [INF] Executed ViewResult - view Index executed in 326.4308ms.
+2025-12-05 11:48:45.489 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 395.5023ms
+2025-12-05 11:48:45.494 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:48:45.543 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 2224.0473ms
+2025-12-05 11:48:45.580 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:48:45.580 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:48:45.592 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 11.2545ms
+2025-12-05 11:48:45.639 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 58.1882ms
+2025-12-05 11:48:50.389 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/login - null null
+2025-12-05 11:48:50.410 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:48:50.418 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-12-05 11:48:50.422 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.AccountController.Login (Lab1)'
+2025-12-05 11:48:50.439 +03:00 [INF] Route matched with {action = "Login", controller = "Account", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(System.String) on controller Lab1.UI.Controllers.AccountController (Lab1).
+2025-12-05 11:48:50.470 +03:00 [INF] Executing ChallengeResult with authentication schemes (["keycloak"]).
+2025-12-05 11:48:50.511 +03:00 [INF] AuthenticationScheme: keycloak was challenged.
+2025-12-05 11:48:50.514 +03:00 [INF] Executed action Lab1.UI.Controllers.AccountController.Login (Lab1) in 66.4744ms
+2025-12-05 11:48:50.518 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.AccountController.Login (Lab1)'
+2025-12-05 11:48:50.523 +03:00 [INF] ---> request /login returns 302
+2025-12-05 11:48:50.533 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/login - 302 0 null 144.7733ms
+2025-12-05 11:49:11.726 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7001/signin-oidc - application/x-www-form-urlencoded 539
+2025-12-05 11:49:11.822 +03:00 [INF] Start processing HTTP request POST http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/token
+2025-12-05 11:49:11.833 +03:00 [INF] Sending HTTP request POST http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/token
+2025-12-05 11:49:12.212 +03:00 [INF] Received HTTP response headers after 370.228ms - 200
+2025-12-05 11:49:12.216 +03:00 [INF] End processing HTTP request after 398.3404ms - 200
+2025-12-05 11:49:12.234 +03:00 [INF] Start processing HTTP request GET http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/userinfo
+2025-12-05 11:49:12.237 +03:00 [INF] Sending HTTP request GET http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/userinfo
+2025-12-05 11:49:12.325 +03:00 [INF] Received HTTP response headers after 84.9907ms - 200
+2025-12-05 11:49:12.328 +03:00 [INF] End processing HTTP request after 93.994ms - 200
+2025-12-05 11:49:12.341 +03:00 [INF] AuthenticationScheme: AppCookie signed in.
+2025-12-05 11:49:12.349 +03:00 [INF] ---> request /signin-oidc returns 302
+2025-12-05 11:49:12.351 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7001/signin-oidc - 302 0 null 625.7138ms
+2025-12-05 11:49:12.361 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 11:49:12.375 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:49:12.381 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:49:12.383 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 11:49:12.388 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:12.484 +03:00 [INF] Executed ViewResult - view Index executed in 97.2493ms.
+2025-12-05 11:49:12.487 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 100.4131ms
+2025-12-05 11:49:12.489 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:49:12.491 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 130.3229ms
+2025-12-05 11:49:12.543 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:12.543 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/images/default-avatar.svg?v=ZNmab5mTeviwDZywqMqJXVxyVEU46M-uoKRE5L6POQw - null null
+2025-12-05 11:49:12.543 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:12.547 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 4.0032ms
+2025-12-05 11:49:12.559 +03:00 [INF] Sending file. Request path: '/images/default-avatar.svg'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4\wwwroot\images\default-avatar.svg'
+2025-12-05 11:49:12.562 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/images/default-avatar.svg?v=ZNmab5mTeviwDZywqMqJXVxyVEU46M-uoKRE5L6POQw - 200 246 image/svg+xml 19.4256ms
+2025-12-05 11:49:12.566 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 23.1904ms
+2025-12-05 11:49:17.373 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-12-05 11:49:17.388 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:49:17.397 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:17.423 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:49:17.464 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:49:17.467 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:17.474 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:21.270 +03:00 [INF] Received HTTP response headers after 3790.2145ms - 200
+2025-12-05 11:49:21.274 +03:00 [INF] End processing HTTP request after 3806.2195ms - 200
+2025-12-05 11:49:21.317 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:21.321 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:24.625 +03:00 [INF] Received HTTP response headers after 3301.3092ms - 200
+2025-12-05 11:49:24.628 +03:00 [INF] End processing HTTP request after 3311.5491ms - 200
+2025-12-05 11:49:24.672 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:24.737 +03:00 [INF] Executed ViewResult - view Index executed in 66.543ms.
+2025-12-05 11:49:24.741 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 7309.795ms
+2025-12-05 11:49:24.745 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:24.749 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 7376.2358ms
+2025-12-05 11:49:24.798 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:24.799 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:24.803 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 4.8831ms
+2025-12-05 11:49:24.816 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 17.716ms
+2025-12-05 11:49:28.868 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Cart/add/1?returnurl=%2FCatalog - null null
+2025-12-05 11:49:28.884 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The key {4797e21f-7320-4d0c-8223-dd704a8671b2} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-05 11:49:28.898 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CartController.Add (Lab1)'
+2025-12-05 11:49:28.913 +03:00 [INF] Route matched with {action = "Add", controller = "Cart", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Add(Int32, System.String) on controller Lab1.UI.Controllers.CartController (Lab1).
+2025-12-05 11:49:28.938 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/1
+2025-12-05 11:49:28.942 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/1
+2025-12-05 11:49:29.187 +03:00 [INF] Received HTTP response headers after 243.1153ms - 200
+2025-12-05 11:49:29.191 +03:00 [INF] End processing HTTP request after 252.3258ms - 200
+2025-12-05 11:49:29.236 +03:00 [INF] Executing RedirectResult, redirecting to /Catalog.
+2025-12-05 11:49:29.241 +03:00 [INF] Executed action Lab1.UI.Controllers.CartController.Add (Lab1) in 318.9815ms
+2025-12-05 11:49:29.248 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CartController.Add (Lab1)'
+2025-12-05 11:49:29.254 +03:00 [INF] Session started; Key:3a14ed82-f06e-9aba-bf13-e7b78ec06fa4, Id:ed968ae0-6162-6064-a6ec-0ee8f2600317
+2025-12-05 11:49:29.261 +03:00 [INF] ---> request /Cart/add/1 returns 302
+2025-12-05 11:49:29.269 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Cart/add/1?returnurl=%2FCatalog - 302 0 null 400.3926ms
+2025-12-05 11:49:29.278 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-12-05 11:49:29.296 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:29.302 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:49:29.311 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:49:29.315 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:29.321 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:29.338 +03:00 [INF] Received HTTP response headers after 12.1244ms - 200
+2025-12-05 11:49:29.342 +03:00 [INF] End processing HTTP request after 27.0653ms - 200
+2025-12-05 11:49:29.349 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:29.356 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:29.366 +03:00 [INF] Received HTTP response headers after 6.5551ms - 200
+2025-12-05 11:49:29.373 +03:00 [INF] End processing HTTP request after 23.2357ms - 200
+2025-12-05 11:49:29.377 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:29.403 +03:00 [INF] Executed ViewResult - view Index executed in 25.5311ms.
+2025-12-05 11:49:29.409 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 100.2568ms
+2025-12-05 11:49:29.415 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:29.420 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 141.4732ms
+2025-12-05 11:49:29.459 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:29.459 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:29.463 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 4.0955ms
+2025-12-05 11:49:29.472 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 12.5807ms
+2025-12-05 11:49:30.899 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Cart - null null
+2025-12-05 11:49:30.914 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CartController.Index (Lab1)'
+2025-12-05 11:49:30.920 +03:00 [INF] Route matched with {action = "Index", controller = "Cart", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.CartController (Lab1).
+2025-12-05 11:49:30.930 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:30.947 +03:00 [INF] Executed ViewResult - view Index executed in 18.5468ms.
+2025-12-05 11:49:30.954 +03:00 [INF] Executed action Lab1.UI.Controllers.CartController.Index (Lab1) in 26.1062ms
+2025-12-05 11:49:30.958 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CartController.Index (Lab1)'
+2025-12-05 11:49:30.963 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Cart - 200 null text/html; charset=utf-8 64.749ms
+2025-12-05 11:49:31.006 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:31.006 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:31.012 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 5.8305ms
+2025-12-05 11:49:31.015 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 8.0148ms
+2025-12-05 11:49:36.471 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-12-05 11:49:36.482 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:36.484 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:49:36.491 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:49:36.495 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:36.501 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:36.512 +03:00 [INF] Received HTTP response headers after 7.4103ms - 200
+2025-12-05 11:49:36.515 +03:00 [INF] End processing HTTP request after 19.8419ms - 200
+2025-12-05 11:49:36.519 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:36.524 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:36.532 +03:00 [INF] Received HTTP response headers after 4.4781ms - 200
+2025-12-05 11:49:36.538 +03:00 [INF] End processing HTTP request after 18.8748ms - 200
+2025-12-05 11:49:36.544 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:36.554 +03:00 [INF] Executed ViewResult - view Index executed in 9.9707ms.
+2025-12-05 11:49:36.559 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 70.0214ms
+2025-12-05 11:49:36.562 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:36.564 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 93.3496ms
+2025-12-05 11:49:36.604 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:36.604 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:36.608 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 3.8568ms
+2025-12-05 11:49:36.618 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 14.0079ms
+2025-12-05 11:49:42.215 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json - null null
+2025-12-05 11:49:42.222 +03:00 [INF] ---> request /.well-known/appspecific/com.chrome.devtools.json returns 404
+2025-12-05 11:49:42.223 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json - 404 0 null 7.8259ms
+2025-12-05 11:49:42.227 +03:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json, Response status code: 404
+2025-12-05 11:49:42.274 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css.map - null null
+2025-12-05 11:49:42.299 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map - null null
+2025-12-05 11:49:42.349 +03:00 [INF] Sending file. Request path: '/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map'
+2025-12-05 11:49:42.362 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map - 200 327229 text/plain 63.3742ms
+2025-12-05 11:49:42.365 +03:00 [INF] Sending file. Request path: '/lib/bootstrap/dist/css/bootstrap.min.css.map'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab10\Lab4\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map'
+2025-12-05 11:49:42.372 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css.map - 200 449111 text/plain 97.3592ms
+2025-12-05 11:49:50.850 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog - null null
+2025-12-05 11:49:50.858 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:50.860 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:49:50.865 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:49:50.868 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:50.870 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:49:50.877 +03:00 [INF] Received HTTP response headers after 5.8526ms - 200
+2025-12-05 11:49:50.879 +03:00 [INF] End processing HTTP request after 10.7276ms - 200
+2025-12-05 11:49:50.881 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:50.882 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:49:50.888 +03:00 [INF] Received HTTP response headers after 4.2628ms - 200
+2025-12-05 11:49:50.890 +03:00 [INF] End processing HTTP request after 8.7719ms - 200
+2025-12-05 11:49:50.893 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:49:50.897 +03:00 [INF] Executed ViewResult - view Index executed in 4.721ms.
+2025-12-05 11:49:50.899 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 34.8547ms
+2025-12-05 11:49:50.901 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:49:50.905 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog - 200 null text/html; charset=utf-8 54.0425ms
+2025-12-05 11:49:50.954 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json - null null
+2025-12-05 11:49:50.956 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:49:50.956 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:49:50.960 +03:00 [INF] ---> request /.well-known/appspecific/com.chrome.devtools.json returns 404
+2025-12-05 11:49:50.963 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 7.2122ms
+2025-12-05 11:49:50.966 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json - 404 0 null 12.3118ms
+2025-12-05 11:49:50.972 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 16.7163ms
+2025-12-05 11:49:50.977 +03:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:7001/.well-known/appspecific/com.chrome.devtools.json, Response status code: 404
+2025-12-05 11:50:03.309 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=2 - null null
+2025-12-05 11:50:03.324 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:03.328 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:03.335 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:03.338 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:03.342 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:03.355 +03:00 [INF] Received HTTP response headers after 9.7827ms - 200
+2025-12-05 11:50:03.358 +03:00 [INF] End processing HTTP request after 19.9039ms - 200
+2025-12-05 11:50:03.361 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=2&pageSize=3
+2025-12-05 11:50:03.365 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=2&pageSize=3
+2025-12-05 11:50:03.403 +03:00 [INF] Received HTTP response headers after 36.073ms - 200
+2025-12-05 11:50:03.406 +03:00 [INF] End processing HTTP request after 45.5418ms - 200
+2025-12-05 11:50:03.410 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:03.413 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 3.7468ms.
+2025-12-05 11:50:03.417 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 82.7009ms
+2025-12-05 11:50:03.419 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:03.422 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:03.424 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=2 - 200 null text/html; charset=utf-8 115.0619ms
+2025-12-05 11:50:03.959 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=4 - null null
+2025-12-05 11:50:03.974 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:03.977 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:03.984 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:03.986 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:03.990 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:04.000 +03:00 [INF] Received HTTP response headers after 7.721ms - 200
+2025-12-05 11:50:04.002 +03:00 [INF] End processing HTTP request after 15.9311ms - 200
+2025-12-05 11:50:04.006 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=4&pageSize=3
+2025-12-05 11:50:04.009 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=4&pageSize=3
+2025-12-05 11:50:04.019 +03:00 [INF] Received HTTP response headers after 8.2852ms - 200
+2025-12-05 11:50:04.022 +03:00 [INF] End processing HTTP request after 15.4261ms - 200
+2025-12-05 11:50:04.025 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:04.027 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 2.485ms.
+2025-12-05 11:50:04.029 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 46.2445ms
+2025-12-05 11:50:04.032 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:04.034 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:04.035 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=4 - 200 null text/html; charset=utf-8 75.7987ms
+2025-12-05 11:50:04.634 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=5 - null null
+2025-12-05 11:50:04.645 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:04.648 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:04.653 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:04.657 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:04.660 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:04.671 +03:00 [INF] Received HTTP response headers after 7.5579ms - 200
+2025-12-05 11:50:04.674 +03:00 [INF] End processing HTTP request after 17.0461ms - 200
+2025-12-05 11:50:04.677 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=5&pageSize=3
+2025-12-05 11:50:04.681 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=5&pageSize=3
+2025-12-05 11:50:04.692 +03:00 [INF] Received HTTP response headers after 8.4198ms - 200
+2025-12-05 11:50:04.695 +03:00 [INF] End processing HTTP request after 18.0657ms - 200
+2025-12-05 11:50:04.698 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:04.702 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 3.9976ms.
+2025-12-05 11:50:04.706 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 53.6879ms
+2025-12-05 11:50:04.708 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:04.711 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:04.713 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=5 - 200 null text/html; charset=utf-8 79.1128ms
+2025-12-05 11:50:05.514 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=6 - null null
+2025-12-05 11:50:05.525 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:05.529 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:05.534 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:05.538 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:05.543 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:05.554 +03:00 [INF] Received HTTP response headers after 5.5377ms - 200
+2025-12-05 11:50:05.559 +03:00 [INF] End processing HTTP request after 21.2605ms - 200
+2025-12-05 11:50:05.565 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=6&pageSize=3
+2025-12-05 11:50:05.568 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=6&pageSize=3
+2025-12-05 11:50:05.579 +03:00 [INF] Received HTTP response headers after 6.8742ms - 200
+2025-12-05 11:50:05.584 +03:00 [INF] End processing HTTP request after 18.9301ms - 200
+2025-12-05 11:50:05.586 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:05.588 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 2.1022ms.
+2025-12-05 11:50:05.591 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 56.9437ms
+2025-12-05 11:50:05.597 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:05.601 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:05.602 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=6 - 200 null text/html; charset=utf-8 87.9355ms
+2025-12-05 11:50:08.657 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=5 - null null
+2025-12-05 11:50:08.672 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:08.675 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:08.682 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:08.685 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:08.687 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:08.698 +03:00 [INF] Received HTTP response headers after 7.8029ms - 200
+2025-12-05 11:50:08.700 +03:00 [INF] End processing HTTP request after 14.931ms - 200
+2025-12-05 11:50:08.703 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=5&pageSize=3
+2025-12-05 11:50:08.705 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=5&pageSize=3
+2025-12-05 11:50:08.711 +03:00 [INF] Received HTTP response headers after 3.4189ms - 200
+2025-12-05 11:50:08.713 +03:00 [INF] End processing HTTP request after 10.1368ms - 200
+2025-12-05 11:50:08.715 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:08.717 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 1.7131ms.
+2025-12-05 11:50:08.720 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 39.4489ms
+2025-12-05 11:50:08.723 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:08.726 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:08.727 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=5 - 200 null text/html; charset=utf-8 70.3448ms
+2025-12-05 11:50:11.056 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Catalog?pageNo=4 - null null
+2025-12-05 11:50:11.069 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:11.071 +03:00 [INF] Route matched with {action = "Index", controller = "Car", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index(System.String, Int32) on controller Lab1.UI.Controllers.CarController (Lab1).
+2025-12-05 11:50:11.075 +03:00 [INF] Setting Authorization header using token (length=1591)
+2025-12-05 11:50:11.078 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:11.084 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/categories/
+2025-12-05 11:50:11.098 +03:00 [INF] Received HTTP response headers after 7.3439ms - 200
+2025-12-05 11:50:11.104 +03:00 [INF] End processing HTTP request after 26.2667ms - 200
+2025-12-05 11:50:11.110 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=4&pageSize=3
+2025-12-05 11:50:11.115 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=4&pageSize=3
+2025-12-05 11:50:11.122 +03:00 [INF] Received HTTP response headers after 2.4098ms - 200
+2025-12-05 11:50:11.128 +03:00 [INF] End processing HTTP request after 17.4546ms - 200
+2025-12-05 11:50:11.133 +03:00 [INF] Executing PartialViewResult, running view _ListPartial.
+2025-12-05 11:50:11.139 +03:00 [INF] Executed PartialViewResult - view _ListPartial executed in 5.9378ms.
+2025-12-05 11:50:11.144 +03:00 [INF] Executed action Lab1.UI.Controllers.CarController.Index (Lab1) in 68.8765ms
+2025-12-05 11:50:11.149 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.CarController.Index (Lab1)'
+2025-12-05 11:50:11.154 +03:00 [WRN] Unable to configure Browser Link script injection on the response. 
+2025-12-05 11:50:11.156 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Catalog?pageNo=4 - 200 null text/html; charset=utf-8 100.4192ms
+2025-12-05 11:50:15.389 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/Admin/Car - null null
+2025-12-05 11:50:15.404 +03:00 [INF] Executing endpoint '/Car/Index'
+2025-12-05 11:50:15.419 +03:00 [INF] Route matched with {page = "/Car/Index", area = "Admin", action = "", controller = ""}. Executing page /Car/Index
+2025-12-05 11:50:15.441 +03:00 [INF] Executing handler method Lab1.Areas.Admin.Pages.Car.IndexModel.OnGetAsync - ModelState is "Valid"
+2025-12-05 11:50:15.449 +03:00 [INF] Start processing HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:50:15.455 +03:00 [INF] Sending HTTP request GET http://localhost:5002/api/cars/?pageNo=1&pageSize=3
+2025-12-05 11:50:15.478 +03:00 [INF] Received HTTP response headers after 18.5978ms - 200
+2025-12-05 11:50:15.484 +03:00 [INF] End processing HTTP request after 35.4195ms - 200
+2025-12-05 11:50:15.493 +03:00 [INF] Executed handler method OnGetAsync, returned result .
+2025-12-05 11:50:15.503 +03:00 [INF] Executing an implicit handler method - ModelState is "Valid"
+2025-12-05 11:50:15.508 +03:00 [INF] Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+2025-12-05 11:50:15.544 +03:00 [INF] Executed page /Car/Index in 119.7214ms
+2025-12-05 11:50:15.549 +03:00 [INF] Executed endpoint '/Car/Index'
+2025-12-05 11:50:15.555 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/Admin/Car - 200 null text/html; charset=utf-8 166.3321ms
+2025-12-05 11:50:15.608 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:50:15.609 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:50:15.616 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 7.4393ms
+2025-12-05 11:50:15.617 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 8.8692ms
+2025-12-05 11:50:18.691 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 11:50:18.701 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:50:18.704 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 11:50:18.708 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 11:50:18.714 +03:00 [INF] Executed ViewResult - view Index executed in 6.5246ms.
+2025-12-05 11:50:18.720 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 12.4075ms
+2025-12-05 11:50:18.722 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 11:50:18.725 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 34.2427ms
+2025-12-05 11:50:18.764 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 11:50:18.765 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 11:50:18.769 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 4.7222ms
+2025-12-05 11:50:18.778 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 13.0662ms
+2025-12-05 12:03:52.715 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 12:03:52.723 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:03:52.724 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 12:03:52.726 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 12:03:52.729 +03:00 [INF] Executed ViewResult - view Index executed in 2.1918ms.
+2025-12-05 12:03:52.730 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 3.6787ms
+2025-12-05 12:03:52.732 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:03:52.733 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 18.135ms
+2025-12-05 12:03:52.767 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 12:03:52.767 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 12:03:52.770 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 3.1219ms
+2025-12-05 12:03:52.773 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 6.5539ms
+2025-12-05 12:04:03.770 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7001/logout - application/x-www-form-urlencoded 225
+2025-12-05 12:04:03.779 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.AccountController.Logout (Lab1)'
+2025-12-05 12:04:03.784 +03:00 [INF] Route matched with {action = "Logout", controller = "Account", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Logout() on controller Lab1.UI.Controllers.AccountController (Lab1).
+2025-12-05 12:04:03.790 +03:00 [INF] AuthenticationScheme: AppCookie signed out.
+2025-12-05 12:04:03.791 +03:00 [INF] Executing RedirectResult, redirecting to http://localhost:8080/realms/DzmitryLeushukou/protocol/openid-connect/logout?id_token_hint=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ6d0o3cjB2UDhfN2ZTS0tWNnlsVHdwdFRJQlRuRzA5YjFaYUJIUHc5b3Y4In0.eyJleHAiOjE3NjQ5MjQ4NTEsImlhdCI6MTc2NDkyNDU1MiwiYXV0aF90aW1lIjoxNzY0OTI0NTUxLCJqdGkiOiI1MDk2OGRjNS1hM2E2LTliNDEtNzdjOS01OTQxZTdhYTI4NjIiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL0R6bWl0cnlMZXVzaHVrb3UiLCJhdWQiOiJMZXVzaHVrb3VVSUNsaWVudCIsInN1YiI6ImE3NzRkZWZlLTI5YTctNGEwNy1hZmUzLTlkYzEwM2E5NDljOSIsInR5cCI6IklEIiwiYXpwIjoiTGV1c2h1a291VUlDbGllbnQiLCJub25jZSI6IjYzOTAwNTIxMzMwNDk1NjkwOC5PVGMwTldZMU1tWXRNR0kxWkMwME1tWXlMVGt6TkdFdE9XUXdZV0k1T0dNeE5XSmxNVFZtWVRFd04yWXRPRGMwTkMwME9XRm1MV0l4TnprdE9UWXdZVGhoWldFMFl6SXgiLCJzaWQiOiIxOTVhODk4OC0yMjFlLTA2ODMtNDIyYS03ZmE5YjNjYmFiMDkiLCJhdF9oYXNoIjoiaE4ybzFoWlpZNjNaOTkxOTdmSkk2ZyIsImFjciI6IjEiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZSI6WyJQT1dFUi1VU0VSIiwibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJkem1pdHJ5LmxldnNodWtvdkBnbWFpbC5jb20iLCJlbWFpbCI6ImR6bWl0cnkubGV2c2h1a292QGdtYWlsLmNvbSJ9.Ie212SUtbFS3Ghd_pCU3nJ-6jpW_aO4DeByW_ZMTsDvbKfay4M5GOpc2bPJCCOD6RrCfTugUFEnIYNiH5BtgVjZ_mG81QuIeWhIkKr9V5b4VXNVIFPhIOQUVQKf7sa0T_QmF7JeC1M8BNX9A-Fbb1fuCOHy48EMEPRu70TDupQEjMSBZB5gXDPfjVSI-sS2vVzBWVlmz3Pxyf1wPUpO1QxP7oWIlJzF2ofla7xMLQcT0HKT9fZR4NS96scyXAIdOV_8S-hVYoRJiiT_vTHJHXboQ4prmpCzcaPlwU8yOTp0ja-zoFpxhoLvNtjOQZ-h7XCu8Gn_kXzf9u0Om71_tZQ&post_logout_redirect_uri=https%3A%2F%2Flocalhost%3A7001%2F.
+2025-12-05 12:04:03.792 +03:00 [INF] Executed action Lab1.UI.Controllers.AccountController.Logout (Lab1) in 6.1203ms
+2025-12-05 12:04:03.793 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.AccountController.Logout (Lab1)'
+2025-12-05 12:04:03.794 +03:00 [INF] ---> request /logout returns 302
+2025-12-05 12:04:03.795 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7001/logout - 302 0 null 24.7534ms
+2025-12-05 12:04:03.860 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 12:04:03.864 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:04:03.865 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 12:04:03.867 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 12:04:03.868 +03:00 [INF] Executed ViewResult - view Index executed in 0.9382ms.
+2025-12-05 12:04:03.868 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 1.5675ms
+2025-12-05 12:04:03.869 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:04:03.870 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 9.675ms
+2025-12-05 12:04:03.901 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 12:04:03.901 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 12:04:03.903 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 2.3864ms
+2025-12-05 12:04:03.907 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 6.4291ms
+2025-12-05 12:04:06.507 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-05 12:04:06.512 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:04:06.514 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-05 12:04:06.516 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-05 12:04:06.516 +03:00 [INF] Executed ViewResult - view Index executed in 0.7977ms.
+2025-12-05 12:04:06.517 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 1.4056ms
+2025-12-05 12:04:06.517 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-05 12:04:06.518 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 11.4948ms
+2025-12-05 12:04:06.541 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-05 12:04:06.541 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-05 12:04:06.545 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 3.4742ms
+2025-12-05 12:04:06.546 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 4.8293ms
