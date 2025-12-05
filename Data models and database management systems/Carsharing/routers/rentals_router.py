@@ -23,8 +23,11 @@ def create_rental_endpoint(rental: RentalCreate):
 
 @router.put("/{rental_id}", response_model=Rental)
 def update_rental_endpoint(rental_id: int, rental: RentalUpdate):
+    # Проверяем, что статус не является 'paused', так как это недопустимое значение
+    if rental.status == "paused":
+        raise HTTPException(status_code=400, detail="Invalid status: 'paused' is not allowed")
+    
     return update_rental(rental_id, rental)
-
 @router.delete("/{rental_id}")
 def delete_rental_endpoint(rental_id: int):
     return delete_rental(rental_id)

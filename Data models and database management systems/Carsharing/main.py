@@ -30,8 +30,23 @@ from routers.action_logs_router import router as action_logs_router
 
 app = FastAPI(title="Carsharing API", description="API for carsharing application", version="1.0.0")
 
-# Подключаем статические файлы
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+from starlette.staticfiles import StaticFiles
+from starlette.responses import FileResponse
+import os
+
+# Custom StaticFiles class to add cache control headers
+class NoCacheStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if isinstance(response, FileResponse):
+            # Add cache control headers to prevent 304 issues
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+# Mount static files with cache control
+app.mount("/static", NoCacheStaticFiles(directory="frontend"), name="static")
 
 # Include routers
 app.include_router(roles_router)

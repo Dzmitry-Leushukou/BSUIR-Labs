@@ -93,9 +93,9 @@ async function showCarsOnMap() {
         if (response.ok) {
             const cars = await response.json();
             
-            // Добавить маркеры для каждой машины
+            // Добавить маркеры для каждой машины, кроме арендованных
             cars.forEach(car => {
-                if (car.latitude && car.longitude) {
+                if (car.latitude && car.longitude && car.status !== 'rented') {
                     // Создаем иконку для маркера машины
                     const carIcon = L.divIcon({
                         className: 'car-marker',
@@ -108,8 +108,20 @@ async function showCarsOnMap() {
                     carMarker.bindPopup(`
                         <b>Машина: ${car.model}</b><br>
                         Номер: ${car.plate_number}<br>
-                        Статус: ${car.status}
+                        Статус: ${car.status}<br>
+                        <button class="rent-car-btn" data-car-id="${car.id}">Арендовать</button>
                     `);
+                    
+                    // Добавляем обработчик клика для кнопки аренды
+                    carMarker.on('popupopen', function() {
+                        const rentButton = this._popup._container.querySelector('.rent-car-btn');
+                        if (rentButton) {
+                            rentButton.addEventListener('click', async function() {
+                                const carId = this.getAttribute('data-car-id');
+                                await rentCar(carId);
+                            });
+                        }
+                    });
                     
                     carMarkers.push(carMarker);
                 }
@@ -462,6 +474,7 @@ function goToUserLocation() {
 document.addEventListener('DOMContentLoaded', () => {
     getCurrentLocation();
     checkAuthStatus();
+    checkAndShowActiveRental(); // Добавляем проверку активной аренды
     
     // Добавляем обработчик для кнопки "Мое местоположение"
     const locateBtn = document.getElementById('locate-user-btn');
@@ -469,3 +482,294 @@ document.addEventListener('DOMContentLoaded', () => {
         locateBtn.addEventListener('click', goToUserLocation);
     }
 });
+
+// Функция для аренды автомобиля
+async function rentCar(carId) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Для аренды автомобиля необходимо авторизоваться');
+        return;
+    }
+    
+    // Получаем ID пользователя из токена (извлекаем из строки токена)
+    const userId = parseInt(token.split(':')[0]);
+    
+    // Проверяем, есть ли у пользователя уже активная аренда
+    const activeRental = await getActiveRental();
+    if (activeRental) {
+        alert('У вас уже есть активная аренда. Завершите её перед тем, как арендовать новую машину.');
+        return;
+    }
+    
+    try {
+        // Отправляем запрос на создание аренды
+        const response = await fetch('/rentals/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                car_id: parseInt(carId),
+                started_at: new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Minsk"})).toISOString(), // Устанавливаем время с учетом часового пояса Минска
+                price: 1, // Начальная цена 1 BYN
+                status: "active"
+            })
+        });
+        
+        if (response.ok) {
+            const rentalData = await response.json();
+            alert(`Автомобиль успешно арендован! ID аренды: ${rentalData.id}`);
+            
+            // Обновляем статус машины на "rented" визуально на карте
+            updateCarMarkerStatus(carId, "rented");
+            
+            // Показываем панель активной аренды сразу после аренды
+            showActiveRentalPanel(rentalData);
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при аренде автомобиля: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при попытке арендовать автомобиль:', error);
+        alert('Ошибка при попытке арендовать автомобиль');
+    }
+}
+
+// Функция для обновления статуса маркера машины
+function updateCarMarkerStatus(carId, newStatus) {
+    // Перезагружаем все маркеры, чтобы отразить изменения статуса
+    showCarsOnMap();
+}
+
+// Функция для получения активной аренды пользователя
+async function getActiveRental() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        return null;
+    }
+    
+    // Получаем ID пользователя из токена
+    const userId = parseInt(token.split(':')[0]);
+    
+    try {
+        // Запрашиваем все аренды пользователя
+        const response = await fetch(`/rentals/user/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const rentals = await response.json();
+            // Находим активную аренду (если есть)
+            const activeRental = rentals.find(rental => rental.status === 'active');
+            return activeRental || null;
+        } else {
+            console.error('Ошибка при получении аренды:', response.status);
+            return null;
+        }
+    } catch (error) {
+        console.error('Ошибка при запросе аренды:', error);
+        return null;
+    }
+}
+
+// Функция для отображения панели активной аренды
+function showActiveRentalPanel(rental) {
+    // Если панель уже существует, удаляем её
+    const existingPanel = document.getElementById('active-rental-panel');
+    if (existingPanel) {
+        existingPanel.remove();
+    }
+    
+    if (rental) {
+        // Создаем панель активной аренды
+        const rentalPanel = document.createElement('div');
+        rentalPanel.id = 'active-rental-panel';
+        rentalPanel.className = 'active-rental-panel';
+        
+        // Рассчитываем текущую цену аренды
+        // rental.started_at приходит из API в формате ISO (в UTC)
+        // Используем объекты Date напрямую для корректного вычисления разницы
+        const startedAt = new Date(rental.started_at); // Это время в UTC
+        const now = new Date(); // Это текущее время в локальной таймзоне браузера
+        
+        // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
+        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
+        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
+        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+        const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+        
+        // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
+        let timeDiff = nowUTC - startedAt;
+        if (timeDiff < 0) {
+            // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
+            timeDiff = 0;
+        }
+        
+        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
+        const currentPrice = 1 + minutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
+        
+        // Проверяем, чтобы цена не была отрицательной или нулевой
+        if (currentPrice < 1) {
+            currentPrice = 1;
+        }
+        
+        rentalPanel.innerHTML = `
+            <div class="rental-info">
+                <h3>Текущая аренда</h3>
+                <p>Машина: ${rental.car_id}</p>
+                <p>Статус: ${rental.status}</p>
+                <p>Начало: ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
+                <p>Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
+            </div>
+            <div class="rental-controls">
+                <button id="end-rental-btn" class="btn end-btn">⏹️ Завершить</button>
+            </div>
+        `;
+        
+        document.body.appendChild(rentalPanel);
+        
+        // Добавляем обработчики для кнопок
+        document.getElementById('end-rental-btn').addEventListener('click', () => {
+            endRental(rental.id);
+        });
+        
+        // Обновляем цену каждые 10 секунд
+        const updatePriceInterval = setInterval(() => {
+            if (document.getElementById('active-rental-panel')) {
+                const updatedStartedAt = new Date(rental.started_at); // Это время в UTC
+                const updatedNow = new Date(); // Это текущее время в локальной таймзоне браузера
+                
+                // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
+                // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
+                // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
+                // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+                const updatedNowUTC = new Date(updatedNow.getTime() + updatedNow.getTimezoneOffset() * 60000);
+                
+                // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
+                let updatedTimeDiff = updatedNowUTC - updatedStartedAt;
+                if (updatedTimeDiff < 0) {
+                    // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
+                    updatedTimeDiff = 0;
+                }
+                
+                const updatedMinutesDiff = Math.floor(updatedTimeDiff / (1000 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
+                const updatedPrice = 1 + updatedMinutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
+                
+                // Проверяем, чтобы цена не была отрицательной или нулевой
+                if (updatedPrice < 1) {
+                    updatedPrice = 1;
+                }
+                
+                const priceElement = rentalPanel.querySelector('.rental-info p:nth-child(5)');
+                if (priceElement) {
+                    priceElement.textContent = `Текущая цена: ${updatedPrice} BYN за ${updatedMinutesDiff} мин.`;
+                }
+            } else {
+                clearInterval(updatePriceInterval);
+            }
+        }, 1000); // Обновляем каждые 10 секунд
+    }
+}
+
+
+// Функция для завершения аренды
+async function endRental(rentalId) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Необходима авторизация для управления арендой');
+        return;
+    }
+    
+    if (!confirm('Вы уверены, что хотите завершить аренду?')) {
+        return;
+    }
+    
+    try {
+        // Получаем текущую аренду для расчета цены
+        const rentalResponse = await fetch(`/rentals/${rentalId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!rentalResponse.ok) {
+            throw new Error('Не удалось получить информацию об аренде');
+        }
+        
+        const rental = await rentalResponse.json();
+        // rental.started_at приходит из API в формате ISO (в UTC)
+        // Используем объекты Date напрямую для корректного вычисления разницы
+        const startedAt = new Date(rental.started_at); // Это время в UTC
+        const endedAt = new Date(); // Это текущее время в локальной таймзоне браузера
+        
+        // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
+        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
+        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
+        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+        const endedAtUTC = new Date(endedAt.getTime() + endedAt.getTimezoneOffset() * 60000);
+        
+        // Рассчитываем разницу в миллисекундах между окончанием аренды и началом
+        let timeDiff = endedAtUTC - startedAt;
+        if (timeDiff < 0) {
+            // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
+            timeDiff = 0;
+        }
+        
+        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
+        
+        // Цена = 1 BYN за начало + 0.5 BYN за минуту
+        const price = 1 + minutesDiff * 0.5;
+        
+        // Проверяем, чтобы цена не была отрицательной или нулевой
+        if (price < 1) {
+            price = 1;
+        }
+        
+        const response = await fetch(`/rentals/${rentalId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                ended_at: endedAt.toISOString(),
+                status: "completed",
+                price: price  // Обновляем цену при завершении аренды
+            })
+        });
+        
+        if (response.ok) {
+            const updatedRental = await response.json();
+            // Удаляем панель активной аренды
+            const rentalPanel = document.getElementById('active-rental-panel');
+            if (rentalPanel) {
+                rentalPanel.remove();
+            }
+            alert(`Аренда успешно завершена! С вас списано: ${price} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут).`);
+            // Обновляем карту
+            showCarsOnMap();
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при завершении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при попытке завершить аренду:', error);
+        alert('Ошибка при попытке завершить аренду');
+    }
+}
+
+// Функция для проверки и отображения активной аренды при загрузке
+async function checkAndShowActiveRental() {
+    const activeRental = await getActiveRental();
+    if (activeRental) {
+        showActiveRentalPanel(activeRental);
+    }
+}

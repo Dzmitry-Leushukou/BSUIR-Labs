@@ -2,6 +2,7 @@ from schemas import RentalCreate, RentalUpdate, Rental
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+from datetime import datetime
 
 # Rentals CRUD
 def get_rentals(offset: int = 0, limit: int = 10):
@@ -36,10 +37,25 @@ def get_rental(rental_id: int):
 def create_rental(rental: RentalCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Проверяем, есть ли у пользователя уже активная аренда
     cur.execute(
-        """INSERT INTO rentals (user_id, car_id, started_at, price, status) 
+        "SELECT id FROM rentals WHERE user_id = %s AND status = 'active'",
+        (rental.user_id,)
+    )
+    active_rental = cur.fetchone()
+    
+    if active_rental:
+        conn.close()
+        raise HTTPException(status_code=400, detail="User already has an active rental")
+    
+    # Если started_at не предоставлен, используем текущее время сервера
+    started_at = rental.started_at if rental.started_at is not None else datetime.utcnow()
+    
+    cur.execute(
+        """INSERT INTO rentals (user_id, car_id, started_at, price, status)
            VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-        (rental.user_id, rental.car_id, rental.started_at, rental.price, rental.status)
+        (rental.user_id, rental.car_id, started_at, rental.price, rental.status)
     )
     new_rental = cur.fetchone()
     conn.commit()
@@ -61,6 +77,9 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     if rental.status is not None:
         update_fields.append("status = %s")
         values.append(rental.status)
+    if rental.price is not None:
+        update_fields.append("price = %s")
+        values.append(rental.price)
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")

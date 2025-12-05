@@ -320,3 +320,95 @@ body {
 .orders-table tr:hover {
     background-color: #f5f5f5;
 }
+
+/* Стили для панели активной аренды */
+.active-rental-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    min-width: 280px;
+    max-width: 350px;
+}
+
+.rental-info {
+    margin-bottom: 15px;
+}
+
+.rental-info h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.rental-info p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 14px;
+}
+
+.rental-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.end-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    background: #dc3545;
+    color: white;
+}
+
+.end-btn:hover {
+    background: #c82333;
+}
+
+/* Additional styles for active trip section on profile page */
+.active-trip-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.active-trip-info {
+    margin-bottom: 15px;
+}
+
+.active-trip-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.active-trip-info .info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.end-trip-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+}
+
+.end-trip-btn:hover {
+    background-color: #c82333;
+}

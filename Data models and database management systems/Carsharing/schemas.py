@@ -170,7 +170,7 @@ class CarState(CarStateBase):
 class RentalBase(BaseModel):
     user_id: int
     car_id: int
-    started_at: datetime
+    started_at: Optional[datetime] = None
     price: float
     status: Optional[str] = "active"
 
@@ -180,6 +180,7 @@ class RentalCreate(RentalBase):
 class RentalUpdate(BaseModel):
     ended_at: Optional[datetime] = None
     status: Optional[str] = None
+    price: Optional[float] = None
 
 class Rental(RentalBase):
     id: int
