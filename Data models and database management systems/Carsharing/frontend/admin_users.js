@@ -1,7 +1,7 @@
 // Функция для загрузки и отображения данных таблицы Users
 async function loadUsers() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -10,7 +10,7 @@ async function loadUsers() {
         const response = await fetch('/users/', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -59,8 +59,8 @@ function displayUsers(users) {
 
 // Функция для изменения роли пользователя
 async function changeRole(userId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userIdFromStorage = localStorage.getItem('user_id');
+    if (!userIdFromStorage) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -76,7 +76,7 @@ async function changeRole(userId) {
         const response = await fetch(`/users/${userId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userIdFromStorage,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ role_id: parseInt(newRoleId) })
@@ -98,8 +98,8 @@ async function changeRole(userId) {
 
 // Функция для изменения статуса пользователя (блокировка/разблокировка)
 async function toggleUserStatus(userId, newStatus) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userIdFromStorage = localStorage.getItem('user_id');
+    if (!userIdFromStorage) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -113,7 +113,7 @@ async function toggleUserStatus(userId, newStatus) {
         const response = await fetch(`/users/${userId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userIdFromStorage,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: newStatus })
@@ -135,8 +135,8 @@ async function toggleUserStatus(userId, newStatus) {
 
 // Функция для удаления пользователя
 async function deleteUser(userId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userIdFromStorage = localStorage.getItem('user_id');
+    if (!userIdFromStorage) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -149,7 +149,7 @@ async function deleteUser(userId) {
         const response = await fetch(`/users/${userId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userIdFromStorage,
                 'Content-Type': 'application/json'
             }
         });

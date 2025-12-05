@@ -5,8 +5,8 @@ function goToAdminPanel() {
 
 // Функция для проверки, является ли пользователь администратором
 async function checkAdminAccess() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         window.location.href = '/';
         return false;
@@ -16,7 +16,7 @@ async function checkAdminAccess() {
         const response = await fetch('/users/profile', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });

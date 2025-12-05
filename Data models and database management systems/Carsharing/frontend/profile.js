@@ -85,8 +85,8 @@ function addProfileMarker(lat, lng) {
 
 // Показать все машины на карте
 async function showProfileCarsOnMap() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         console.error('Пользователь не авторизован');
         return;
     }
@@ -95,7 +95,7 @@ async function showProfileCarsOnMap() {
         const response = await fetch('/cars/all/positions', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -136,8 +136,8 @@ async function showProfileCarsOnMap() {
 
 // Функция для загрузки информации о пользователе
 async function loadProfileInfo() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         // Если пользователь не авторизован, перенаправляем на главную страницу
         window.location.href = '/';
         return;
@@ -147,7 +147,7 @@ async function loadProfileInfo() {
         const response = await fetch('/users/profile', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -174,14 +174,14 @@ async function loadProfileInfo() {
                 document.getElementById('profile-role').textContent = roleName;
             }
             
-            // Обновляем токен, если он был возвращен с сервера
-            if (userData.token) {
-                localStorage.setItem('auth_token', userData.token);
-            }
+            // Сохраняем user_id, если он был возвращен с сервера
+                        if (userData.id) {
+                            localStorage.setItem('user_id', userData.id);
+                        }
         } else {
-            // Если токен недействителен, удаляем его и перенаправляем на главную страницу
-            localStorage.removeItem('auth_token');
-            window.location.href = '/';
+            // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
+                        localStorage.removeItem('user_id');
+                        window.location.href = '/';
         }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
@@ -232,8 +232,8 @@ window.addEventListener('click', (event) => {
 document.getElementById('change-password-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -263,7 +263,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
         const response = await fetch('/users/change-password', {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
@@ -341,8 +341,8 @@ window.addEventListener('click', (event) => {
 document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -357,7 +357,7 @@ document.getElementById('edit-profile-form').addEventListener('submit', async (e
         const response = await fetch('/users/profile', {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
@@ -385,42 +385,19 @@ document.getElementById('edit-profile-form').addEventListener('submit', async (e
     }
 });
 
-// Функция для получения ID пользователя из токена
+// Функция для получения ID пользователя из localStorage
 function getUserIdFromToken() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return null;
+    const userId = localStorage.getItem('user_id');
+    if (!userId) return null;
     
-    try {
-        // Проверяем, является ли токен стандартным JWT токеном
-        if (token.split('.').length === 3) {
-            // Это стандартный JWT токен
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.user_id;
-        } else {
-            // Это токен в формате 'id:token', используемый в приложении
-            const parts = token.split(':');
-            if (parts.length >= 2) {
-                return parseInt(parts[0]);
-            }
-            return null;
-        }
-    } catch (e) {
-        console.error('Ошибка при разборе токена:', e);
-        return null;
-    }
+    return parseInt(userId);
 }
 
 // Функция для отображения заказов пользователя
 async function showMyOrders() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
     const userId = getUserIdFromToken();
     if (!userId) {
-        alert('Не удалось получить ID пользователя');
+        alert('Пользователь не авторизован');
         return;
     }
     
@@ -428,7 +405,7 @@ async function showMyOrders() {
         const response = await fetch(`/rentals/user/${userId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });

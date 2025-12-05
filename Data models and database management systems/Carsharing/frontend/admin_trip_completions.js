@@ -1,7 +1,7 @@
 // Функция для загрузки и отображения данных таблицы Trip completions
 async function loadTripCompletions() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -10,7 +10,7 @@ async function loadTripCompletions() {
         const response = await fetch('/rentals/', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -39,11 +39,11 @@ async function displayTripCompletions(rentals) {
         // Загружаем фотографии автомобиля
         let photosHtml = 'Нет фото';
         try {
-            const token = localStorage.getItem('auth_token');
+            const userId = localStorage.getItem('user_id');
             const photosResponse = await fetch(`/photos/?object_type=car&car_id=${rental.car_id}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 }
             });
@@ -82,8 +82,8 @@ async function displayTripCompletions(rentals) {
 
 // Функция для подтверждения завершения поездки
 async function confirmTrip(rentalId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -96,7 +96,7 @@ async function confirmTrip(rentalId) {
         const response = await fetch(`/rentals/${rentalId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: 'completed' })
@@ -118,8 +118,8 @@ async function confirmTrip(rentalId) {
 
 // Функция для отклонения завершения поездки
 async function rejectTrip(rentalId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -132,7 +132,7 @@ async function rejectTrip(rentalId) {
         const response = await fetch(`/rentals/${rentalId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: 'active' }) // Возвращаем статус на активный
@@ -154,8 +154,8 @@ async function rejectTrip(rentalId) {
 
 // Функция для пропуска подтверждения поездки
 async function skipTrip(rentalId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }

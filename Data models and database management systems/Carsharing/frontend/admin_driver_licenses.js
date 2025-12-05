@@ -1,7 +1,7 @@
 // Функция для загрузки и отображения данных таблицы Driver licenses
 async function loadDriverLicenses() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -10,7 +10,7 @@ async function loadDriverLicenses() {
         const response = await fetch('/driver_licenses/', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -38,11 +38,11 @@ async function displayDriverLicenses(driverLicenses) {
         let photoUrl = '';
         if (license.document_photo_id) {
             try {
-                const token = localStorage.getItem('auth_token');
+                const userId = localStorage.getItem('user_id');
                 const photoResponse = await fetch(`/photos/${license.document_photo_id}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'X-User-ID': userId,
                         'Content-Type': 'application/json'
                     }
                 });
@@ -80,8 +80,8 @@ async function displayDriverLicenses(driverLicenses) {
 
 // Функция для обновления статуса водительской лицензии
 async function updateLicenseStatus(licenseId, status) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -94,7 +94,7 @@ async function updateLicenseStatus(licenseId, status) {
         const response = await fetch(`/driver_licenses/${licenseId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: status })

@@ -1,7 +1,7 @@
 // Функция для загрузки и отображения данных таблицы Action logs
 async function loadActionLogs() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -10,7 +10,7 @@ async function loadActionLogs() {
         const response = await fetch('/action_logs/', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });

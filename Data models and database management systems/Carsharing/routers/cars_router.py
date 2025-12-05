@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from schemas import *
 from crud.cars_crud import *
 from typing import List
+from .users_router import get_current_user_from_header
 
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
@@ -36,6 +37,6 @@ class CarPosition(BaseModel):
     latitude: Optional[float] = None
 
 @router.get("/all/positions", response_model=List[CarPosition])
-def get_all_cars_positions_endpoint():
+def get_all_cars_positions_endpoint(request: Request, current_user: dict = Depends(get_current_user_from_header)):
     """Возвращает все машины с их позициями"""
     return get_all_cars_positions()

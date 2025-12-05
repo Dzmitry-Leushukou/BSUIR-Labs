@@ -1,7 +1,7 @@
 // Функция для загрузки и отображения данных таблицы Payment logs
 async function loadPaymentLogs() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
@@ -10,7 +10,7 @@ async function loadPaymentLogs() {
         const response = await fetch('/payment_logs/', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });

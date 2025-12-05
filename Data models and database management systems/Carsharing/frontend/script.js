@@ -75,8 +75,8 @@ async function showCarsOnMap() {
     // Очистить предыдущие маркеры машин
     clearCarMarkers();
     
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         console.error('Пользователь не авторизован');
         return;
     }
@@ -85,7 +85,7 @@ async function showCarsOnMap() {
         const response = await fetch('/cars/all/positions', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -145,9 +145,9 @@ function clearCarMarkers() {
 // Проверка статуса авторизации пользователя
 function checkAuthStatus() {
     // Здесь будет логика проверки сессии
-    // Пока что используем фиктивные данные
-    const token = localStorage.getItem('auth_token');
-    if (token) {
+    // Проверяем наличие user_id в localStorage
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
         loadUserInfo();
     } else {
         showAuthButtons();
@@ -179,9 +179,9 @@ async function showUserInfo(userData) {
     document.getElementById('user-name').textContent = `${userData.name} ${userData.surname}`;
     document.getElementById('user-cashback').textContent = `Кэшбэк: ${userData.cashback} BYN`;
     
-    // Обновляем токен, если он был возвращен с сервера
-    if (userData.token) {
-        localStorage.setItem('auth_token', userData.token);
+    // Сохраняем user_id, если он был возвращен с сервера
+    if (userData.id) {
+        localStorage.setItem('user_id', userData.id);
     }
     
     // Проверяем, является ли пользователь администратором
@@ -192,11 +192,11 @@ async function showUserInfo(userData) {
     } else {
         // Если role_id нет в userData, запрашиваем информацию о роли
         try {
-            const token = localStorage.getItem('auth_token');
+            const userId = localStorage.getItem('user_id');
             const response = await fetch(`/users/${userData.id}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 }
             });
@@ -228,8 +228,8 @@ async function showUserInfo(userData) {
 
 // Функция для загрузки информации о пользователе
 async function loadUserInfo() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         showAuthButtons();
         return;
     }
@@ -238,7 +238,7 @@ async function loadUserInfo() {
         const response = await fetch('/users/profile', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -247,13 +247,13 @@ async function loadUserInfo() {
             const userData = await response.json();
             showUserInfo(userData);
         } else {
-            // Если токен недействителен, удаляем его
-            localStorage.removeItem('auth_token');
+            // Если user_id недействителен, удаляем его
+            localStorage.removeItem('user_id');
             showAuthButtons();
         }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
-        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_id');
         showAuthButtons();
     }
 }
@@ -261,13 +261,13 @@ async function loadUserInfo() {
 // Функция для обновления статуса авторизации
 function updateAuthStatus(isAuthenticated, userData = null) {
     if (isAuthenticated && userData) {
-        // Сохраняем токен, полученный от сервера, или используем фиктивный для демонстрации
-        if (userData.token) {
-            localStorage.setItem('auth_token', userData.token);
+        // Сохраняем user_id, полученный от сервера
+        if (userData.id) {
+            localStorage.setItem('user_id', userData.id);
         }
         showUserInfo(userData);
     } else {
-        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_id');
         showAuthButtons();
     }
 }
@@ -317,11 +317,10 @@ document.querySelector('.login-btn').addEventListener('click', () => {
                 
                 if (response.ok) {
                     const userData = await response.json();
-                    // Проверяем, есть ли токен в ответе от сервера
-                    // В текущей реализации сервер должен возвращать токен
-                    if (!userData.token) {
-                        // Если сервер не вернул токен, создаем фиктивный для демонстрации
-                        userData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
+                    // Проверяем, есть ли user_id в ответе от сервера
+                    if (!userData.id) {
+                        alert('Ошибка: сервер не вернул идентификатор пользователя');
+                        return;
                     }
                     updateAuthStatus(true, userData);
                     
@@ -401,38 +400,15 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                 
                 if (response.ok) {
                     const userData = await response.json();
-                    // Registration endpoint now returns user data with token directly
-                    if (userData.token) {
+                    // Registration endpoint now returns user data with user_id directly
+                    if (userData.id) {
                         updateAuthStatus(true, userData);
                         alert('Регистрация и вход прошли успешно!');
                         
                         // После успешной регистрации и входа обновляем карту с машинами
                         showCarsOnMap();
                     } else {
-                        // Fallback: try to login after registration
-                        const loginResponse = await fetch('/users/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ email, password })
-                        });
-                        
-                        if (loginResponse.ok) {
-                            const loginData = await loginResponse.json();
-                            if (!loginData.token) {
-                                // Если сервер не вернул токен, создаем фиктивный для демонстрации
-                                loginData.token = '1:dummy_token';  // В реальном приложении токен должен возвращаться сервером
-                            }
-                            updateAuthStatus(true, loginData);
-                            alert('Регистрация и вход прошли успешно!');
-                            
-                            // После успешной регистрации и входа обновляем карту с машинами
-                            showCarsOnMap();
-                        } else {
-                            const errorData = await loginResponse.json();
-                            alert(`Ошибка входа после регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
-                        }
+                        alert('Ошибка: сервер не вернул идентификатор пользователя');
                     }
                 } else {
                     const errorData = await response.json();
@@ -519,14 +495,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Функция для аренды автомобиля
 async function rentCar(carId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Для аренды автомобиля необходимо авторизоваться');
         return;
     }
-    
-    // Получаем ID пользователя из токена (извлекаем из строки токена)
-    const userId = parseInt(token.split(':')[0]);
     
     // Проверяем, есть ли у пользователя уже активная аренда
     const activeRental = await getActiveRental();
@@ -541,10 +514,10 @@ async function rentCar(carId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': userId
             },
             body: JSON.stringify({
-                user_id: userId,
+                user_id: parseInt(userId),
                 car_id: parseInt(carId),
                 started_at: new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Minsk"})).toISOString(), // Устанавливаем время с учетом часового пояса Минска
                 price: 1, // Начальная цена 1 BYN
@@ -579,20 +552,17 @@ function updateCarMarkerStatus(carId, newStatus) {
 
 // Функция для получения активной аренды пользователя
 async function getActiveRental() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         return null;
     }
-    
-    // Получаем ID пользователя из токена
-    const userId = parseInt(token.split(':')[0]);
     
     try {
         // Запрашиваем все аренды пользователя
         const response = await fetch(`/rentals/user/${userId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -714,8 +684,8 @@ function showActiveRentalPanel(rental) {
 
 // Функция для завершения аренды
 async function endRental(rentalId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Необходима авторизация для управления арендой');
         return;
     }
@@ -729,7 +699,7 @@ async function endRental(rentalId) {
         const rentalResponse = await fetch(`/rentals/${rentalId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -771,7 +741,7 @@ async function endRental(rentalId) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': userId
             },
             body: JSON.stringify({
                 ended_at: endedAt.toISOString(),
@@ -974,8 +944,8 @@ function showCompletionModal(rentalId) {
 
 // Функция для загрузки информации о пользователе и отображения кэшбэка
 async function loadUserInfoForCashback() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         return;
     }
     
@@ -983,7 +953,7 @@ async function loadUserInfoForCashback() {
         const response = await fetch('/users/profile', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -1014,8 +984,8 @@ function updateCashbackDisplay() {
 // Функция для обработки оплаты и завершения аренды
 async function processPaymentAndComplete(rentalId) {
     // Получаем текущую информацию о аренде
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         alert('Необходима авторизация для завершения аренды');
         return;
     }
@@ -1024,7 +994,7 @@ async function processPaymentAndComplete(rentalId) {
         const rentalResponse = await fetch(`/rentals/${rentalId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -1093,7 +1063,7 @@ async function processPaymentAndComplete(rentalId) {
         // Создаем запись в логе оплаты
         const paymentLog = {
             rental_id: rentalId,
-            user_id: parseInt(token.split(':')[0]),
+            user_id: parseInt(userId),
             pay_type: 'card',
             price: finalPrice,
             ip: await getUserIP()
@@ -1104,7 +1074,7 @@ async function processPaymentAndComplete(rentalId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': userId
             },
             body: JSON.stringify(paymentLog)
         });
@@ -1123,7 +1093,7 @@ async function processPaymentAndComplete(rentalId) {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 if (file.type.startsWith('image/')) {
-                    const photoId = await uploadPhoto(file, rental.car_id, parseInt(token.split(':')[0]));
+                    const photoId = await uploadPhoto(file, rental.car_id, parseInt(userId));
                     if (photoId) {
                         uploadedPhotoIds.push(photoId);
                     }
@@ -1136,7 +1106,7 @@ async function processPaymentAndComplete(rentalId) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': userId
             },
             body: JSON.stringify({
                 ended_at: endedAt.toISOString(),
@@ -1183,8 +1153,8 @@ async function processPaymentAndComplete(rentalId) {
 
 // Функция для загрузки фотографии
 async function uploadPhoto(file, carId, userId) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const currentUserId = localStorage.getItem('user_id');
+    if (!currentUserId) {
         console.error('Необходима авторизация для загрузки фотографий');
         return null;
     }
@@ -1195,14 +1165,14 @@ async function uploadPhoto(file, carId, userId) {
         formData.append('file', file);
         formData.append('object_type', 'car');
         formData.append('car_id', carId);
-        formData.append('user_id', userId);
-        formData.append('uploaded_by', userId);
+        formData.append('user_id', currentUserId);
+        formData.append('uploaded_by', currentUserId);
         
         // Отправляем запрос на загрузку фотографии
         const response = await fetch('/photos/upload', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': currentUserId
             },
             body: formData
         });
@@ -1255,8 +1225,8 @@ function validateCardData(cardNumber, cardHolder, expiryDate, cvv) {
 
 // Функция для получения данных пользователя
 async function getUserData() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         return null;
     }
     
@@ -1264,7 +1234,7 @@ async function getUserData() {
         const response = await fetch('/users/profile', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -1281,8 +1251,8 @@ async function getUserData() {
 
 // Функция для обновления баланса кэшбэка
 async function updateCashbackBalance(amount) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
         return;
     }
     
@@ -1299,7 +1269,7 @@ async function updateCashbackBalance(amount) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'X-User-ID': userId
             },
             body: JSON.stringify({
                 cashback: newCashback
