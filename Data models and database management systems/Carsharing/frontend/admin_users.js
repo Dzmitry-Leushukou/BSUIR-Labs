@@ -45,8 +45,8 @@ function displayUsers(users) {
             <td class="status-${user.status}">${user.status}</td>
             <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>
-                <button class="btn action-btn assign-btn" onclick="assignRole(${user.id})">Назначить</button>
-                <button class="btn action-btn ${user.status === 'active' ? 'block-btn' : 'unblock-btn'}" 
+                <button class="btn action-btn role-btn" onclick="changeRole(${user.id})">Изменить роль</button>
+                <button class="btn action-btn ${user.status === 'active' ? 'block-btn' : 'unblock-btn'}"
                     onclick="toggleUserStatus(${user.id}, '${user.status === 'active' ? 'banned' : 'active'}')">
                     ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
                 </button>
@@ -57,8 +57,8 @@ function displayUsers(users) {
     });
 }
 
-// Функция для назначения роли пользователю
-async function assignRole(userId) {
+// Функция для изменения роли пользователя
+async function changeRole(userId) {
     const token = localStorage.getItem('auth_token');
     if (!token) {
         alert('Пользователь не авторизован');

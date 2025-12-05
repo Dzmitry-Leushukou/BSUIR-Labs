@@ -29,27 +29,53 @@ async function loadDriverLicenses() {
 }
 
 // Функция для отображения данных в таблице Driver licenses
-function displayDriverLicenses(driverLicenses) {
+async function displayDriverLicenses(driverLicenses) {
     const tableBody = document.getElementById('driver-licenses-table-body');
     tableBody.innerHTML = '';
     
-    driverLicenses.forEach(license => {
+    for (const license of driverLicenses) {
+        // Загружаем информацию о фотографии
+        let photoUrl = '';
+        if (license.document_photo_id) {
+            try {
+                const token = localStorage.getItem('auth_token');
+                const photoResponse = await fetch(`/photos/${license.document_photo_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (photoResponse.ok) {
+                    const photo = await photoResponse.json();
+                    photoUrl = photo.url;
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке информации о фотографии:', error);
+            }
+        }
+        
         const row = document.createElement('tr');
         row.innerHTML = `
+            <td>${license.id}</td>
             <td>${license.driver_id}</td>
             <td>${license.license_number}</td>
             <td>${license.issued_by}</td>
             <td>${new Date(license.expiration_date).toLocaleDateString('ru-RU')}</td>
             <td>${license.document_photo_id}</td>
+            <td>
+                ${photoUrl ? `<img src="${photoUrl}" alt="Document Photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showPhotoModal('${photoUrl}', 'Фото документа')">` : 'Нет фото'}
+            </td>
             <td class="status-${license.status}">${license.status}</td>
             <td>
-                <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
-                <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>
-                <button class="btn action-btn skip-btn" onclick="updateLicenseStatus(${license.driver_id}, 'pending')">Пропустить</button>
+                <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.id}, 'approved')">Подтвердить</button>
+                <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.id}, 'rejected')">Отклонить</button>
+                <button class="btn action-btn skip-btn" onclick="updateLicenseStatus(${license.id}, 'pending')">Пропустить</button>
             </td>
         `;
         tableBody.appendChild(row);
-    });
+    }
 }
 
 // Функция для обновления статуса водительской лицензии
