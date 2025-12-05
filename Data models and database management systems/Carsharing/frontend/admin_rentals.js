@@ -1,0 +1,52 @@
+// Функция для загрузки и отображения данных таблицы Rentals
+async function loadRentals() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/rentals/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const rentals = await response.json();
+            displayRentals(rentals);
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при загрузке Rentals: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке Rentals:', error);
+        alert('Ошибка при загрузке Rentals');
+    }
+}
+
+// Функция для отображения данных в таблице Rentals
+function displayRentals(rentals) {
+    const tableBody = document.getElementById('rentals-table-body');
+    tableBody.innerHTML = '';
+    
+    rentals.forEach(rental => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${rental.id}</td>
+            <td>${rental.user_id}</td>
+            <td>${rental.car_id}</td>
+            <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : ''}</td>
+            <td>${rental.price} BYN</td>
+            <td class="status-${rental.status}">${rental.status}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Загружаем данные при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadRentals);

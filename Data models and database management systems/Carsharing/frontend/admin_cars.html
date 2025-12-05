@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица Cars - Админ панель</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
+            <h1>Таблица Cars</h1>
+        </div>
+        
+        <div class="admin-content">
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>VIN</th>
+                            <th>Plate Number</th>
+                            <th>Model</th>
+                            <th>Status</th>
+                            <th>Position</th>
+                            <th>Updated At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cars-table-body">
+                        <!-- Содержимое таблицы будет загружено через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+    <script src="/static/admin_common.js"></script>
+    <script src="/static/admin_cars.js"></script>
+</body>
+</html>

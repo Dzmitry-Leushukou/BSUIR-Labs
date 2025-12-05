@@ -74,6 +74,60 @@ async def read_profile():
     with open("frontend/profile.html", "r", encoding="utf-8") as file:
         return HTMLResponse(content=file.read())
 
+# Маршрут для админ панели
+@app.get("/admin")
+async def read_admin():
+    with open("frontend/admin.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Action logs
+@app.get("/admin/action_logs")
+async def read_admin_action_logs():
+    with open("frontend/admin_action_logs.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Cars
+@app.get("/admin/cars")
+async def read_admin_cars():
+    with open("frontend/admin_cars.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Maintenance requests
+@app.get("/admin/maintenance_requests")
+async def read_admin_maintenance_requests():
+    with open("frontend/admin_maintenance_requests.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Payment logs
+@app.get("/admin/payment_logs")
+async def read_admin_payment_logs():
+    with open("frontend/admin_payment_logs.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы подтверждения документов
+@app.get("/admin/driver_licenses")
+async def read_admin_driver_licenses():
+    with open("frontend/admin_driver_licenses.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Rentals
+@app.get("/admin/rentals")
+async def read_admin_rentals():
+    with open("frontend/admin_rentals.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы Users
+@app.get("/admin/users")
+async def read_admin_users():
+    with open("frontend/admin_users.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+# Маршрут для таблицы подтверждения завершения поездок
+@app.get("/admin/trip_completions")
+async def read_admin_trip_completions():
+    with open("frontend/admin_trip_completions.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

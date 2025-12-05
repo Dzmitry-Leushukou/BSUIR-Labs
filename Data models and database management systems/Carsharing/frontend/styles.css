@@ -412,3 +412,194 @@ body {
 .end-trip-btn:hover {
     background-color: #c82333;
 }
+
+/* Стили для админ панели */
+.admin-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.admin-header h1 {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.admin-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.admin-table-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.admin-table-btn:hover {
+    background: #0056b3;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.admin-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #555;
+    position: sticky;
+    top: 0;
+}
+
+.admin-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.status-active {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-banned {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.status-approved {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-rejected {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-available {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-rented {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.status-maintenance {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-open {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.status-in_progress {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.status-resolved {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-completed {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-cancelled {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.approve-btn {
+    background: #28a745;
+    color: white;
+}
+
+.reject-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.skip-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.assign-btn {
+    background: #007bff;
+    color: white;
+}
+
+.block-btn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.unblock-btn {
+    background: #28a745;
+    color: white;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}

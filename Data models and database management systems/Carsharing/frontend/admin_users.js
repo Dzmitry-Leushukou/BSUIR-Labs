@@ -1,0 +1,172 @@
+// Функция для загрузки и отображения данных таблицы Users
+async function loadUsers() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/users/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            displayUsers(users);
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при загрузке Users: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке Users:', error);
+        alert('Ошибка при загрузке Users');
+    }
+}
+
+// Функция для отображения данных в таблице Users
+function displayUsers(users) {
+    const tableBody = document.getElementById('users-table-body');
+    tableBody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.email}</td>
+            <td>${user.name}</td>
+            <td>${user.surname}</td>
+            <td>${user.cashback} BYN</td>
+            <td>${user.role_id}</td>
+            <td class="status-${user.status}">${user.status}</td>
+            <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>
+                <button class="btn action-btn assign-btn" onclick="assignRole(${user.id})">Назначить</button>
+                <button class="btn action-btn ${user.status === 'active' ? 'block-btn' : 'unblock-btn'}" 
+                    onclick="toggleUserStatus(${user.id}, '${user.status === 'active' ? 'banned' : 'active'}')">
+                    ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
+                </button>
+                <button class="btn action-btn delete-btn" onclick="deleteUser(${user.id})">Удалить</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Функция для назначения роли пользователю
+async function assignRole(userId) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user, 3 - manager):');
+    if (!newRoleId) return;
+    
+    if (!confirm(`Вы уверены, что хотите изменить роль пользователя на ${newRoleId}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ role_id: parseInt(newRoleId) })
+        });
+        
+        if (response.ok) {
+            alert('Роль пользователя успешно обновлена');
+            // Перезагружаем таблицу
+            loadUsers();
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при обновлении роли: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении роли:', error);
+        alert('Ошибка при обновлении роли');
+    }
+}
+
+// Функция для изменения статуса пользователя (блокировка/разблокировка)
+async function toggleUserStatus(userId, newStatus) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    const statusText = newStatus === 'active' ? 'активен' : 'заблокирован';
+    if (!confirm(`Вы уверены, что хотите изменить статус пользователя на "${statusText}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.ok) {
+            alert(`Статус пользователя успешно изменен на "${statusText}"`);
+            // Перезагружаем таблицу
+            loadUsers();
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при обновлении статуса: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении статуса:', error);
+        alert('Ошибка при обновлении статуса');
+    }
+}
+
+// Функция для удаления пользователя
+async function deleteUser(userId) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие необратимо.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            alert('Пользователь успешно удален');
+            // Перезагружаем таблицу
+            loadUsers();
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при удалении пользователя: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при удалении пользователя:', error);
+        alert('Ошибка при удалении пользователя');
+    }
+}
+
+// Загружаем данные при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadUsers);

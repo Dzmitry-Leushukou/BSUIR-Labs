@@ -166,10 +166,11 @@ function showAuthButtons() {
 }
 
 // Функция для отображения информации о пользователе
-function showUserInfo(userData) {
+async function showUserInfo(userData) {
     const userInfo = document.getElementById('user-info');
     const authButtons = document.getElementById('auth-buttons');
     const logoutButton = document.getElementById('logout-button');
+    const adminPanelButton = document.getElementById('admin-panel-button');
     
     userInfo.style.display = 'flex';
     authButtons.style.display = 'none';
@@ -181,6 +182,39 @@ function showUserInfo(userData) {
     // Обновляем токен, если он был возвращен с сервера
     if (userData.token) {
         localStorage.setItem('auth_token', userData.token);
+    }
+    
+    // Проверяем, является ли пользователь администратором
+    let isAdmin = false;
+    if (userData.role_id) {
+        // Если у пользователя есть role_id, проверяем, является ли он админом
+        isAdmin = userData.role_id === 1; // admin role ID is 1
+    } else {
+        // Если role_id нет в userData, запрашиваем информацию о роли
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`/users/${userData.id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const fullUserData = await response.json();
+                isAdmin = fullUserData.role_id === 1;
+            }
+        } catch (error) {
+            console.error('Ошибка при проверке роли пользователя:', error);
+        }
+    }
+    
+    // Показываем кнопку админ панели только для администраторов
+    if (isAdmin) {
+        adminPanelButton.style.display = 'block';
+    } else {
+        adminPanelButton.style.display = 'none';
     }
     
     // Добавляем обработчик клика на весь прямоугольник профиля
@@ -764,6 +798,11 @@ async function endRental(rentalId) {
         console.error('Ошибка при попытке завершить аренду:', error);
         alert('Ошибка при попытке завершить аренду');
     }
+}
+
+// Функция для перехода на админ панель
+function goToAdminPanel() {
+    window.location.href = '/admin';
 }
 
 // Функция для проверки и отображения активной аренды при загрузке

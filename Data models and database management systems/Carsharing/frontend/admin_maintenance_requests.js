@@ -1,0 +1,52 @@
+// Функция для загрузки и отображения данных таблицы Maintenance requests
+async function loadMaintenanceRequests() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/maintenance_requests/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const maintenanceRequests = await response.json();
+            displayMaintenanceRequests(maintenanceRequests);
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при загрузке Maintenance requests: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке Maintenance requests:', error);
+        alert('Ошибка при загрузке Maintenance requests');
+    }
+}
+
+// Функция для отображения данных в таблице Maintenance requests
+function displayMaintenanceRequests(maintenanceRequests) {
+    const tableBody = document.getElementById('maintenance-requests-table-body');
+    tableBody.innerHTML = '';
+    
+    maintenanceRequests.forEach(request => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${request.id}</td>
+            <td>${request.car_id}</td>
+            <td>${request.reported_by || ''}</td>
+            <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : ''}</td>
+            <td>${request.status}</td>
+            <td>${request.description}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Загружаем данные при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadMaintenanceRequests);
