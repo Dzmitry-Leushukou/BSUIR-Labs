@@ -670,7 +670,7 @@ function showActiveRentalPanel(rental) {
         
         // Добавляем обработчики для кнопок
         document.getElementById('end-rental-btn').addEventListener('click', () => {
-            endRental(rental.id);
+            showCompletionModal(rental.id);
         });
         
         // Обновляем цену каждые 10 секунд
@@ -798,6 +798,499 @@ async function endRental(rentalId) {
         console.error('Ошибка при попытке завершить аренду:', error);
         alert('Ошибка при попытке завершить аренду');
     }
+}
+ 
+// Функция для отображения модального окна завершения аренды
+function showCompletionModal(rentalId) {
+    // Проверяем, существует ли уже модальное окно
+    const existingModal = document.getElementById('completion-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Создаем модальное окно
+    const modal = document.createElement('div');
+    modal.id = 'completion-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0.3);
+        ">
+            <h3>Завершение аренды</h3>
+            
+            <!-- Фотографии -->
+            <div style="margin-bottom: 20px;">
+                <h4>Добавить фотографии</h4>
+                <div id="photo-preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                <input type="file" id="photo-upload" accept="image/*" multiple style="margin-top: 10px;">
+            </div>
+            
+            <!-- Оплата -->
+            <div style="margin-bottom: 20px;">
+                <h4>Оплата</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="card-number" placeholder="Номер карты" maxlength="19" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" id="card-holder" placeholder="Имя держателя" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" id="expiry-date" placeholder="ММ/ГГ" maxlength="5" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" id="cvv" placeholder="CVV" maxlength="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+            </div>
+            
+            <!-- Кэшбэк -->
+            <div style="margin-bottom: 20px;">
+                <h4>Кэшбэк</h4>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                    <input type="checkbox" id="use-cashback" style="width: 16px; height: 16px;">
+                    <label for="use-cashback" style="flex: 1;">Использовать кэшбэк</label>
+                    <span id="cashback-amount">Доступно: 0 BYN</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="cancel-completion" style="
+                    flex: 1;
+                    padding: 10px;
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Отмена</button>
+                <button id="pay-and-complete" style="
+                    flex: 1;
+                    padding: 10px;
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Оплатить и завершить</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Добавляем обработчики для элементов формы
+    const photoUpload = document.getElementById('photo-upload');
+    const photoPreviewContainer = document.getElementById('photo-preview-container');
+    
+    // Обработчик для загрузки фотографий
+    photoUpload.addEventListener('change', function(e) {
+        const files = e.target.files;
+        photoPreviewContainer.innerHTML = ''; // Очищаем предыдущие превью
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.border = '1px solid #ddd';
+                    img.style.borderRadius = '4px';
+                    photoPreviewContainer.appendChild(img);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+    
+    // Форматирование номера карты
+    const cardNumberInput = document.getElementById('card-number');
+    cardNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+        let formattedValue = '';
+        
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += ' ';
+            }
+            formattedValue += value[i];
+        }
+        
+        e.target.value = formattedValue;
+    });
+    
+    // Форматирование даты
+    const expiryDateInput = document.getElementById('expiry-date');
+    expiryDateInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+        
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        
+        e.target.value = value;
+    });
+    
+    // Валидация CVV
+    const cvvInput = document.getElementById('cvv');
+    cvvInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+    });
+    
+    // Обработчик для чекбокса кэшбэка
+    const useCashbackCheckbox = document.getElementById('use-cashback');
+    useCashbackCheckbox.addEventListener('change', function() {
+        updateCashbackDisplay();
+    });
+    
+    // Загружаем информацию о пользователе для отображения кэшбэка
+    loadUserInfoForCashback();
+    
+    // Обработчики для кнопок
+    document.getElementById('cancel-completion').addEventListener('click', function() {
+        document.body.removeChild(modal);
+    });
+    
+    document.getElementById('pay-and-complete').addEventListener('click', function() {
+        processPaymentAndComplete(rentalId);
+    });
+}
+
+// Функция для загрузки информации о пользователе и отображения кэшбэка
+async function loadUserInfoForCashback() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/users/profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            document.getElementById('cashback-amount').textContent = `Доступно: ${userData.cashback} BYN`;
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке информации о пользователе:', error);
+    }
+}
+
+// Функция для обновления отображения кэшбэка
+function updateCashbackDisplay() {
+    const useCashbackCheckbox = document.getElementById('use-cashback');
+    const cashbackAmountElement = document.getElementById('cashback-amount');
+    
+    if (useCashbackCheckbox.checked) {
+        cashbackAmountElement.style.color = '#28a745';
+        cashbackAmountElement.style.fontWeight = 'bold';
+    } else {
+        cashbackAmountElement.style.color = '';
+        cashbackAmountElement.style.fontWeight = '';
+    }
+}
+
+// Функция для обработки оплаты и завершения аренды
+async function processPaymentAndComplete(rentalId) {
+    // Получаем текущую информацию о аренде
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert('Необходима авторизация для завершения аренды');
+        return;
+    }
+    
+    try {
+        const rentalResponse = await fetch(`/rentals/${rentalId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!rentalResponse.ok) {
+            throw new Error('Не удалось получить информацию об аренде');
+        }
+        
+        const rental = await rentalResponse.json();
+        
+        // rental.started_at приходит из API в формате ISO (в UTC)
+        // Используем объекты Date напрямую для корректного вычисления разницы
+        const startedAt = new Date(rental.started_at); // Это время в UTC
+        const endedAt = new Date(); // Это текущее время в локальной таймзоне браузера
+        
+        // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
+        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
+        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
+        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+        const endedAtUTC = new Date(endedAt.getTime() + endedAt.getTimezoneOffset() * 60000);
+        
+        // Рассчитываем разницу в миллисекундах между окончанием аренды и началом
+        let timeDiff = endedAtUTC - startedAt;
+        if (timeDiff < 0) {
+            // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
+            timeDiff = 0;
+        }
+        
+        const minutesDiff = Math.floor(timeDiff / (100 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
+        
+        // Цена = 1 BYN за начало + 0.5 BYN за минуту
+        const totalPrice = 1 + minutesDiff * 0.5;
+        
+        // Проверяем, чтобы цена не была отрицательной или нулевой
+        if (totalPrice < 1) {
+            totalPrice = 1;
+        }
+        
+        // Валидация данных карты
+        const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+        const cardHolder = document.getElementById('card-holder').value;
+        const expiryDate = document.getElementById('expiry-date').value;
+        const cvv = document.getElementById('cvv').value;
+        
+        if (!validateCardData(cardNumber, cardHolder, expiryDate, cvv)) {
+            return;
+        }
+        
+        // Проверяем, использовать ли кэшбэк
+        const useCashback = document.getElementById('use-cashback').checked;
+        let finalPrice = totalPrice;
+        let cashbackUsed = 0;
+        
+        if (useCashback) {
+            const userData = await getUserData();
+            if (userData.cashback > 0) {
+                cashbackUsed = Math.min(totalPrice, userData.cashback);
+                finalPrice = totalPrice - cashbackUsed;
+                
+                if (finalPrice < 0) {
+                    finalPrice = 0;
+                }
+            }
+        }
+        
+        // Создаем запись в логе оплаты
+        const paymentLog = {
+            rental_id: rentalId,
+            user_id: parseInt(token.split(':')[0]),
+            pay_type: 'card',
+            price: finalPrice,
+            ip: await getUserIP()
+        };
+        
+        // Отправляем данные оплаты
+        const paymentLogResponse = await fetch('/payment_logs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(paymentLog)
+        });
+        
+        if (!paymentLogResponse.ok) {
+            throw new Error('Ошибка при создании записи об оплате');
+        }
+        
+        // Обновляем аренду
+        const response = await fetch(`/rentals/${rentalId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                ended_at: endedAt.toISOString(),
+                status: "completed",
+                price: totalPrice  // Обновляем цену при завершении аренды
+            })
+        });
+        
+        if (response.ok) {
+            // Если использовался кэшбэк, обновляем баланс пользователя
+            if (useCashback && cashbackUsed > 0) {
+                await updateCashbackBalance(-cashbackUsed);
+            }
+            
+            // Рассчитываем и добавляем кэшбэк (3% от стоимости поездки)
+            const cashbackToAdd = totalPrice * 0.03;
+            await updateCashbackBalance(cashbackToAdd);
+            
+            // Удаляем панель активной аренды
+            const rentalPanel = document.getElementById('active-rental-panel');
+            if (rentalPanel) {
+                rentalPanel.remove();
+            }
+            
+            // Закрываем модальное окно
+            const modal = document.getElementById('completion-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            alert(`Аренда успешно завершена! С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
+            
+            // Обновляем карту
+            showCarsOnMap();
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при завершении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при завершении аренды:', error);
+        alert('Ошибка при завершении аренды');
+    }
+}
+
+// Функция для валидации данных карты
+function validateCardData(cardNumber, cardHolder, expiryDate, cvv) {
+    // Проверка номера карты (16 цифр)
+    const cardNumberRegex = /^\d{16}$/;
+    if (!cardNumberRegex.test(cardNumber)) {
+        alert('Неверный формат номера карты. Должно быть 16 цифр.');
+        return false;
+    }
+    
+    // Проверка имени держателя
+    if (!cardHolder.trim()) {
+        alert('Введите имя держателя карты.');
+        return false;
+    }
+    
+    // Проверка срока действия
+    const expiryRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
+    if (!expiryRegex.test(expiryDate)) {
+        alert('Неверный формат срока действия. Используйте ММ/ГГ.');
+        return false;
+    }
+    
+    // Проверка CVV
+    const cvvRegex = /^\d{3}$/;
+    if (!cvvRegex.test(cvv)) {
+        alert('Неверный формат CVV. Должно быть 3 цифры.');
+        return false;
+    }
+    
+    return true;
+}
+
+// Функция для получения данных пользователя
+async function getUserData() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        return null;
+    }
+    
+    try {
+        const response = await fetch('/users/profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            return await response.json();
+        }
+        return null;
+    } catch (error) {
+        console.error('Ошибка при получении данных пользователя:', error);
+        return null;
+    }
+}
+
+// Функция для обновления баланса кэшбэка
+async function updateCashbackBalance(amount) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        return;
+    }
+    
+    try {
+        const userData = await getUserData();
+        if (!userData) {
+            return;
+        }
+        
+        const newCashback = userData.cashback + amount;
+        
+        // Обновляем данные пользователя
+        const response = await fetch(`/users/${userData.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                cashback: newCashback
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('Ошибка при обновлении кэшбэка:', response.status);
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении кэшбэка:', error);
+    }
+}
+
+// Функция для получения IP пользователя
+async function getUserIP() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+    } catch (error) {
+        console.error('Ошибка при получении IP:', error);
+        return 'unknown';
+    }
+}
+ 
+// Функция для перехода на админ панель
+function goToAdminPanel() {
+    window.location.href = '/admin';
+}
+
+// Функция для проверки и отображения активной аренды при загрузке
+async function checkAndShowActiveRental() {
+    const activeRental = await getActiveRental();
+    if (activeRental) {
+        showActiveRentalPanel(activeRental);
+    }
+// Функция для перехода на админ панель
+function goToAdminPanel() {
+    window.location.href = '/admin';
+}
+
+// Функция для проверки и отображения активной аренды при загрузке
+async function checkAndShowActiveRental() {
+    const activeRental = await getActiveRental();
+    if (activeRental) {
+        showActiveRentalPanel(activeRental);
+    }
+}
 }
 
 // Функция для перехода на админ панель
