@@ -1053,7 +1053,7 @@ async function processPaymentAndComplete(rentalId) {
             timeDiff = 0;
         }
         
-        const minutesDiff = Math.floor(timeDiff / (100 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
+        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
         
         // Цена = 1 BYN за начало + 0.5 BYN за минуту
         const totalPrice = 1 + minutesDiff * 0.5;
@@ -1113,6 +1113,24 @@ async function processPaymentAndComplete(rentalId) {
             throw new Error('Ошибка при создании записи об оплате');
         }
         
+        // Загружаем фотографии, если они были выбраны
+        const photoUpload = document.getElementById('photo-upload');
+        const files = photoUpload.files;
+        const uploadedPhotoIds = [];
+        
+        if (files.length > 0) {
+            // Загружаем каждую фотографию
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const photoId = await uploadPhoto(file, rental.car_id, parseInt(token.split(':')[0]));
+                    if (photoId) {
+                        uploadedPhotoIds.push(photoId);
+                    }
+                }
+            }
+        }
+        
         // Обновляем аренду
         const response = await fetch(`/rentals/${rentalId}`, {
             method: 'PUT',
@@ -1160,6 +1178,46 @@ async function processPaymentAndComplete(rentalId) {
     } catch (error) {
         console.error('Ошибка при завершении аренды:', error);
         alert('Ошибка при завершении аренды');
+    }
+}
+
+// Функция для загрузки фотографии
+async function uploadPhoto(file, carId, userId) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        console.error('Необходима авторизация для загрузки фотографий');
+        return null;
+    }
+    
+    try {
+        // Создаем FormData для отправки файла
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('object_type', 'car');
+        formData.append('car_id', carId);
+        formData.append('user_id', userId);
+        formData.append('uploaded_by', userId);
+        
+        // Отправляем запрос на загрузку фотографии
+        const response = await fetch('/photos/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const photoData = await response.json();
+            return photoData.id; // Возвращаем ID загруженной фотографии
+        } else {
+            const errorData = await response.json();
+            console.error('Ошибка при загрузке фотографии:', errorData.detail || 'Неизвестная ошибка');
+            return null;
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке фотографии:', error);
+        return null;
     }
 }
 

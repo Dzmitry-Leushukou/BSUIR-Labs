@@ -47,6 +47,7 @@ class NoCacheStaticFiles(StaticFiles):
 
 # Mount static files with cache control
 app.mount("/static", NoCacheStaticFiles(directory="frontend"), name="static")
+app.mount("/uploads", NoCacheStaticFiles(directory="frontend/uploads"), name="uploads")
 
 # Include routers
 app.include_router(roles_router)
