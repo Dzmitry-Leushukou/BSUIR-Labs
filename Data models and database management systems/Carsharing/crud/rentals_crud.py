@@ -58,6 +58,13 @@ def create_rental(rental: RentalCreate):
         (rental.user_id, rental.car_id, started_at, rental.price, rental.status)
     )
     new_rental = cur.fetchone()
+    
+    # Обновляем статус машины на "rented"
+    cur.execute(
+        "UPDATE cars SET status = 'rented' WHERE id = %s",
+        (rental.car_id,)
+    )
+    
     conn.commit()
     cur.close()
     conn.close()
@@ -89,6 +96,16 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     
     cur.execute(query, values)
     updated_rental = cur.fetchone()
+    
+    # Если статус аренды изменяется на "completed", обновляем статус машины на "available"
+    if rental.status == "completed":
+        # Получаем ID машины из обновленной аренды
+        car_id = updated_rental['car_id']
+        cur.execute(
+            "UPDATE cars SET status = 'available' WHERE id = %s",
+            (car_id,)
+        )
+    
     conn.commit()
     cur.close()
     conn.close()

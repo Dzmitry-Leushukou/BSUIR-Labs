@@ -93,9 +93,9 @@ async function showCarsOnMap() {
         if (response.ok) {
             const cars = await response.json();
             
-            // Добавить маркеры для каждой машины, кроме арендованных
+            // Добавить маркеры для каждой машины, кроме арендованных и находящихся на обслуживании
             cars.forEach(car => {
-                if (car.latitude && car.longitude && car.status !== 'rented') {
+                if (car.latitude && car.longitude && car.status === 'available') {
                     // Создаем иконку для маркера машины
                     const carIcon = L.divIcon({
                         className: 'car-marker',
