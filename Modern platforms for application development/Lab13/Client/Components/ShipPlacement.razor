@@ -1,0 +1,239 @@
+﻿@page "/placement"
+@using Shared
+@using Client.Services
+@using Microsoft.AspNetCore.Components
+@inject GameHubService HubService
+@inject GameClientLogic GameLogic
+
+<div class="ship-placement-container">
+    <!-- Остальной код остается без изменений до конца -->
+    <!-- ... -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            @successMessage
+        </div>
+    }
+</div>
+
+@code {
+    private int currentShipSize = 0;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Инициализация, если нужно
+    }
+
+    private string GetCellClass(CellState state, bool isSelected)
+    {
+        var classes = new List<string> { "cell" };
+
+        if (isSelected)
+        {
+            classes.Add("cell-selected");
+        }
+
+        switch (state)
+        {
+            case CellState.Empty:
+                classes.Add("cell-empty");
+                break;
+            case CellState.Ship:
+                classes.Add("cell-ship");
+                break;
+            case CellState.Hit:
+                classes.Add("cell-hit");
+                break;
+            case CellState.Miss:
+                classes.Add("cell-miss");
+                break;
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetCellContent(CellState state, bool isSelected, bool hasShip)
+    {
+        if (isSelected)
+            return "✓";
+
+        if (state == CellState.Ship)
+            return "■";
+
+        if (state == CellState.Hit)
+            return "💥";
+
+        if (state == CellState.Miss)
+            return "○";
+
+        return "";
+    }
+
+    private void SelectShipSize(int size)
+    {
+        currentShipSize = size;
+        GameLogic.ClearSelection();
+        errorMessage = string.Empty;
+        successMessage = $"Выбран корабль размером {size} клетки. Кликайте по клеткам доски для построения.";
+        StateHasChanged();
+    }
+
+    private void OnCellClick(int x, int y)
+    {
+        try
+        {
+            if (currentShipSize == 0)
+            {
+                errorMessage = "Сначала выберите размер корабля!";
+                return;
+            }
+
+            var position = new Position(x, y);
+
+            // Если это первый клик для этого корабля
+            if (GameLogic.SelectedPositions.Count == 0)
+            {
+                GameLogic.StartBuildingShip(currentShipSize, position);
+                errorMessage = string.Empty;
+            }
+            else
+            {
+                // Добавляем позицию к текущему кораблю
+                bool success = GameLogic.AddPositionToCurrentShip(position);
+                if (!success)
+                {
+                    errorMessage = "Корабль должен быть прямой линией! Выбирайте смежные клетки.";
+                }
+                else
+                {
+                    errorMessage = string.Empty;
+
+                    // Если выбрано достаточно клеток, завершаем построение
+                    if (GameLogic.SelectedPositions.Count == currentShipSize)
+                    {
+                        bool shipPlaced = GameLogic.FinishBuildingShip(currentShipSize);
+                        if (shipPlaced)
+                        {
+                            successMessage = $"Корабль размером {currentShipSize} клетки успешно размещен!";
+                            currentShipSize = 0;
+                            GameLogic.ClearSelection();
+
+                            if (GameLogic.AreAllShipsPlaced())
+                            {
+                                successMessage = "Все корабли размещены! Нажмите 'Начать игру!'";
+                            }
+                        }
+                        else
+                        {
+                            errorMessage = "Невозможно разместить корабль здесь. Проверьте правила: корабли не должны касаться и должны быть прямой линией.";
+                            GameLogic.ClearSelection();
+                        }
+                    }
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task AutoPlaceAllShips()
+    {
+        try
+        {
+            bool success = GameLogic.AutoPlaceAllShips();
+            if (success)
+            {
+                successMessage = "Все корабли успешно размещены автоматически!";
+                errorMessage = string.Empty;
+                currentShipSize = 0;
+                GameLogic.ClearSelection();
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Не удалось автоматически разместить все корабли. Попробуйте снова или разместите вручную.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при автоматической расстановке: {ex.Message}";
+        }
+    }
+
+    private void CancelCurrentShip()
+    {
+        currentShipSize = 0;
+        GameLogic.ClearSelection();
+        errorMessage = string.Empty;
+        successMessage = "Построение корабля отменено.";
+        StateHasChanged();
+    }
+
+    private void ClearAllShips()
+    {
+        // Создаем копию списка, так как он будет изменяться
+        var shipIds = GameLogic.PlacedShips.Select(s => s.Id).ToList();
+        foreach (var shipId in shipIds)
+        {
+            GameLogic.RemoveShip(shipId);
+        }
+
+        currentShipSize = 0;
+        GameLogic.ClearSelection();
+        errorMessage = string.Empty;
+        successMessage = "Все корабли удалены. Начните расстановку заново.";
+        StateHasChanged();
+    }
+
+    private void RemoveShip(int shipId)
+    {
+        GameLogic.RemoveShip(shipId);
+        successMessage = "Корабль удален.";
+        StateHasChanged();
+    }
+
+    private async Task ReadyToPlay()
+    {
+        try
+        {
+            if (!GameLogic.AreAllShipsPlaced())
+            {
+                errorMessage = "Не все корабли размещены!";
+                return;
+            }
+
+            await HubService.PlaceShipsAsync(GameLogic.PlacedShips);
+            await HubService.ReadyToPlayAsync();
+            successMessage = "Вы готовы к игре! Ожидаем противника...";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task BackToLobby()
+    {
+        try
+        {
+            await HubService.LeaveGameAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при выходе из игры: {ex.Message}";
+        }
+    }
+}

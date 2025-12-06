@@ -1,0 +1,25 @@
+2025-12-06 09:10:46.837 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-06 09:10:47.168 +03:00 [INF] Now listening on: https://localhost:7001
+2025-12-06 09:10:47.176 +03:00 [INF] Now listening on: http://localhost:5001
+2025-12-06 09:10:47.270 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-06 09:10:47.284 +03:00 [INF] Hosting environment: Development
+2025-12-06 09:10:47.463 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4
+2025-12-06 09:10:47.835 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-06 09:10:48.050 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The payload was invalid. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.Cng.CbcAuthenticatedEncryptor.DecryptImpl(Byte* pbCiphertext, UInt32 cbCiphertext, Byte* pbAdditionalAuthenticatedData, UInt32 cbAdditionalAuthenticatedData)
+   at Microsoft.AspNetCore.DataProtection.Cng.Internal.CngAuthenticatedEncryptorBase.Decrypt(ArraySegment`1 ciphertext, ArraySegment`1 additionalAuthenticatedData)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-06 09:10:48.769 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-06 09:10:48.797 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-06 09:10:48.847 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-06 09:10:48.996 +03:00 [INF] Executed ViewResult - view Index executed in 153.919ms.
+2025-12-06 09:10:49.000 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 201.1097ms
+2025-12-06 09:10:49.001 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-06 09:10:49.016 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 1183.6047ms
+2025-12-06 09:10:49.043 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-06 09:10:49.045 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-06 09:10:49.050 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 6.515ms
+2025-12-06 09:10:49.068 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 22.8852ms

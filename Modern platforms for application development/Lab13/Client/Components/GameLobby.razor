@@ -1,0 +1,84 @@
+@using Shared
+@using Client.Services
+
+<div class="lobby-container">
+    <h2>Лобби игры</h2>
+    
+    <div class="form-group mb-3">
+        <label for="playerName">Ваше имя:</label>
+      <input type="text" class="form-control" id="playerName" @bind="playerName" placeholder="Введите имя" />
+    </div>
+
+    <div class="form-group mb-3">
+    <label for="gameName">Название игры:</label>
+<input type="text" class="form-control" id="gameName" @bind="gameName" placeholder="Новая игра" />
+    </div>
+
+    <div class="d-grid gap-2">
+    <button class="btn btn-primary btn-lg" @onclick="CreateGame" disabled="@(string.IsNullOrWhiteSpace(playerName))">
+        ?? Создать новую игру
+        </button>
+        <button class="btn btn-success btn-lg" @onclick="JoinGame" disabled="@(string.IsNullOrWhiteSpace(playerName))">
+         ? Присоединиться к игре
+       </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<(string gameName, string playerName)> OnGameCreated { get; set; }
+
+    [Parameter]
+    public EventCallback<(string gameName, string playerName)> OnGameJoined { get; set; }
+
+    private string playerName = "";
+    private string gameName = "Морской бой";
+
+ private async Task CreateGame()
+    {
+        if (string.IsNullOrWhiteSpace(playerName))
+     {
+   return;
+        }
+        if (string.IsNullOrWhiteSpace(gameName))
+        {
+            gameName = "Морской бой " + DateTime.Now.Ticks;
+        }
+        await OnGameCreated.InvokeAsync((gameName, playerName));
+    }
+
+  private async Task JoinGame()
+    {
+     if (string.IsNullOrWhiteSpace(playerName))
+  {
+   return;
+        }
+      if (string.IsNullOrWhiteSpace(gameName))
+        {
+       gameName = "Морской бой";
+        }
+     await OnGameJoined.InvokeAsync((gameName, playerName));
+    }
+}
+
+<style>
+    .lobby-container {
+max-width: 500px;
+   margin: 40px auto;
+        padding: 30px;
+        border: 2px solid #007bff;
+   border-radius: 10px;
+       background-color: #f8f9fa;
+    }
+
+   .lobby-container h2 {
+       color: #007bff;
+        text-align: center;
+  margin-bottom: 25px;
+    }
+
+   .btn-lg {
+   font-size: 1.1rem;
+  padding: 12px;
+    }
+</style>

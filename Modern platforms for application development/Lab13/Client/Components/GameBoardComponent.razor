@@ -1,0 +1,294 @@
+@using Client.Services
+@using Shared
+
+<div class="game-board-container">
+    <h3>@Title</h3>
+    <div class="game-board">
+    @for (int x = 0; x < GameBoard.BOARD_SIZE; x++)
+  {
+            <div class="board-row">
+     @for (int y = 0; y < GameBoard.BOARD_SIZE; y++)
+        {
+var cellX = x;
+      var cellY = y;
+  var cellState = GameLogic.GetCellState(IsMyBoard, cellX, cellY);
+ var hasShip = IsMyBoard && GameLogic.HasShip(cellX, cellY);
+  var isSelected = GameLogic.IsSelected(cellX, cellY);
+  var isAlreadyShot = GameLogic.IsAlreadyShot(cellX, cellY);
+var isInBuffer = IsMyBoard && IsInShipBuffer(cellX, cellY);
+var isInSelectionBuffer = GameLogic.SelectedPositions.Count > 0 && IsInSelectionBuffer(cellX, cellY);
+
+<button 
+    class="board-cell @GetCellClass(cellState, hasShip, isSelected, isAlreadyShot, isInBuffer, isInSelectionBuffer)"
+     @onclick="() => HandleCellClick(cellX, cellY)"
+         disabled="@isAlreadyShot"
+  title="@GetCellTooltip(cellState, isInBuffer)">
+   @GetCellContent(cellState, hasShip, isSelected, isInBuffer)
+      </button>
+     }
+      </div>
+     }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Game Board";
+
+    [Parameter]
+    public bool IsMyBoard { get; set; }
+
+   [Parameter]
+    public GameClientLogic GameLogic { get; set; } = null!;
+
+   [Parameter]
+    public EventCallback<Position> OnCellClicked { get; set; }
+
+    [Parameter]
+  public EventCallback OnMakeMove { get; set; }
+
+   private async Task HandleCellClick(int x, int y)
+    {
+ try
+ {
+ if (GameLogic == null)
+ return;
+
+     if (IsMyBoard)
+        {
+   GameLogic.ToggleCellForPlacement(new Position(x, y));
+     }
+       else
+     {
+     if (!GameLogic.IsAlreadyShot(x, y) && GameLogic.IsMyTurn)
+   {
+  await OnCellClicked.InvokeAsync(new Position(x, y));
+   }
+    }
+
+StateHasChanged();
+ }
+ catch (Exception ex)
+ {
+  Console.WriteLine($"[Error] HandleCellClick failed: {ex}");
+ }
+    }
+
+    private bool IsInShipBuffer(int x, int y)
+    {
+   if (GameLogic?.PlacedShips == null)
+      return false;
+
+     // Проверяем каждый размещенный корабль
+  foreach (var ship in GameLogic.PlacedShips)
+ {
+     // Проверяем каждую позицию корабля
+        foreach (var shipPos in ship.Positions)
+        {
+     // Проверяем все 8 соседних позиций + саму позицию (3x3 область)
+    for (int dx = -1; dx <= 1; dx++)
+  {
+   for (int dy = -1; dy <= 1; dy++)
+      {
+  int checkX = shipPos.X + dx;
+   int checkY = shipPos.Y + dy;
+
+            if (checkX == x && checkY == y)
+         return true; // Эта позиция в буферной зоне существующего корабля
+ }
+      }
+    }
+  }
+
+return false;
+   }
+
+    private bool IsInSelectionBuffer(int x, int y)
+ {
+       if (GameLogic?.SelectedPositions == null || GameLogic.SelectedPositions.Count == 0)
+   return false;
+
+      // Проверяем для каждой выбранной позиции
+ foreach (var selectedPos in GameLogic.SelectedPositions)
+  {
+     // Проверяем все 8 соседних + саму позицию (3x3 область)
+       for (int dx = -1; dx <= 1; dx++)
+    {
+      for (int dy = -1; dy <= 1; dy++)
+       {
+         int checkX = selectedPos.X + dx;
+    int checkY = selectedPos.Y + dy;
+
+if (checkX == x && checkY == y && !IsPositionSelected(x, y))
+      return true; // Эта позиция в буферной зоне выбранного корабля
+ }
+      }
+   }
+
+     return false;
+  }
+
+    /// <summary>
+    /// Проверяет, выбрана ли конкретная позиция
+    /// </summary>
+    private bool IsPositionSelected(int x, int y)
+  {
+        return GameLogic?.SelectedPositions.Any(p => p.X == x && p.Y == y) ?? false;
+    }
+
+  private string GetCellClass(CellState cellState, bool hasShip, bool isSelected, bool isAlreadyShot, bool isInBuffer, bool isInSelectionBuffer)
+    {
+   var classes = "board-cell";
+
+  if (isAlreadyShot)
+      classes += " disabled";
+
+if (isSelected && IsMyBoard)
+    classes += " selected";
+
+if (isInBuffer && IsMyBoard && !hasShip && !isSelected)
+  classes += " buffer";
+
+if (isInSelectionBuffer && IsMyBoard)
+classes += " selection-buffer";
+
+     classes += cellState switch
+        {
+   CellState.Empty => " empty",
+ CellState.Ship => hasShip ? " ship" : " empty",
+     CellState.Hit => " hit",
+   CellState.Miss => " miss",
+   _ => " empty"
+        };
+
+  return classes;
+    }
+
+    private string GetCellContent(CellState cellState, bool hasShip, bool isSelected, bool isInBuffer)
+   {
+   if (isSelected && IsMyBoard)
+       return "S";
+
+ if (isInBuffer && IsMyBoard && !hasShip && !isSelected)
+   return "•";
+
+     return cellState switch
+   {
+     CellState.Hit => "X",
+       CellState.Miss => "•",
+        _ => ""
+    };
+    }
+
+   private string GetCellTooltip(CellState cellState, bool isInBuffer)
+    {
+    if (isInBuffer)
+   return "Буфер (корабль не может здесь быть)";
+
+     return cellState switch
+        {
+          CellState.Hit => "Попадание!",
+  CellState.Miss => "Промах",
+        CellState.Ship => "Корабль",
+    _ => "Пусто"
+   };
+    }
+}
+
+<style>
+ .game-board-container {
+    margin: 20px;
+      padding: 15px;
+      border: 2px solid #333;
+    background-color: #f0f0f0;
+border-radius: 8px;
+  }
+
+    .game-board-container h3 {
+   margin-top: 0;
+ text-align: center;
+   color: #333;
+    }
+
+ .game-board {
+ display: inline-block;
+        border-collapse: collapse;
+gap: 0;
+   background-color: #ddd;
+ padding: 2px;
+  border-radius: 4px;
+ }
+
+    .board-row {
+    display: flex;
+     gap: 0;
+    }
+
+    .board-cell {
+   width: 35px;
+ height: 35px;
+border: 1px solid #999;
+  padding: 0;
+     margin: 0;
+font-weight: bold;
+      cursor: pointer;
+ background-color: #e8f4f8;
+  color: #333;
+       display: flex;
+     align-items: center;
+ justify-content: center;
+   transition: all 0.2s;
+    }
+
+    .board-cell:hover:not(:disabled) {
+ background-color: #c0e8f0;
+    transform: scale(1.05);
+ }
+
+    .board-cell.empty {
+  background-color: #e8f4f8;
+ }
+
+  .board-cell.ship {
+ background-color: #333;
+        color: #fff;
+    }
+
+    .board-cell.ship:hover:not(:disabled) {
+ background-color: #555;
+    }
+
+ .board-cell.hit {
+  background-color: #ff4444;
+      color: #fff;
+   }
+
+    .board-cell.miss {
+ background-color: #4488ff;
+  color: #fff;
+    }
+
+    .board-cell.selected {
+        background-color: #ffcc00;
+color: #000;
+  border: 2px solid #ff8800;
+    }
+
+ .board-cell.buffer {
+ background-color: #ffebe9;
+  border: 1px dashed #ff9999;
+     color: #ff6666;
+    }
+
+    .board-cell.selection-buffer {
+    background-color: #fff3cd;
+       border: 1px dashed #ffc107;
+   }
+
+    .board-cell.disabled {
+     cursor: not-allowed;
+   opacity: 0.6;
+    }
+
+
+</style>

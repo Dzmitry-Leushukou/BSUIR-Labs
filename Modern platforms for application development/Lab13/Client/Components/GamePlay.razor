@@ -1,0 +1,128 @@
+@using Client.Services
+@using Shared
+@inject GameHubService HubService
+
+<div class="gameplay">
+  <h2>Игра в процессе</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+ <h4>Ваша доска</h4>
+     @if (GameLogic != null)
+ {
+  <GameBoardComponent 
+   Title="Мои корабли"
+    IsMyBoard="true"
+    GameLogic="@GameLogic"
+    />
+ }
+ else
+ {
+   <p>Loading...</p>
+ }
+      <div class="mt-3">
+    @if (GameLogic != null)
+{
+     <strong>Мой счёт: @GameLogic.MyScore</strong>
+}
+ </div>
+ </div>
+
+<div class="col-md-6">
+  <h4>Доска противника</h4>
+  @if (GameLogic != null)
+{
+  <GameBoardComponent 
+       Title="Доска противника"
+     IsMyBoard="false"
+  GameLogic="@GameLogic"
+   OnCellClicked="HandleCellClicked"
+/>
+}
+else
+{
+  <p>Loading...</p>
+}
+<div class="mt-3">
+    @if (GameLogic != null)
+{
+     <strong>Счёт противника: @GameLogic.OpponentScore</strong>
+}
+     </div>
+     </div>
+    </div>
+
+    <div class="game-status mt-4">
+        @if (GameLogic.IsMyTurn)
+    {
+          <div class="alert alert-info">
+    <strong>Ваш ход!</strong> Нажмите на клетку доски противника
+            </div>
+        }
+        else
+        {
+       <div class="alert alert-warning">
+        <strong>Ход противника...</strong>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string GameId { get; set; } = "";
+
+    [Parameter]
+    public GameClientLogic GameLogic { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        HubService.OnMoveResult += HandleMoveResult;
+        HubService.OnOpponentMoveResult += HandleOpponentMoveResult;
+    }
+
+    private async Task HandleCellClicked(Position position)
+    {
+  try
+        {
+     await HubService.MakeMoveAsync(position);
+        }
+        catch (Exception ex)
+        {
+      // Handle error
+        }
+ }
+
+    private async Task HandleMoveResult(MoveResultDto result)
+    {
+        GameLogic.ProcessMoveResult(result);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleOpponentMoveResult(Position position, bool isHit)
+    {
+        GameLogic.ProcessOpponentMove(position, isHit);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+ HubService.OnMoveResult -= HandleMoveResult;
+  HubService.OnOpponentMoveResult -= HandleOpponentMoveResult;
+    }
+}
+
+<style>
+    .gameplay {
+        padding: 20px;
+    }
+
+    .game-status {
+        text-align: center;
+    }
+
+    h4 {
+        color: #333;
+   margin-bottom: 15px;
+    }
+</style>
