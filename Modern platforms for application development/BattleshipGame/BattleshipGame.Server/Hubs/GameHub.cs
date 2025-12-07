@@ -197,26 +197,29 @@ namespace BattleshipGame.Server.Hubs
             }
             else
             {
-                // Сразу меняем ход на сервере
-                session.SwitchTurn();
-
-                // Уведомляем о смене хода
-                var nextPlayer = session.CurrentTurnPlayer;
-                if (nextPlayer != null)
+                // Обрабатываем смену хода
+                if (!result.IsHit)
                 {
-                    await Clients.Group(sessionId).ChangeTurn(nextPlayer.Name);
+                    // При промахе - меняем ход
+                    session.SwitchTurn();
+                    var nextPlayer = session.CurrentTurnPlayer;
 
-                    if (result.IsHit)
+                    if (nextPlayer != null)
                     {
-                        var message = result.IsShipDestroyed
-                            ? $"Корабль {result.ShipName} уничтожен! Ход переходит к {nextPlayer.Name}"
-                            : $"Попадание! Ход переходит к {nextPlayer.Name}";
-                        await Clients.Group(sessionId).ShowMessage(message);
-                    }
-                    else
-                    {
+                        await Clients.Group(sessionId).ChangeTurn(nextPlayer.Name);
                         await Clients.Group(sessionId).ShowMessage($"Промах! Ход переходит к {nextPlayer.Name}");
                     }
+                }
+                else
+                {
+                    // При попадании - ход остается у текущего игрока
+                    var message = result.IsShipDestroyed
+                        ? $"Корабль {result.ShipName} уничтожен! {shooter.Name} продолжает ход"
+                        : $"Попадание! {shooter.Name} продолжает ход";
+                    await Clients.Group(sessionId).ShowMessage(message);
+
+                    // Также уведомляем, что ход остался у текущего игрока
+                    await Clients.Group(sessionId).ChangeTurn(shooter.Name);
                 }
             }
         }

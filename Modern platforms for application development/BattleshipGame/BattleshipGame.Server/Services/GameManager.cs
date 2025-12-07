@@ -163,8 +163,8 @@ namespace BattleshipGame.Server.Services
                     IsHit = true,
                     IsShipDestroyed = isShipDestroyed,
                     IsGameOver = isGameOver,
-                    ShipName = hitShip.Name,
-                    ShooterKeepsTurn = false // В морском бою после попадания ход все равно переходит
+                    ShipName = hitShip.Name
+                    // При попадании ход остается у текущего игрока (не меняем ShooterKeepsTurn)
                 };
             }
             else
@@ -181,8 +181,8 @@ namespace BattleshipGame.Server.Services
                 {
                     IsValid = true,
                     IsHit = false,
-                    IsGameOver = false,
-                    ShooterKeepsTurn = false
+                    IsGameOver = false
+                    // При промахе ход переходит (ShooterKeepsTurn = false по умолчанию)
                 };
             }
         }
@@ -255,6 +255,5 @@ namespace BattleshipGame.Server.Services
         public bool IsShipDestroyed { get; set; }
         public bool IsGameOver { get; set; }
         public string? ShipName { get; set; }
-        public bool ShooterKeepsTurn { get; set; }
     }
 }
