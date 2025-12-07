@@ -268,6 +268,9 @@ function updateAuthStatus(isAuthenticated, userData = null) {
         if (userData.id) {
             localStorage.setItem('user_id', userData.id);
         }
+        // Очищаем сохраненные данные форм при успешной аутентификации
+        localStorage.removeItem('loginFormData');
+        localStorage.removeItem('registerFormData');
         showUserInfo(userData);
         // Проверяем и показываем активную аренду при входе
         setTimeout(checkAndShowActiveRental, 500); // Используем таймаут, чтобы дождаться полной загрузки интерфейса
@@ -318,6 +321,15 @@ document.querySelector('.login-btn').addEventListener('click', () => {
     
     document.body.appendChild(modal);
     
+    // Восстанавливаем предыдущие значения из localStorage, если они есть
+    const savedLoginData = JSON.parse(localStorage.getItem('loginFormData') || '{}');
+    if (savedLoginData.email) {
+        document.getElementById('login-email').value = savedLoginData.email;
+    }
+    if (savedLoginData.password) {
+        document.getElementById('login-password').value = savedLoginData.password;
+    }
+    
     document.getElementById('submit-login').addEventListener('click', async () => {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
@@ -342,21 +354,43 @@ document.querySelector('.login-btn').addEventListener('click', () => {
                     updateAuthStatus(true, userData);
                     
                     // После успешного входа обновляем карту с машинами
+                    // Очищаем сохраненные данные формы
+                    localStorage.removeItem('loginFormData');
                     showCarsOnMap();
                 } else {
                     const errorData = await response.json();
                     alert(`Ошибка входа: ${errorData.detail || 'Неверный email или пароль'}`);
+                    // Сохраняем введенные данные при ошибке
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-password').value = password;
                 }
             } catch (error) {
                 console.error('Ошибка при попытке входа:', error);
                 alert('Ошибка при попытке входа');
+                // Сохраняем введенные данные при ошибке
+                document.getElementById('login-email').value = email;
+                document.getElementById('login-password').value = password;
             }
+        } else {
+            // Если поля не заполнены, сохраняем введенные данные при ошибке
+            if (!email) {
+                alert('Пожалуйста, введите email');
+            }
+            if (!password) {
+                alert('Пожалуйста, введите пароль');
+            }
+            // Сохраняем введенные данные
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = password;
         }
-        
-        document.body.removeChild(modal);
     });
     
     document.getElementById('cancel-login').addEventListener('click', () => {
+        // Сохраняем введенные данные при закрытии модального окна
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        // Сохраняем данные в localStorage для возможного восстановления
+        localStorage.setItem('loginFormData', JSON.stringify({ email, password }));
         document.body.removeChild(modal);
     });
 });
@@ -391,6 +425,21 @@ document.querySelector('.register-btn').addEventListener('click', () => {
     
     document.body.appendChild(modal);
     
+    // Восстанавливаем предыдущие значения из localStorage, если они есть
+    const savedRegisterData = JSON.parse(localStorage.getItem('registerFormData') || '{}');
+    if (savedRegisterData.email) {
+        document.getElementById('register-email').value = savedRegisterData.email;
+    }
+    if (savedRegisterData.name) {
+        document.getElementById('register-name').value = savedRegisterData.name;
+    }
+    if (savedRegisterData.surname) {
+        document.getElementById('register-surname').value = savedRegisterData.surname;
+    }
+    if (savedRegisterData.password) {
+        document.getElementById('register-password').value = savedRegisterData.password;
+    }
+    
     document.getElementById('submit-register').addEventListener('click', async () => {
         const email = document.getElementById('register-email').value;
         const name = document.getElementById('register-name').value;
@@ -423,6 +472,8 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                         alert('Регистрация и вход прошли успешно!');
                         
                         // После успешной регистрации и входа обновляем карту с машинами
+                        // Очищаем сохраненные данные формы
+                        localStorage.removeItem('registerFormData');
                         showCarsOnMap();
                     } else {
                         alert('Ошибка: сервер не вернул идентификатор пользователя');
@@ -447,17 +498,51 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                     } else {
                         alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
                     }
+                    // Сохраняем введенные данные при ошибке
+                    document.getElementById('register-email').value = email;
+                    document.getElementById('register-name').value = name;
+                    document.getElementById('register-surname').value = surname;
+                    document.getElementById('register-password').value = password;
                 }
             } catch (error) {
                 console.error('Ошибка при попытке регистрации:', error);
                 alert('Ошибка при попытке регистрации');
+                // Сохраняем введенные данные при ошибке
+                document.getElementById('register-email').value = email;
+                document.getElementById('register-name').value = name;
+                document.getElementById('register-surname').value = surname;
+                document.getElementById('register-password').value = password;
             }
+        } else {
+            // Если поля не заполнены, показываем ошибки и сохраняем введенные данные
+            if (!email) {
+                alert('Пожалуйста, введите email');
+            }
+            if (!name) {
+                alert('Пожалуйста, введите имя');
+            }
+            if (!surname) {
+                alert('Пожалуйста, введите фамилию');
+            }
+            if (!password) {
+                alert('Пожалуйста, введите пароль');
+            }
+            // Сохраняем введенные данные
+            document.getElementById('register-email').value = email;
+            document.getElementById('register-name').value = name;
+            document.getElementById('register-surname').value = surname;
+            document.getElementById('register-password').value = password;
         }
-        
-        document.body.removeChild(modal);
     });
     
     document.getElementById('cancel-register').addEventListener('click', () => {
+        // Сохраняем введенные данные при закрытии модального окна
+        const email = document.getElementById('register-email').value;
+        const name = document.getElementById('register-name').value;
+        const surname = document.getElementById('register-surname').value;
+        const password = document.getElementById('register-password').value;
+        // Сохраняем данные в localStorage для возможного восстановления
+        localStorage.setItem('registerFormData', JSON.stringify({ email, name, surname, password }));
         document.body.removeChild(modal);
     });
 });
@@ -477,6 +562,10 @@ document.querySelector('.logout-btn').addEventListener('click', () => {
     if (rentalPanel) {
         rentalPanel.remove();
     }
+    
+    // Также очищаем сохраненные данные форм при выходе
+    localStorage.removeItem('loginFormData');
+    localStorage.removeItem('registerFormData');
 });
 
 // Функция для перехода к местоположению пользователя на карте
