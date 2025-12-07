@@ -1,0 +1,162 @@
+﻿@using BattleshipGame.Shared.Models
+@using BattleshipGame.Client.Services
+@inject BattleshipGame.Client.Services.GameStateService GameState
+
+<div class="ship-placement-container">
+    <h3>Расстановка кораблей</h3>
+
+    <div class="placement-info">
+        <p>Разместите ваши корабли на поле (10×10)</p>
+        <p>Осталось разместить: @GetRemainingShipsCount() из 10</p>
+    </div>
+
+    <div class="placement-controls mb-3">
+        <button class="btn btn-success me-2" @onclick="PlaceRandomly"
+                disabled="@GameState.AreAllShipsPlaced()">
+            <i class="fas fa-random"></i> Расставить случайно
+        </button>
+        <button class="btn btn-warning me-2" @onclick="ClearAll">
+            <i class="fas fa-undo"></i> Очистить все
+        </button>
+        <button class="btn btn-primary" @onclick="ConfirmPlacement"
+                disabled="@(!GameState.AreAllShipsPlaced())">
+            <i class="fas fa-check"></i> Подтвердить расстановку
+        </button>
+    </div>
+
+    <div class="game-board-container">
+        <div class="game-board" style="grid-template-columns: repeat(10, 1fr);">
+            @for (int y = 0; y < 10; y++)
+            {
+                @for (int x = 0; x < 10; x++)
+                {
+                    <div class="board-cell @GetCellClass(x, y)"
+                         @onclick="() => OnCellClick(x, y)"
+                         @oncontextmenu:preventDefault
+                         @oncontextmenu="() => OnCellRightClick(x, y)">
+                        @if (IsShipCell(x, y) && _selectedShipId == GetShipIdAt(x, y))
+                        {
+                            <div class="selected-indicator"></div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="ships-list mt-3">
+        <h4>Ваши корабли:</h4>
+        <div class="ships-grid">
+            @foreach (var ship in GameState.Ships)
+            {
+                <div class="ship-item @(ship.IsPlaced ? "placed" : "") @(_selectedShipId == ship.Id ? "selected" : "")"
+                     @onclick="() => SelectShip(ship.Id)">
+                    <div class="ship-preview @(ship.IsHorizontal ? "horizontal" : "vertical")">
+                        @for (int i = 0; i < ship.Size; i++)
+                        {
+                            <div class="ship-cell"></div>
+                        }
+                    </div>
+                    <span>@ship.Name (@ship.Size)</span>
+                    @if (ship.IsPlaced)
+                    {
+                        <span class="badge bg-success">Размещен</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Не размещен</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private int? _selectedShipId = null;
+
+    [Parameter]
+    public EventCallback OnShipsPlaced { get; set; }
+
+    private string GetCellClass(int x, int y)
+    {
+        var cell = GameState.GetOwnCell(x, y);
+        if (cell == null) return "empty";
+
+        if (cell.HasShip)
+        {
+            return cell.IsHit ? "ship-hit" : "ship";
+        }
+
+        return "empty";
+    }
+
+    private bool IsShipCell(int x, int y)
+    {
+        return GameState.GetOwnCell(x, y)?.HasShip ?? false;
+    }
+
+    private int? GetShipIdAt(int x, int y)
+    {
+        foreach (var ship in GameState.Ships)
+        {
+            if (ship.Cells.Any(c => c.X == x && c.Y == y))
+            {
+                return ship.Id;
+            }
+        }
+        return null;
+    }
+
+    private void SelectShip(int shipId)
+    {
+        _selectedShipId = shipId;
+    }
+
+    private void OnCellClick(int x, int y)
+    {
+        if (_selectedShipId.HasValue)
+        {
+            // Пытаемся разместить выбранный корабль
+            var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
+            if (ship != null && !ship.IsPlaced)
+            {
+                GameState.PlaceShip(ship.Id, x, y, true);
+            }
+        }
+    }
+
+    private void OnCellRightClick(int x, int y)
+    {
+        // При правом клике - поворот корабля
+        var shipId = GetShipIdAt(x, y);
+        if (shipId.HasValue)
+        {
+            GameState.RotateShip(shipId.Value);
+        }
+    }
+
+    private void PlaceRandomly()
+    {
+        GameState.PlaceShipsRandomly();
+    }
+
+    private void ClearAll()
+    {
+        GameState.ClearShips();
+        _selectedShipId = null;
+    }
+
+    private async Task ConfirmPlacement()
+    {
+        if (GameState.AreAllShipsPlaced())
+        {
+            await OnShipsPlaced.InvokeAsync();
+        }
+    }
+
+    private int GetRemainingShipsCount()
+    {
+        return GameState.Ships.Count(s => !s.IsPlaced);
+    }
+}

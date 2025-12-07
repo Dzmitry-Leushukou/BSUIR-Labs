@@ -1,0 +1,83 @@
+﻿@using BattleshipGame.Shared.Models
+
+<div class="game-board-component">
+    <h4>@Title</h4>
+
+    <div class="coordinates">
+        <div class="corner"></div>
+        @for (int x = 0; x < 10; x++)
+        {
+            <div class="coordinate">@((char)('A' + x))</div>
+        }
+    </div>
+
+    <div class="game-board" style="grid-template-columns: repeat(10, 1fr);">
+        @for (int y = 0; y < 10; y++)
+        {
+            <div class="coordinate">@(y + 1)</div>
+            @for (int x = 0; x < 10; x++)
+            {
+                <div class="board-cell @GetCellClass(x, y)"
+                     @onclick="() => OnCellClick(x, y)">
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Игровое поле";
+
+    [Parameter]
+    public bool IsOwnBoard { get; set; } = false;
+
+    [Parameter]
+    public List<Ship>? Ships { get; set; }
+
+    [Parameter]
+    public List<Shot>? Shots { get; set; }
+
+    [Parameter]
+    public EventCallback<(int x, int y)> OnCellClicked { get; set; }
+
+    private string GetCellClass(int x, int y)
+    {
+        // Проверяем выстрелы
+        var shot = Shots?.FirstOrDefault(s => s.X == x && s.Y == y);
+        if (shot != null)
+        {
+            if (shot.IsHit)
+                return "hit";
+            else
+                return "miss";
+        }
+
+        // Для своего поля показываем корабли
+        if (IsOwnBoard && Ships != null)
+        {
+            var shipCell = Ships
+                .SelectMany(s => s.Cells)
+                .FirstOrDefault(c => c.X == x && c.Y == y);
+
+            if (shipCell != null)
+            {
+                if (shipCell.IsHit)
+                    return "ship-hit";
+                else
+                    return "ship";
+            }
+        }
+
+        return "empty";
+    }
+
+    private async Task OnCellClick(int x, int y)
+    {
+        // Не позволяем кликать на свое поле (только на поле противника)
+        if (!IsOwnBoard)
+        {
+            await OnCellClicked.InvokeAsync((x, y));
+        }
+    }
+}

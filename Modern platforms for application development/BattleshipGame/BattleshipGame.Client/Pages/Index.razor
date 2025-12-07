@@ -1,0 +1,234 @@
+﻿@page "/"
+@using BattleshipGame.Client.Services
+@using BattleshipGame.Shared.Models
+@inject GameHubService GameHubService
+@inject GameStateService GameStateService
+@inject NavigationManager Navigation
+@inject ILogger<Index> Logger
+
+<PageTitle>Морской бой</PageTitle>
+
+<h1>Морской бой</h1>
+
+@if (!GameHubService.IsConnected)
+{
+    <div class="connection-panel">
+        <h3>Подключение к серверу...</h3>
+        <button class="btn btn-primary" @onclick="ConnectToServer">
+            Подключиться
+        </button>
+    </div>
+}
+else
+{
+    <div class="game-menu">
+        <h3>Добро пожаловать в Морской бой!</h3>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger">
+                @_errorMessage
+                <button type="button" class="close" @onclick="() => _errorMessage = null">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="menu-options">
+            <div class="menu-card">
+                <h4><i class="fas fa-plus-circle"></i> Создать игру</h4>
+                <input @bind="_playerName" placeholder="Ваше имя" class="form-control" />
+                <button class="btn btn-success mt-2" @onclick="CreateGame"
+                        disabled="@string.IsNullOrEmpty(_playerName)">
+                    Создать новую игру
+                </button>
+            </div>
+
+            <div class="menu-card">
+                <h4><i class="fas fa-user-plus"></i> Присоединиться</h4>
+                <input @bind="_playerName" placeholder="Ваше имя" class="form-control" />
+                <input @bind="_sessionIdToJoin" placeholder="ID игры" class="form-control mt-2" />
+                <button class="btn btn-primary mt-2" @onclick="JoinGame"
+                        disabled="@(string.IsNullOrEmpty(_playerName) || string.IsNullOrEmpty(_sessionIdToJoin))">
+                    Присоединиться
+                </button>
+            </div>
+
+            <div class="menu-card">
+                <h4><i class="fas fa-list"></i> Активные игры</h4>
+                <button class="btn btn-info" @onclick="LoadActiveGames">
+                    Обновить список
+                </button>
+
+                @if (_activeGames != null && _activeGames.Any())
+                {
+                    <div class="games-list mt-2">
+                        @foreach (var game in _activeGames)
+                        {
+                            <div class="game-item">
+                                <span>Игра @game.SessionId</span>
+                                <span>@game.Players.Count/2 игроков</span>
+                                <span>@game.State</span>
+                                <button class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => JoinActiveGame(game.SessionId)">
+                                    Присоединиться
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (_activeGames != null)
+                {
+                    <p class="text-muted mt-2">Нет активных игр</p>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(GameHubService.CurrentSessionId))
+        {
+            <div class="current-game mt-4">
+                <h4>Текущая игра: @GameHubService.CurrentSessionId</h4>
+                <p>Игрок: @GameHubService.PlayerName</p>
+                <button class="btn btn-danger" @onclick="LeaveGame">
+                    Покинуть игру
+                </button>
+                <button class="btn btn-secondary" @onclick="GoToGame">
+                    Перейти к игре
+                </button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private string _playerName = "";
+    private string _sessionIdToJoin = "";
+    private List<GameSession>? _activeGames;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GameHubService.OnMessageReceived += OnMessage;
+        GameHubService.OnErrorReceived += OnError;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ConnectToServer()
+    {
+        try
+        {
+            await GameHubService.InitializeAsync("");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Ошибка подключения: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateGame()
+    {
+        if (string.IsNullOrEmpty(_playerName)) return;
+
+        try
+        {
+            var sessionId = await GameHubService.CreateGameAsync(_playerName);
+            GameStateService.InitializeNewGame("", _playerName);
+            Navigation.NavigateTo($"/game/{sessionId}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при создании игры");
+            _errorMessage = $"Ошибка при создании игры: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task JoinGame()
+    {
+        if (string.IsNullOrEmpty(_playerName) || string.IsNullOrEmpty(_sessionIdToJoin)) return;
+
+        try
+        {
+            var success = await GameHubService.JoinGameAsync(_sessionIdToJoin, _playerName);
+            if (success)
+            {
+                GameStateService.InitializeNewGame("", _playerName);
+                Navigation.NavigateTo($"/game/{_sessionIdToJoin}");
+            }
+            else
+            {
+                _errorMessage = "Не удалось присоединиться к игре. Возможно, игра не существует или уже полная.";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при присоединении");
+            _errorMessage = $"Ошибка при присоединении: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task JoinActiveGame(string sessionId)
+    {
+        if (string.IsNullOrEmpty(_playerName))
+        {
+            _playerName = $"Игрок_{new Random().Next(1000)}";
+        }
+
+        _sessionIdToJoin = sessionId;
+        await JoinGame();
+    }
+
+    private async Task LoadActiveGames()
+    {
+        try
+        {
+            _activeGames = await GameHubService.GetActiveGamesAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при загрузке игр");
+            _errorMessage = $"Ошибка при загрузке игр: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task LeaveGame()
+    {
+        await GameHubService.LeaveGameAsync();
+        GameStateService.Reset();
+        StateHasChanged();
+    }
+
+    private void GoToGame()
+    {
+        if (!string.IsNullOrEmpty(GameHubService.CurrentSessionId))
+        {
+            Navigation.NavigateTo($"/game/{GameHubService.CurrentSessionId}");
+        }
+    }
+
+    private void OnMessage(string message)
+    {
+        Logger.LogInformation("Сообщение: {Message}", message);
+        // Здесь можно добавить логику отображения сообщений, если нужно
+        StateHasChanged();
+    }
+
+    private void OnError(string error)
+    {
+        Logger.LogError("Ошибка: {Error}", error);
+        _errorMessage = error;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        GameHubService.OnMessageReceived -= OnMessage;
+        GameHubService.OnErrorReceived -= OnError;
+    }
+}

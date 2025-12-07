@@ -1,0 +1,326 @@
+﻿@page "/game/{SessionId}"
+@using BattleshipGame.Client.Services
+@using BattleshipGame.Shared.Models
+@using BattleshipGame.Client.Components
+@inject GameHubService GameHub
+@inject GameStateService GameStateService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject ILogger<Game> Logger
+
+<PageTitle>Морской бой - Игра @SessionId</PageTitle>
+
+<div class="game-page">
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @_errorMessage
+            <button type="button" class="btn-close" @onclick="() => _errorMessage = null"></button>
+        </div>
+    }
+
+    <div class="game-header">
+        <h1>Игра: @SessionId</h1>
+        <div class="game-status">
+            <span class="badge @GetStateBadgeClass()">@GetStateText()</span>
+            <span class="player-info">Вы: <strong>@GameHub.PlayerName</strong></span>
+            @if (!string.IsNullOrEmpty(_opponentName))
+            {
+                <span class="player-info">Противник: <strong>@_opponentName</strong></span>
+            }
+        </div>
+    </div>
+
+    <div class="game-phase">
+        @if (_currentGameState == GameState.WaitingForPlayers)
+        {
+            <div class="waiting-for-players">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <h3>Ожидание второго игрока...</h3>
+                <p>Пригласите друга, отправив ему ID игры: <code>@SessionId</code></p>
+                <button class="btn btn-outline-secondary" @onclick="CopyGameId">
+                    <i class="fas fa-copy"></i> Копировать ID
+                </button>
+            </div>
+        }
+        else if (_currentGameState == GameState.PlacingShips)
+        {
+            <ShipPlacement OnShipsPlaced="OnShipsPlaced" />
+        }
+        else if (_currentGameState == GameState.InProgress)
+        {
+            <div class="game-boards-container">
+                <div class="board-section">
+                    <h4>Ваше поле</h4>
+                    <GameBoard Title="Мои корабли"
+                               IsOwnBoard="true"
+                               Ships="GameStateService.Ships"
+                               Shots="_receivedShots" />
+                </div>
+
+                <div class="board-section">
+                    <h4>Поле противника</h4>
+                    <GameBoard Title="Атака противника"
+                               IsOwnBoard="false"
+                               Shots="_firedShots"
+                               OnCellClicked="OnEnemyCellClick" />
+                </div>
+            </div>
+
+            @if (_isMyTurn)
+            {
+                <div class="turn-indicator alert alert-info">
+                    <i class="fas fa-crosshairs"></i> <strong>Ваш ход!</strong> Выберите клетку на поле противника.
+                </div>
+            }
+            else
+            {
+                <div class="turn-indicator alert alert-warning">
+                    <i class="fas fa-hourglass-half"></i> <strong>Ход противника.</strong> Ожидайте...
+                </div>
+            }
+        }
+        else if (_currentGameState == GameState.Finished)
+        {
+            <div class="game-finished">
+                <h2>Игра завершена!</h2>
+                @if (_isWinner)
+                {
+                    <div class="winner-message alert alert-success">
+                        <i class="fas fa-trophy"></i> <strong>Поздравляем! Вы победили!</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="winner-message alert alert-danger">
+                        <i class="fas fa-flag"></i> <strong>Вы проиграли. Победил: @_winnerName</strong>
+                    </div>
+                }
+                <button class="btn btn-primary" @onclick="GoToHome">
+                    <i class="fas fa-home"></i> Вернуться на главную
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="game-controls mt-4">
+        <button class="btn btn-danger" @onclick="LeaveGame">
+            <i class="fas fa-sign-out-alt"></i> Покинуть игру
+        </button>
+        <button class="btn btn-secondary" @onclick="GoToHome">
+            <i class="fas fa-home"></i> На главную
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SessionId { get; set; } = string.Empty;
+
+    private BattleshipGame.Shared.Models.GameState _currentGameState = BattleshipGame.Shared.Models.GameState.WaitingForPlayers;
+    private string? _opponentName;
+    private string? _winnerName;
+    private bool _isMyTurn = false;
+    private bool _isWinner = false;
+    private string? _errorMessage;
+
+    private List<Shot> _firedShots = new();
+    private List<Shot> _receivedShots = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        GameHub.OnMessageReceived += OnMessage;
+        GameHub.OnErrorReceived += OnError;
+
+        // Подписываемся на события изменения состояния игры
+        await InitializeGame();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(SessionId))
+        {
+            await InitializeGame();
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task InitializeGame()
+    {
+        try
+        {
+            // Загружаем информацию об игре
+            var gameInfo = await GameHub.GetGameInfoAsync(SessionId);
+            if (gameInfo != null)
+            {
+                UpdateGameState(gameInfo);
+            }
+            else
+            {
+                _errorMessage = "Игра не найдена. Возможно, она была удалена или вы ввели неверный ID.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при инициализации игры");
+            _errorMessage = $"Ошибка: {ex.Message}";
+        }
+    }
+
+    private void UpdateGameState(GameSession game)
+    {
+        _currentGameState = game.State;
+        _winnerName = game.WinnerConnectionId != null ?
+            game.Players.FirstOrDefault(p => p.ConnectionId == game.WinnerConnectionId)?.Name : null;
+
+        // Определяем имя противника
+        var currentPlayer = game.Players.FirstOrDefault(p => p.Name == GameHub.PlayerName);
+        var opponent = game.Players.FirstOrDefault(p => p.Name != GameHub.PlayerName);
+        _opponentName = opponent?.Name;
+
+        // Определяем, мой ли сейчас ход
+        _isMyTurn = currentPlayer?.IsMyTurn ?? false;
+
+        // Определяем, победили ли мы
+        _isWinner = game.WinnerConnectionId == currentPlayer?.ConnectionId;
+
+        // Обновляем выстрелы
+        if (currentPlayer != null)
+        {
+            _firedShots = currentPlayer.ShotsFired;
+            _receivedShots = currentPlayer.ShotsReceived;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task OnShipsPlaced()
+    {
+        if (GameStateService.AreAllShipsPlaced())
+        {
+            try
+            {
+                var success = await GameHub.PlaceShipsAsync(GameStateService.Ships);
+                if (!success)
+                {
+                    _errorMessage = "Не удалось разместить корабли. Проверьте расстановку.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _errorMessage = $"Ошибка при размещении кораблей: {ex.Message}";
+                Logger.LogError(ex, "Ошибка в OnShipsPlaced");
+            }
+        }
+        else
+        {
+            _errorMessage = "Не все корабли размещены!";
+        }
+    }
+
+    private async Task OnEnemyCellClick((int x, int y) coordinates)
+    {
+        if (_isMyTurn && _currentGameState == GameState.InProgress)
+        {
+            try
+            {
+                await GameHub.ShootAsync(coordinates.x, coordinates.y);
+            }
+            catch (Exception ex)
+            {
+                _errorMessage = $"Ошибка при выстреле: {ex.Message}";
+                Logger.LogError(ex, "Ошибка в OnEnemyCellClick");
+            }
+        }
+    }
+
+    private async Task LeaveGame()
+    {
+        try
+        {
+            await GameHub.LeaveGameAsync();
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Ошибка при выходе из игры: {ex.Message}";
+            Logger.LogError(ex, "Ошибка в LeaveGame");
+        }
+    }
+
+    private void GoToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task CopyGameId()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", SessionId);
+            // Можно показать всплывающее сообщение об успешном копировании
+        }
+        catch (Exception)
+        {
+            // Игнорируем ошибки копирования
+        }
+    }
+
+    private void OnMessage(string message)
+    {
+        Logger.LogInformation("Сообщение: {Message}", message);
+
+        // При получении сообщения обновляем состояние игры
+        _ = InvokeAsync(async () =>
+        {
+            var gameInfo = await GameHub.GetGameInfoAsync(SessionId);
+            if (gameInfo != null)
+            {
+                UpdateGameState(gameInfo);
+            }
+        });
+
+        StateHasChanged();
+    }
+
+    private void OnError(string error)
+    {
+        Logger.LogError("Ошибка: {Error}", error);
+        _errorMessage = error;
+        StateHasChanged();
+    }
+
+    private string GetStateText()
+    {
+        return _currentGameState switch
+        {
+            GameState.WaitingForPlayers => "Ожидание игроков",
+            GameState.PlacingShips => "Расстановка кораблей",
+            GameState.InProgress => "Игра в процессе",
+            GameState.Finished => "Игра завершена",
+            _ => "Неизвестно"
+        };
+    }
+
+    private string GetStateBadgeClass()
+    {
+        return _currentGameState switch
+        {
+            GameState.WaitingForPlayers => "bg-secondary",
+            GameState.PlacingShips => "bg-warning",
+            GameState.InProgress => "bg-primary",
+            GameState.Finished => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    public void Dispose()
+    {
+        GameHub.OnMessageReceived -= OnMessage;
+        GameHub.OnErrorReceived -= OnError;
+    }
+}

@@ -1,0 +1,312 @@
+﻿body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Игровое поле */
+.game-board-container {
+    display: inline-block;
+    margin: 20px auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.game-board {
+    display: grid;
+    gap: 1px;
+    background-color: #1a73e8;
+    border: 3px solid #0d47a1;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.board-cell {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .board-cell:hover {
+        background-color: rgba(255, 255, 255, 0.95);
+        transform: scale(1.05);
+    }
+
+    .board-cell.empty {
+        background-color: rgba(173, 216, 230, 0.7);
+    }
+
+    .board-cell.ship {
+        background-color: #555;
+    }
+
+    .board-cell.ship-hit {
+        background-color: #dc3545;
+    }
+
+        .board-cell.ship-hit::after {
+            content: '💥';
+            font-size: 20px;
+        }
+
+    .board-cell.hit {
+        background-color: #dc3545;
+    }
+
+        .board-cell.hit::after {
+            content: '✕';
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+    .board-cell.miss {
+        background-color: #0dcaf0;
+    }
+
+        .board-cell.miss::after {
+            content: '○';
+            color: #333;
+            font-size: 20px;
+        }
+
+/* Координаты */
+.coordinates {
+    display: grid;
+    grid-template-columns: 30px repeat(10, 40px);
+    margin-bottom: 5px;
+}
+
+.coordinate {
+    width: 40px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.corner {
+    width: 30px;
+}
+
+/* Компоненты игры */
+.game-page {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    margin-top: 20px;
+}
+
+.game-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+    .game-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+    }
+
+.game-status {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+    .game-status .badge {
+        font-size: 1.1rem;
+        padding: 8px 16px;
+    }
+
+.player-info {
+    font-size: 1.1rem;
+}
+
+/* Контейнеры досок */
+.game-boards-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin: 30px 0;
+}
+
+@media (max-width: 1200px) {
+    .game-boards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.board-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+}
+
+    .board-section h4 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+/* Индикатор хода */
+.turn-indicator {
+    font-size: 1.2rem;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+    .turn-indicator i {
+        margin-right: 10px;
+    }
+
+/* Завершение игры */
+.game-finished {
+    text-align: center;
+    padding: 40px;
+}
+
+.winner-message {
+    font-size: 1.5rem;
+    padding: 20px;
+    margin: 30px 0;
+}
+
+    .winner-message i {
+        margin-right: 15px;
+        font-size: 2rem;
+    }
+
+/* Экраны ожидания */
+.waiting-for-players {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+    .waiting-for-players .spinner-border {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 30px;
+    }
+
+/* Корабли */
+.ships-list {
+    margin-top: 30px;
+}
+
+.ships-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.ship-item {
+    background: white;
+    padding: 15px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .ship-item:hover {
+        border-color: #007bff;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .ship-item.selected {
+        border-color: #0d6efd;
+        background-color: #e7f3ff;
+    }
+
+    .ship-item.placed {
+        opacity: 0.7;
+    }
+
+.ship-preview {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+    .ship-preview.horizontal {
+        flex-direction: row;
+    }
+
+    .ship-preview.vertical {
+        flex-direction: column;
+    }
+
+.ship-cell {
+    width: 25px;
+    height: 25px;
+    background-color: #555;
+    border: 1px solid #333;
+    margin: 1px;
+}
+
+/* Контролы игры */
+.game-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .game-board {
+        grid-template-columns: repeat(10, 30px) !important;
+    }
+
+    .board-cell {
+        width: 30px;
+        height: 30px;
+    }
+
+    .game-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .game-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+/* Убираем стандартный blazor error UI */
+#blazor-error-ui {
+    display: none;
+}
