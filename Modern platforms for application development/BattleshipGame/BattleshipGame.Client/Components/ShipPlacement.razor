@@ -5,8 +5,17 @@
 <div class="ship-placement-container">
     <h3 class="text-center mb-4">Расстановка кораблей</h3>
 
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @_errorMessage
+            <button type="button" class="btn-close" @onclick="() => _errorMessage = string.Empty"></button>
+        </div>
+    }
+
     <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Разместите ваши корабли на поле (10×10)
+        <i class="fas fa-info-circle"></i> Разместите ваши корабли на поле (10×10)<br />
+        <small>Корабли не должны касаться друг друга даже углами!</small>
     </div>
 
     <div class="row">
@@ -68,6 +77,17 @@
                     </button>
                 </div>
 
+                @if (_selectedShipId.HasValue)
+                {
+                    <div class="selected-ship-info mb-3 p-2 bg-info text-white rounded">
+                        <small>Выбран: @GetSelectedShipName()</small>
+                        <button class="btn btn-sm btn-light ms-2" @onclick="RotateSelectedShip"
+                                title="Повернуть корабль">
+                            <i class="fas fa-redo"></i> Повернуть
+                        </button>
+                    </div>
+                }
+
                 <div class="ships-list">
                     @foreach (var ship in GameState.Ships)
                     {
@@ -77,6 +97,12 @@
                             <div class="ship-info">
                                 <div class="ship-name">@ship.Name</div>
                                 <div class="ship-size">Размер: @ship.Size</div>
+                                <div class="ship-direction">
+                                    @if (ship.IsPlaced)
+                                    {
+                                        <span>@(ship.IsHorizontal ? "Горизонтально" : "Вертикально")</span>
+                                    }
+                                </div>
                                 <div class="ship-status">
                                     @if (ship.IsPlaced)
                                     {
@@ -97,7 +123,9 @@
                         <strong>Инструкция:</strong><br />
                         1. Выберите корабль из списка<br />
                         2. Кликните на поле для размещения<br />
-                        3. Нажмите "Случайно" для автоматической расстановки
+                        3. Нажмите "Повернуть" для смены ориентации<br />
+                        4. Нажмите "Случайно" для автоматической расстановки<br />
+                        <em>Корабли не должны касаться друг друга!</em>
                     </small>
                 </div>
             </div>
@@ -107,6 +135,7 @@
 
 @code {
     private int? _selectedShipId = null;
+    private string _errorMessage = string.Empty;
 
     [Parameter]
     public EventCallback OnShipsPlaced { get; set; }
@@ -136,12 +165,40 @@
         return $"{col}{row}";
     }
 
+    private string GetSelectedShipName()
+    {
+        if (!_selectedShipId.HasValue) return string.Empty;
+        var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
+        return ship?.Name ?? string.Empty;
+    }
+
     private void SelectShip(int shipId)
     {
         var ship = GameState.Ships.FirstOrDefault(s => s.Id == shipId);
         if (ship != null && !ship.IsPlaced)
         {
             _selectedShipId = shipId;
+            _errorMessage = string.Empty;
+        }
+        else
+        {
+            _selectedShipId = null;
+        }
+    }
+
+    private void RotateSelectedShip()
+    {
+        if (_selectedShipId.HasValue)
+        {
+            var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
+            if (ship != null && ship.IsPlaced)
+            {
+                var success = GameState.RotateShip(ship.Id);
+                if (!success)
+                {
+                    _errorMessage = "Невозможно повернуть корабль в этом месте!";
+                }
+            }
         }
     }
 
@@ -152,22 +209,31 @@
             var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
             if (ship != null && !ship.IsPlaced)
             {
-                // Пытаемся разместить корабль горизонтально
-                var success = GameState.PlaceShip(ship.Id, x, y, true);
+                // Пытаемся разместить корабль с текущей ориентацией
+                var success = GameState.PlaceShip(ship.Id, x, y, true); // Сначала горизонтально
+
                 if (!success)
                 {
-                    // Если не получилось, пробуем вертикально
-                    success = GameState.PlaceShip(ship.Id, x, y, false);
+                    _errorMessage = "Невозможно разместить корабль здесь! Проверьте границы и касания с другими кораблями.";
                 }
-
-                if (success)
+                else
                 {
                     // Автоматически выбираем следующий неразмещенный корабль
                     _selectedShipId = GameState.Ships
                         .Where(s => !s.IsPlaced)
                         .Select(s => s.Id)
                         .FirstOrDefault();
+                    _errorMessage = string.Empty;
                 }
+            }
+        }
+        else
+        {
+            // Если корабль не выбран, можно кликнуть на уже размещенный корабль для его выбора
+            var shipAtCell = GameState.GetShipAt(x, y);
+            if (shipAtCell != null)
+            {
+                _selectedShipId = shipAtCell.Id;
             }
         }
     }
@@ -176,19 +242,62 @@
     {
         GameState.PlaceShipsRandomly();
         _selectedShipId = null;
+        _errorMessage = string.Empty;
     }
 
     private void ClearAll()
     {
         GameState.ClearShips();
         _selectedShipId = null;
+        _errorMessage = string.Empty;
     }
 
     private async Task ConfirmPlacement()
     {
         if (GameState.AreAllShipsPlaced())
         {
-            await OnShipsPlaced.InvokeAsync();
+            // Дополнительная валидация
+            if (ValidateShipPlacement())
+            {
+                await OnShipsPlaced.InvokeAsync();
+            }
+            else
+            {
+                _errorMessage = "Некорректная расстановка! Корабли касаются друг друга.";
+            }
         }
+        else
+        {
+            _errorMessage = "Не все корабли размещены!";
+        }
+    }
+
+    private bool ValidateShipPlacement()
+    {
+        // Проверяем, что ни один корабль не касается другого
+        var placedShips = GameState.Ships.Where(s => s.IsPlaced).ToList();
+
+        for (int i = 0; i < placedShips.Count; i++)
+        {
+            for (int j = i + 1; j < placedShips.Count; j++)
+            {
+                var ship1 = placedShips[i];
+                var ship2 = placedShips[j];
+
+                foreach (var cell1 in ship1.Cells)
+                {
+                    foreach (var cell2 in ship2.Cells)
+                    {
+                        // Проверка касания (расстояние 1 клетка)
+                        if (Math.Abs(cell1.X - cell2.X) <= 1 && Math.Abs(cell1.Y - cell2.Y) <= 1)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }

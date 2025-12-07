@@ -31,6 +31,7 @@ namespace BattleshipGame.Client.Services
             NotifyStateChanged();
         }
 
+        // Расстановка корабля на поле с валидацией
         public bool PlaceShip(int shipId, int startX, int startY, bool isHorizontal)
         {
             var ship = _ships.FirstOrDefault(s => s.Id == shipId);
@@ -39,7 +40,18 @@ namespace BattleshipGame.Client.Services
             // Очищаем текущие клетки корабля
             ship.Cells.Clear();
 
-            // Заполняем новые клетки
+            // Проверяем, помещается ли корабль в границы
+            if (isHorizontal)
+            {
+                if (startX + ship.Size > _boardSize) return false;
+            }
+            else
+            {
+                if (startY + ship.Size > _boardSize) return false;
+            }
+
+            // Создаем временные клетки для проверки
+            var tempCells = new List<Cell>();
             for (int i = 0; i < ship.Size; i++)
             {
                 int x = isHorizontal ? startX + i : startX;
@@ -47,69 +59,28 @@ namespace BattleshipGame.Client.Services
 
                 // Проверка границ
                 if (x < 0 || x >= _boardSize || y < 0 || y >= _boardSize)
-                {
-                    ship.Cells.Clear();
                     return false;
-                }
 
-                ship.Cells.Add(new Cell(x, y) { HasShip = true });
+                tempCells.Add(new Cell(x, y) { HasShip = true });
             }
 
+            // Проверяем наложение и касание с другими кораблями
+            var otherShips = _ships.Where(s => s.Id != shipId && s.IsPlaced);
+            foreach (var otherShip in otherShips)
+            {
+                if (DoShipsTouchOrOverlap(tempCells, otherShip.Cells))
+                {
+                    return false;
+                }
+            }
+
+            // Если все проверки прошли, размещаем корабль
+            ship.Cells = tempCells;
             ship.IsHorizontal = isHorizontal;
             ship.IsPlaced = true;
 
-            // Проверка на пересечение с другими кораблями
-            var otherShips = _ships.Where(s => s.Id != shipId && s.IsPlaced);
-            foreach (var otherShip in otherShips)
-            {
-                if (DoShipsOverlap(ship, otherShip))
-                {
-                    // Возвращаем старые клетки (но мы их уже очистили)
-                    ship.Cells.Clear();
-                    ship.IsPlaced = false;
-                    return false;
-                }
-            }
-
             NotifyStateChanged();
             return true;
-        }
-        // Перемещение корабля
-        public void MoveShip(int shipId, int deltaX, int deltaY)
-        {
-            var ship = _ships.FirstOrDefault(s => s.Id == shipId);
-            if (ship == null || !ship.IsPlaced) return;
-
-            var newCells = new List<Cell>();
-            foreach (var cell in ship.Cells)
-            {
-                int newX = cell.X + deltaX;
-                int newY = cell.Y + deltaY;
-
-                // Проверка границ
-                if (newX < 0 || newX >= _boardSize || newY < 0 || newY >= _boardSize)
-                    return;
-
-                newCells.Add(new Cell(newX, newY) { HasShip = true });
-            }
-
-            // Временно сохраняем старые клетки
-            var oldCells = ship.Cells.ToList();
-            ship.Cells = newCells;
-
-            // Проверка на пересечение с другими кораблями
-            var otherShips = _ships.Where(s => s.Id != shipId && s.IsPlaced);
-            foreach (var otherShip in otherShips)
-            {
-                if (DoShipsOverlap(ship, otherShip))
-                {
-                    // Возвращаем старые клетки
-                    ship.Cells = oldCells;
-                    return;
-                }
-            }
-
-            NotifyStateChanged();
         }
 
         // Поворот корабля
@@ -122,7 +93,7 @@ namespace BattleshipGame.Client.Services
             return PlaceShip(shipId, firstCell.X, firstCell.Y, !ship.IsHorizontal);
         }
 
-        // Случайная расстановка всех кораблей
+        // Случайная расстановка всех кораблей с валидацией
         public void PlaceShipsRandomly()
         {
             var random = new Random();
@@ -142,15 +113,18 @@ namespace BattleshipGame.Client.Services
             {
                 bool placed = false;
                 int attempts = 0;
-                const int maxAttempts = 100;
+                const int maxAttempts = 500; // Увеличим лимит попыток
 
                 while (!placed && attempts < maxAttempts)
                 {
                     attempts++;
 
                     // Случайные координаты и направление
-                    int x = random.Next(0, _boardSize);
-                    int y = random.Next(0, _boardSize);
+                    int maxStartX = _boardSize - (ship.IsHorizontal ? ship.Size : 1);
+                    int maxStartY = _boardSize - (ship.IsHorizontal ? 1 : ship.Size);
+
+                    int x = random.Next(0, maxStartX + 1);
+                    int y = random.Next(0, maxStartY + 1);
                     bool horizontal = random.Next(0, 2) == 0;
 
                     // Пытаемся разместить
@@ -166,6 +140,25 @@ namespace BattleshipGame.Client.Services
             }
 
             NotifyStateChanged();
+        }
+
+        // Проверка на касание или наложение кораблей
+        private bool DoShipsTouchOrOverlap(List<Cell> cells1, List<Cell> cells2)
+        {
+            foreach (var cell1 in cells1)
+            {
+                foreach (var cell2 in cells2)
+                {
+                    // Проверка наложения (точное совпадение координат)
+                    if (cell1.X == cell2.X && cell1.Y == cell2.Y)
+                        return true;
+
+                    // Проверка касания (расстояние 1 клетка по горизонтали/вертикали)
+                    if (Math.Abs(cell1.X - cell2.X) <= 1 && Math.Abs(cell1.Y - cell2.Y) <= 1)
+                        return true;
+                }
+            }
+            return false;
         }
 
         // Очистка расстановки
@@ -204,44 +197,17 @@ namespace BattleshipGame.Client.Services
             return new Cell(x, y) { HasShip = false };
         }
 
-        // Обработка выстрела по собственному полю
-        public ShotResult ProcessOwnCellHit(int x, int y)
+        // Вспомогательный метод для получения корабля по координатам
+        public Ship? GetShipAt(int x, int y)
         {
-            var cell = GetOwnCell(x, y);
-            if (cell == null) return new ShotResult { IsValid = false };
-
-            if (cell.HasShip && !cell.IsHit)
-            {
-                cell.IsHit = true;
-
-                // Находим корабль
-                var hitShip = _ships.FirstOrDefault(s => s.Cells.Any(c => c.X == x && c.Y == y));
-                bool isDestroyed = hitShip?.IsDestroyed ?? false;
-
-                return new ShotResult
-                {
-                    IsValid = true,
-                    IsHit = true,
-                    IsShipDestroyed = isDestroyed,
-                    ShipName = hitShip?.Name
-                };
-            }
-
-            return new ShotResult { IsValid = true, IsHit = false };
+            return _ships.FirstOrDefault(s => s.Cells.Any(c => c.X == x && c.Y == y));
         }
 
-        // Проверка пересечения кораблей
-        private bool DoShipsOverlap(Ship ship1, Ship ship2)
+        // Вспомогательный метод для получения направления корабля
+        public bool IsShipHorizontal(int shipId)
         {
-            foreach (var cell1 in ship1.Cells)
-            {
-                foreach (var cell2 in ship2.Cells)
-                {
-                    if (cell1.X == cell2.X && cell1.Y == cell2.Y)
-                        return true;
-                }
-            }
-            return false;
+            var ship = _ships.FirstOrDefault(s => s.Id == shipId);
+            return ship?.IsHorizontal ?? true;
         }
 
         private void NotifyStateChanged()
@@ -257,13 +223,5 @@ namespace BattleshipGame.Client.Services
             _ships = new List<Ship>();
             NotifyStateChanged();
         }
-    }
-
-    public class ShotResult
-    {
-        public bool IsValid { get; set; }
-        public bool IsHit { get; set; }
-        public bool IsShipDestroyed { get; set; }
-        public string? ShipName { get; set; }
     }
 }

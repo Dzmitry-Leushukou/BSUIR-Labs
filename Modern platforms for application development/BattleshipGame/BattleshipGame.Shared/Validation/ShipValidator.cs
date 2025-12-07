@@ -13,7 +13,7 @@ namespace BattleshipGame.Shared.Validation
                     return false;
             }
 
-            // Проверка пересечения с другими кораблями
+            // Проверка касания и пересечения с другими кораблями
             foreach (var existingShip in existingShips)
             {
                 foreach (var existingCell in existingShip.Cells)
@@ -24,7 +24,7 @@ namespace BattleshipGame.Shared.Validation
                         if (existingCell.X == newCell.X && existingCell.Y == newCell.Y)
                             return false;
 
-                        // Проверка касания (опционально, по правилам нельзя касаться)
+                        // Проверка касания (по правилам нельзя касаться)
                         if (Math.Abs(existingCell.X - newCell.X) <= 1 &&
                             Math.Abs(existingCell.Y - newCell.Y) <= 1)
                             return false;
@@ -56,6 +56,11 @@ namespace BattleshipGame.Shared.Validation
                 // Проверка что корабль размещен
                 if (!ship.IsPlaced || ship.Cells.Count != ship.Size)
                     return false;
+
+                // Проверка что все клетки уникальны
+                var distinctCells = ship.Cells.Select(c => new { c.X, c.Y }).Distinct();
+                if (distinctCells.Count() != ship.Cells.Count)
+                    return false;
             }
 
             // Проверка количества кораблей каждого типа
@@ -64,6 +69,24 @@ namespace BattleshipGame.Shared.Validation
                 if (!placedShips.ContainsKey(required.Key) ||
                     placedShips[required.Key] != required.Value)
                     return false;
+            }
+
+            // Проверка касания между всеми кораблями
+            for (int i = 0; i < ships.Count; i++)
+            {
+                for (int j = i + 1; j < ships.Count; j++)
+                {
+                    foreach (var cell1 in ships[i].Cells)
+                    {
+                        foreach (var cell2 in ships[j].Cells)
+                        {
+                            // Проверка касания
+                            if (Math.Abs(cell1.X - cell2.X) <= 1 &&
+                                Math.Abs(cell1.Y - cell2.Y) <= 1)
+                                return false;
+                        }
+                    }
+                }
             }
 
             return true;

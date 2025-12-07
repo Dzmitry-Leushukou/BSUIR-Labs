@@ -392,3 +392,66 @@ body {
     font-weight: bold;
     color: white;
 }
+/* Стили для информации о выбранном корабле */
+.selected-ship-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+}
+
+/* Направление корабля */
+.ship-direction {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+/* Улучшенные стили для кораблей */
+.ship-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ship-name {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+
+.ship-size {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Анимация для выбранного корабля */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+.ship-item.selected {
+    animation: pulse 2s infinite;
+    border-color: #007bff;
+    background-color: #e7f3ff;
+}
+
+/* Стили для кнопки поворота */
+.btn-light {
+    background-color: white;
+    border: 1px solid #dee2e6;
+}
+
+    .btn-light:hover {
+        background-color: #f8f9fa;
+        border-color: #adb5bd;
+    }
