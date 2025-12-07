@@ -16,11 +16,12 @@ namespace BattleshipGame.Server.Services
         // Создание новой игры
         public GameSession CreateNewGame()
         {
-            var sessionId = Guid.NewGuid().ToString("N")[..8]; // Короткий ID для удобства
+            var sessionId = Guid.NewGuid().ToString("N")[..8];
             var session = new GameSession
             {
                 SessionId = sessionId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                State = GameState.WaitingForPlayers
             };
 
             _sessions[sessionId] = session;
@@ -33,22 +34,6 @@ namespace BattleshipGame.Server.Services
         public GameSession? GetSession(string sessionId)
         {
             return _sessions.TryGetValue(sessionId, out var session) ? session : null;
-        }
-
-        // Получение или создание сессии
-        public GameSession GetOrCreateSession(string sessionId)
-        {
-            if (!_sessions.ContainsKey(sessionId))
-            {
-                var session = new GameSession
-                {
-                    SessionId = sessionId,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _sessions[sessionId] = session;
-                _logger.LogInformation("Создана сессия по запросу: {SessionId}", sessionId);
-            }
-            return _sessions[sessionId];
         }
 
         // Добавление игрока в сессию
@@ -64,22 +49,13 @@ namespace BattleshipGame.Server.Services
             // Проверяем, не присоединился ли уже игрок
             if (session.Players.Any(p => p.ConnectionId == player.ConnectionId))
             {
-                return true; // Уже в игре
+                return true;
             }
 
             if (session.TryAddPlayer(player))
             {
                 _logger.LogInformation("Игрок {PlayerName} присоединился к сессии {SessionId}",
                     player.Name, sessionId);
-
-                // Если это второй игрок, меняем состояние игры
-                if (session.Players.Count == 2)
-                {
-                    session.State = GameState.PlacingShips;
-                    session.Player1!.IsMyTurn = true; // Первый игрок начинает
-                    _logger.LogInformation("Сессия {SessionId} готова к расстановке кораблей", sessionId);
-                }
-
                 return true;
             }
 
@@ -105,17 +81,9 @@ namespace BattleshipGame.Server.Services
 
             player.Ships = ships;
             player.HasPlacedShips = true;
-            player.IsReady = true;
 
             _logger.LogInformation("Игрок {PlayerName} разместил корабли в сессии {SessionId}",
                 player.Name, sessionId);
-
-            // Проверяем, готовы ли оба игрока
-            if (session.AreBothPlayersReady())
-            {
-                session.State = GameState.InProgress;
-                _logger.LogInformation("Игра началась в сессии {SessionId}", sessionId);
-            }
 
             return true;
         }
@@ -127,6 +95,9 @@ namespace BattleshipGame.Server.Services
             if (session == null)
                 return new ShotResult { IsValid = false, Error = "Сессия не найдена" };
 
+            if (session.State != GameState.InProgress)
+                return new ShotResult { IsValid = false, Error = "Игра не в процессе" };
+
             // Проверяем, ход ли стреляющего
             if (!session.IsPlayerTurn(shooterConnectionId))
                 return new ShotResult { IsValid = false, Error = "Не ваш ход" };
@@ -136,6 +107,10 @@ namespace BattleshipGame.Server.Services
 
             if (shooter == null || target == null)
                 return new ShotResult { IsValid = false, Error = "Игрок не найден" };
+
+            // Проверяем границы
+            if (x < 0 || x >= 10 || y < 0 || y >= 10)
+                return new ShotResult { IsValid = false, Error = "Выстрел за пределы поля" };
 
             // Проверяем, не стреляли ли уже в эту клетку
             var existingShot = shooter.ShotsFired.FirstOrDefault(s => s.X == x && s.Y == y);
@@ -178,27 +153,9 @@ namespace BattleshipGame.Server.Services
                     _logger.LogInformation("Игра окончена в сессии {SessionId}. Победитель: {PlayerName}",
                         sessionId, shooter.Name);
                 }
-                else if (!isShipDestroyed)
-                {
-                    // Если попал, но не уничтожил корабль - ход остается у текущего игрока
-                    // В морском бою обычно дается дополнительный выстрел при попадании
-                    // Но по правилам: при попадании ход остается
-                    // Мы реализуем стандартные правила: при попадании ход остается
-                    _logger.LogInformation("Попадание в сессии {SessionId} по координатам ({X},{Y})",
-                        sessionId, x, y);
-                    return new ShotResult
-                    {
-                        IsValid = true,
-                        IsHit = true,
-                        IsShipDestroyed = false,
-                        IsGameOver = false,
-                        ShipName = hitShip.Name,
-                        ShooterKeepsTurn = true // Оставляем ход за стреляющим
-                    };
-                }
 
-                _logger.LogInformation("Корабль {ShipName} уничтожен в сессии {SessionId}",
-                    hitShip.Name, sessionId);
+                _logger.LogInformation("Попадание в сессии {SessionId} по координатам ({X},{Y})",
+                    sessionId, x, y);
 
                 return new ShotResult
                 {
@@ -207,8 +164,7 @@ namespace BattleshipGame.Server.Services
                     IsShipDestroyed = isShipDestroyed,
                     IsGameOver = isGameOver,
                     ShipName = hitShip.Name,
-                    ShooterKeepsTurn = isShipDestroyed // Если уничтожил корабль, то ход переходит?
-                    // По стандартным правилам: даже если уничтожил корабль, ход переходит
+                    ShooterKeepsTurn = false // В морском бою после попадания ход все равно переходит
                 };
             }
             else
@@ -217,9 +173,6 @@ namespace BattleshipGame.Server.Services
                 shot.IsHit = false;
                 shooter.ShotsFired.Add(shot);
                 target.ShotsReceived.Add(shot);
-
-                // Меняем ход
-                session.SwitchTurn();
 
                 _logger.LogInformation("Промах в сессии {SessionId} по координатам ({X},{Y})",
                     sessionId, x, y);
@@ -246,7 +199,7 @@ namespace BattleshipGame.Server.Services
                         player.Name, session.SessionId);
 
                     // Если игра в процессе, отмечаем победителем другого игрока
-                    if (session.State == GameState.InProgress || session.State == GameState.PlacingShips)
+                    if (session.State == GameState.InProgress)
                     {
                         var opponent = session.GetOpponent(connectionId);
                         if (opponent != null)
@@ -276,7 +229,7 @@ namespace BattleshipGame.Server.Services
             }
         }
 
-        // Получение активных сессий (для отладки)
+        // Получение активных сессий
         public List<GameSession> GetActiveSessions()
         {
             return _sessions.Values

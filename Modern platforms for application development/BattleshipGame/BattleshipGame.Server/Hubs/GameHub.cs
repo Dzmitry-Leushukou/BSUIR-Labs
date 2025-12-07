@@ -61,9 +61,10 @@ namespace BattleshipGame.Server.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
 
                 // Уведомляем создателя игры
-                await Clients.Group(sessionId).PlayerJoined(playerName, false);
+                await Clients.OthersInGroup(sessionId).PlayerJoined(playerName, false);
+                await Clients.Caller.PlayerJoined(playerName, true);
 
-                // Отправляем информацию о другом игроке новому участнику
+                // Если это второй игрок, отправляем информацию о первом игроке
                 var otherPlayer = session.Players.FirstOrDefault(p => p.ConnectionId != Context.ConnectionId);
                 if (otherPlayer != null)
                 {
@@ -73,9 +74,18 @@ namespace BattleshipGame.Server.Hubs
                 // Если оба игрока на месте, уведомляем о начале расстановки
                 if (session.Players.Count == 2)
                 {
+                    session.State = GameState.PlacingShips;
+
+                    // Определяем, кто ходит первым (случайно)
+                    var random = new Random();
+                    var firstPlayerIndex = random.Next(0, 2);
+                    session.Players[firstPlayerIndex].IsMyTurn = true;
+
+                    var firstPlayer = session.Players[firstPlayerIndex];
                     await Clients.Group(sessionId).GameStarted();
                     await Clients.Group(sessionId).ShipsPlacementRequired();
                     await Clients.Group(sessionId).ShowMessage("Оба игрока в игре! Начинаем расстановку кораблей.");
+                    await Clients.Group(sessionId).ShowMessage($"Первым ходит: {firstPlayer.Name}");
 
                     // Обновляем список игроков
                     await UpdatePlayerList(session);
@@ -108,19 +118,20 @@ namespace BattleshipGame.Server.Hubs
 
             // Уведомляем других игроков
             await Clients.OthersInGroup(sessionId).ShipsPlaced(player.Name);
+            await Clients.Group(sessionId).ShowMessage($"{player.Name} разместил корабли");
 
             // Если оба игрока разместили корабли, начинаем игру
-            if (session.AreBothPlayersReady() && session.State == GameState.InProgress)
+            if (session.AreBothPlayersReady())
             {
-                await Clients.Group(sessionId).ShowMessage("Оба игрока готовы! Игра начинается.");
-                await Clients.Group(sessionId).GameStateChanged(GameState.InProgress);
+                session.State = GameState.InProgress;
 
-                // Уведомляем, чей первый ход
+                // Определяем, чей ход (первый игрок по умолчанию)
                 var currentPlayer = session.CurrentTurnPlayer;
                 if (currentPlayer != null)
                 {
+                    await Clients.Group(sessionId).GameStateChanged(GameState.InProgress);
                     await Clients.Group(sessionId).ChangeTurn(currentPlayer.Name);
-                    await Clients.Group(sessionId).ShowMessage($"Первым ходит: {currentPlayer.Name}");
+                    await Clients.Group(sessionId).ShowMessage($"Игра началась! Ходит: {currentPlayer.Name}");
                 }
             }
 
@@ -130,6 +141,27 @@ namespace BattleshipGame.Server.Hubs
         // Совершение выстрела
         public async Task Shoot(string sessionId, int x, int y)
         {
+            var session = _gameManager.GetSession(sessionId);
+            if (session == null)
+            {
+                await Clients.Caller.ShowError("Сессия не найдена");
+                return;
+            }
+
+            // Проверяем, что игра в процессе
+            if (session.State != GameState.InProgress)
+            {
+                await Clients.Caller.ShowError("Игра еще не началась или уже завершена");
+                return;
+            }
+
+            // Проверяем, ход ли текущего игрока
+            if (!session.IsPlayerTurn(Context.ConnectionId))
+            {
+                await Clients.Caller.ShowError("Не ваш ход");
+                return;
+            }
+
             var result = _gameManager.ProcessShot(sessionId, Context.ConnectionId, x, y);
 
             if (!result.IsValid)
@@ -137,9 +169,6 @@ namespace BattleshipGame.Server.Hubs
                 await Clients.Caller.ShowError(result.Error ?? "Неверный выстрел");
                 return;
             }
-
-            var session = _gameManager.GetSession(sessionId);
-            if (session == null) return;
 
             var shooter = session.GetPlayer(Context.ConnectionId);
             var target = session.GetOpponent(Context.ConnectionId);
@@ -168,21 +197,26 @@ namespace BattleshipGame.Server.Hubs
             }
             else
             {
-                // Меняем ход, если нужно
-                if (!result.ShooterKeepsTurn)
+                // Сразу меняем ход на сервере
+                session.SwitchTurn();
+
+                // Уведомляем о смене хода
+                var nextPlayer = session.CurrentTurnPlayer;
+                if (nextPlayer != null)
                 {
-                    session.SwitchTurn();
-                    var nextPlayer = session.CurrentTurnPlayer;
-                    if (nextPlayer != null)
+                    await Clients.Group(sessionId).ChangeTurn(nextPlayer.Name);
+
+                    if (result.IsHit)
                     {
-                        await Clients.Group(sessionId).ChangeTurn(nextPlayer.Name);
-                        await Clients.Group(sessionId).ShowMessage($"Следующий ход: {nextPlayer.Name}");
+                        var message = result.IsShipDestroyed
+                            ? $"Корабль {result.ShipName} уничтожен! Ход переходит к {nextPlayer.Name}"
+                            : $"Попадание! Ход переходит к {nextPlayer.Name}";
+                        await Clients.Group(sessionId).ShowMessage(message);
                     }
-                }
-                else
-                {
-                    // Ход остается у текущего игрока
-                    await Clients.Group(sessionId).ShowMessage($"Попадание! {shooter.Name} ходит еще раз");
+                    else
+                    {
+                        await Clients.Group(sessionId).ShowMessage($"Промах! Ход переходит к {nextPlayer.Name}");
+                    }
                 }
             }
         }
@@ -199,6 +233,17 @@ namespace BattleshipGame.Server.Hubs
             // Уведомляем других игроков
             await Clients.OthersInGroup(sessionId).PlayerLeft(player.Name);
             await Clients.OthersInGroup(sessionId).ShowMessage($"Игрок {player.Name} покинул игру");
+
+            // Если игра в процессе, объявляем победителем другого игрока
+            if (session.State == GameState.InProgress)
+            {
+                var opponent = session.GetOpponent(Context.ConnectionId);
+                if (opponent != null)
+                {
+                    await Clients.Group(sessionId).GameEnded(opponent.Name, opponent.ConnectionId);
+                    await Clients.Group(sessionId).ShowMessage($"Игрок {player.Name} сдался! Победитель: {opponent.Name}");
+                }
+            }
 
             // Удаляем из группы
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
@@ -229,7 +274,7 @@ namespace BattleshipGame.Server.Hubs
             {
                 ConnectionId = p.ConnectionId,
                 Name = p.Name,
-                IsReady = p.IsReady,
+                IsReady = p.HasPlacedShips,
                 IsYourTurn = p.IsMyTurn
             }).ToList();
 
@@ -253,7 +298,7 @@ namespace BattleshipGame.Server.Hubs
                     await Clients.OthersInGroup(session.SessionId).ShowMessage($"Игрок {player.Name} отключился");
 
                     // Если игра в процессе, отмечаем победителем другого игрока
-                    if (session.State == GameState.InProgress || session.State == GameState.PlacingShips)
+                    if (session.State == GameState.InProgress)
                     {
                         var opponent = session.GetOpponent(Context.ConnectionId);
                         if (opponent != null)
