@@ -30,22 +30,34 @@ def update_rental_endpoint(request: Request, rental_id: int, rental: RentalUpdat
     if rental.status == "paused":
         raise HTTPException(status_code=400, detail="Invalid status: 'paused' is not allowed")
     
-    # Additional check to ensure user can only update their own rentals
-    # First get the rental to check if it belongs to the user
-    from crud.rentals_crud import get_rental
-    rental_obj = get_rental(rental_id)
-    if rental_obj['user_id'] != current_user['id']:
-        raise HTTPException(status_code=403, detail="Not authorized to update this rental")
+    # Check if user is admin - if so, allow updating any rental
+    # Otherwise, ensure user can only update their own rentals
+    from crud.users_crud import get_user
+    current_user_details = get_user(current_user['id'])
+    is_admin = current_user_details['role_id'] == 1  # assuming admin role_id is 1
+    
+    if not is_admin:
+        # First get the rental to check if it belongs to the user
+        from crud.rentals_crud import get_rental
+        rental_obj = get_rental(rental_id)
+        if rental_obj['user_id'] != current_user['id']:
+            raise HTTPException(status_code=403, detail="Not authorized to update this rental")
     
     return update_rental(rental_id, rental)
 
 @router.delete("/{rental_id}")
 def delete_rental_endpoint(request: Request, rental_id: int, current_user: dict = Depends(get_current_user_from_header)):
-    # Additional check to ensure user can only delete their own rentals
-    # First get the rental to check if it belongs to the user
+    # Check if user is admin - if so, allow deleting any rental
+    # Otherwise, ensure user can only delete their own rentals
+    from crud.users_crud import get_user
     from crud.rentals_crud import get_rental
-    rental_obj = get_rental(rental_id)
-    if rental_obj['user_id'] != current_user['id']:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this rental")
+    current_user_details = get_user(current_user['id'])
+    is_admin = current_user_details['role_id'] == 1  # assuming admin role_id is 1
+    
+    if not is_admin:
+        # First get the rental to check if it belongs to the user
+        rental_obj = get_rental(rental_id)
+        if rental_obj['user_id'] != current_user['id']:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this rental")
     
     return delete_rental(rental_id)

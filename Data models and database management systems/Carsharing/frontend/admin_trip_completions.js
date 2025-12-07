@@ -17,12 +17,19 @@ async function loadTripCompletions() {
         
         if (response.ok) {
             const rentals = await response.json();
-            // Отображаем только завершенные поездки (status = 'completed'), которые требуют подтверждения администратором
-            const tripCompletions = rentals.filter(rental => rental.status === 'completed');
+            // Отображаем поездки, которые требуют подтверждения администратором (у которых есть время окончания, но статус еще не 'completed')
+            const tripCompletions = rentals.filter(rental => rental.status === 'active' && rental.ended_at !== null);
             displayTripCompletions(tripCompletions);
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при загрузке поездок: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorDetail = 'Неизвестная ошибка';
+            try {
+                const errorData = await response.json();
+                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                // Если не удалось распарсить JSON, используем текст ошибки
+                errorDetail = await response.text() || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при загрузке поездок: ${errorDetail}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке поездок:', error);
@@ -73,7 +80,6 @@ async function displayTripCompletions(rentals) {
             <td>
                 <button class="btn action-btn approve-btn" onclick="confirmTrip(${rental.id})">Подтвердить</button>
                 <button class="btn action-btn reject-btn" onclick="rejectTrip(${rental.id})">Отклонить</button>
-                <button class="btn action-btn skip-btn" onclick="skipTrip(${rental.id})">Пропустить</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -103,12 +109,19 @@ async function confirmTrip(rentalId) {
         });
         
         if (response.ok) {
-            alert('Поездка успешно подтверждена как завершенная');
+            alert('Поездка успешно подтверждена');
             // Перезагружаем таблицу
             loadTripCompletions();
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при подтверждении поездки: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorDetail = 'Неизвестная ошибка';
+            try {
+                const errorData = await response.json();
+                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                // Если не удалось распарсить JSON, используем текст ошибки
+                errorDetail = await response.text() || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при подтверждении поездки: ${errorDetail}`);
         }
     } catch (error) {
         console.error('Ошибка при подтверждении поездки:', error);
@@ -135,16 +148,23 @@ async function rejectTrip(rentalId) {
                 'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'active' }) // Возвращаем статус на активный
+            body: JSON.stringify({ status: 'cancelled' }) // Устанавливаем статус отмененной поездки
         });
         
         if (response.ok) {
-            alert('Поездка отмечена как незавершенная');
+            alert('Поездка отмечена как отмененная');
             // Перезагружаем таблицу
             loadTripCompletions();
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при отклонении поездки: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorDetail = 'Неизвестная ошибка';
+            try {
+                const errorData = await response.json();
+                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                // Если не удалось распарсить JSON, используем текст ошибки
+                errorDetail = await response.text() || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при отклонении поездки: ${errorDetail}`);
         }
     } catch (error) {
         console.error('Ошибка при отклонении поездки:', error);
@@ -152,22 +172,6 @@ async function rejectTrip(rentalId) {
     }
 }
 
-// Функция для пропуска подтверждения поездки
-async function skipTrip(rentalId) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    if (!confirm('Вы уверены, что хотите пропустить подтверждение этой поездки?')) {
-        return;
-    }
-    
-    alert('Подтверждение поездки пропущено');
-    // Просто перезагружаем таблицу, ничего не изменяя
-    loadTripCompletions();
-}
 
 // Функция для отображения модального окна с фотографией
 function showPhotoModal(photoUrl, title) {

@@ -19,8 +19,22 @@ async function loadDriverLicenses() {
             const driverLicenses = await response.json();
             displayDriverLicenses(driverLicenses);
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при загрузке Driver licenses: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorDetail = 'Неизвестная ошибка';
+            try {
+                // Проверяем, является ли ответ JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                } else {
+                    // Если ответ не JSON, получаем текст
+                    errorDetail = await response.text();
+                }
+            } catch (e) {
+                // Если не удалось распарсить JSON или получить текст, используем код статуса
+                errorDetail = `HTTP Error ${response.status}: ${response.statusText}`;
+            }
+            alert(`Ошибка при загрузке Driver licenses: ${errorDetail}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке Driver licenses:', error);
@@ -58,7 +72,7 @@ async function displayDriverLicenses(driverLicenses) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${license.id}</td>
+            <td>${license.driver_id}</td>
             <td>${license.driver_id}</td>
             <td>${license.license_number}</td>
             <td>${license.issued_by}</td>
@@ -69,9 +83,8 @@ async function displayDriverLicenses(driverLicenses) {
             </td>
             <td class="status-${license.status}">${license.status}</td>
             <td>
-                <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.id}, 'approved')">Подтвердить</button>
-                <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.id}, 'rejected')">Отклонить</button>
-                <button class="btn action-btn skip-btn" onclick="updateLicenseStatus(${license.id}, 'pending')">Пропустить</button>
+                <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
+                <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -105,8 +118,22 @@ async function updateLicenseStatus(licenseId, status) {
             // Перезагружаем таблицу
             loadDriverLicenses();
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при обновлении статуса лицензии: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorDetail = 'Неизвестная ошибка';
+            try {
+                // Проверяем, является ли ответ JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                } else {
+                    // Если ответ не JSON, получаем текст
+                    errorDetail = await response.text();
+                }
+            } catch (e) {
+                // Если не удалось распарсить JSON или получить текст, используем код статуса
+                errorDetail = `HTTP Error ${response.status}: ${response.statusText}`;
+            }
+            alert(`Ошибка при обновлении статуса лицензии: ${errorDetail}`);
         }
     } catch (error) {
         console.error('Ошибка при обновлении статуса лицензии:', error);
