@@ -1,26 +1,36 @@
 ﻿@using BattleshipGame.Shared.Models
 
-<div class="game-board-component">
-    <h4>@Title</h4>
+<div class="board-section">
+    <h5>@Title</h5>
 
-    <div class="coordinates">
-        <div class="corner"></div>
-        @for (int x = 0; x < 10; x++)
-        {
-            <div class="coordinate">@((char)('A' + x))</div>
-        }
-    </div>
-
-    <div class="game-board" style="grid-template-columns: repeat(10, 1fr);">
-        @for (int y = 0; y < 10; y++)
-        {
-            <div class="coordinate">@(y + 1)</div>
+    <div class="board-with-coords">
+        <!-- Горизонтальные координаты (буквы) -->
+        <div class="coord-header">
             @for (int x = 0; x < 10; x++)
             {
-                <div class="board-cell @GetCellClass(x, y)"
-                     @onclick="() => OnCellClick(x, y)">
-                </div>
+                <div class="column-letter">@((char)('A' + x))</div>
             }
+        </div>
+
+        <!-- Игровое поле с вертикальными координатами -->
+        @for (int y = 0; y < 10; y++)
+        {
+            <div class="coord-row">
+                <!-- Вертикальная координата (цифра) -->
+                <div class="row-number">@(y + 1)</div>
+
+                <!-- Клетки поля -->
+                @for (int x = 0; x < 10; x++)
+                {
+                    var currentX = x;
+                    var currentY = y;
+
+                    <div class="board-cell @GetCellClass(x, y)"
+                         @onclick="() => OnCellClick(currentX, currentY)"
+                         title="@GetCellTitle(x, y)">
+                    </div>
+                }
+            </div>
         }
     </div>
 </div>
@@ -43,14 +53,20 @@
 
     private string GetCellClass(int x, int y)
     {
+        var classes = new List<string>();
+
         // Проверяем выстрелы
         var shot = Shots?.FirstOrDefault(s => s.X == x && s.Y == y);
         if (shot != null)
         {
             if (shot.IsHit)
-                return "hit";
+                classes.Add("hit");
             else
-                return "miss";
+                classes.Add("miss");
+        }
+        else
+        {
+            classes.Add("empty");
         }
 
         // Для своего поля показываем корабли
@@ -63,13 +79,20 @@
             if (shipCell != null)
             {
                 if (shipCell.IsHit)
-                    return "ship-hit";
+                    classes.Add("ship-hit");
                 else
-                    return "ship";
+                    classes.Add("ship");
             }
         }
 
-        return "empty";
+        return string.Join(" ", classes);
+    }
+
+    private string GetCellTitle(int x, int y)
+    {
+        var col = (char)('A' + x);
+        var row = y + 1;
+        return $"{col}{row}";
     }
 
     private async Task OnCellClick(int x, int y)

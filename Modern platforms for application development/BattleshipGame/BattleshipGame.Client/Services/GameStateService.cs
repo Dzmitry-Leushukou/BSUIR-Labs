@@ -31,7 +31,6 @@ namespace BattleshipGame.Client.Services
             NotifyStateChanged();
         }
 
-        // Расстановка корабля на поле
         public bool PlaceShip(int shipId, int startX, int startY, bool isHorizontal)
         {
             var ship = _ships.FirstOrDefault(s => s.Id == shipId);
@@ -47,8 +46,11 @@ namespace BattleshipGame.Client.Services
                 int y = isHorizontal ? startY : startY + i;
 
                 // Проверка границ
-                if (x >= _boardSize || y >= _boardSize)
+                if (x < 0 || x >= _boardSize || y < 0 || y >= _boardSize)
+                {
+                    ship.Cells.Clear();
                     return false;
+                }
 
                 ship.Cells.Add(new Cell(x, y) { HasShip = true });
             }
@@ -56,19 +58,22 @@ namespace BattleshipGame.Client.Services
             ship.IsHorizontal = isHorizontal;
             ship.IsPlaced = true;
 
-            // Проверка валидности всей расстановки
-            if (!ShipValidator.ValidateAllShips(_ships.Where(s => s.IsPlaced).ToList()))
+            // Проверка на пересечение с другими кораблями
+            var otherShips = _ships.Where(s => s.Id != shipId && s.IsPlaced);
+            foreach (var otherShip in otherShips)
             {
-                // Откат
-                ship.Cells.Clear();
-                ship.IsPlaced = false;
-                return false;
+                if (DoShipsOverlap(ship, otherShip))
+                {
+                    // Возвращаем старые клетки (но мы их уже очистили)
+                    ship.Cells.Clear();
+                    ship.IsPlaced = false;
+                    return false;
+                }
             }
 
             NotifyStateChanged();
             return true;
         }
-
         // Перемещение корабля
         public void MoveShip(int shipId, int deltaX, int deltaY)
         {
