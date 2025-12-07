@@ -10,7 +10,131 @@ body {
 .page {
     max-width: 1400px;
     margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
 }
+
+/* Главная страница */
+.connection-panel,
+.game-menu {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+    .connection-panel h3,
+    .game-menu h3 {
+        color: #1a2980;
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+        font-weight: 700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+h1 {
+    color: #1a2980;
+    text-align: center;
+    font-size: 3.5rem;
+    margin-bottom: 30px;
+    font-weight: 800;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.menu-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.menu-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+    .menu-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        border-color: #26d0ce;
+    }
+
+    .menu-card h4 {
+        color: #1a2980;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+        .menu-card h4 i {
+            color: #26d0ce;
+            font-size: 1.8rem;
+        }
+
+.form-control {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+    .form-control:focus {
+        border-color: #26d0ce;
+        box-shadow: 0 0 0 0.2rem rgba(38, 208, 206, 0.25);
+    }
+
+.games-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.game-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+    .game-item span {
+        color: #333;
+        font-weight: 500;
+    }
+
+.current-game {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 30px;
+}
+
+    .current-game h4 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .current-game p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
 
 /* Игровые страницы */
 .game-page {
@@ -18,20 +142,24 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    margin-top: 20px;
 }
 
 .game-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 12px;
     margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
     .game-header h1 {
-        margin: 0;
-        font-size: 2.5rem;
+        color: white;
+        font-size: 2.8rem;
+        margin: 0 0 15px 0;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        -webkit-text-fill-color: white;
+        background: none;
     }
 
 .game-status {
@@ -44,18 +172,48 @@ body {
 
     .game-status .badge {
         font-size: 1.1rem;
-        padding: 8px 16px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
 
+.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+    color: #333 !important;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%) !important;
+}
+
+.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;
+}
+
 .player-info {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 /* ФИКС: Игровое поле - правильная сетка 10x10 */
 .game-board {
     display: grid;
-    grid-template-columns: repeat(10, 40px); /* Фиксированные 10 колонок по 40px */
-    grid-template-rows: repeat(10, 40px); /* Фиксированные 10 строк по 40px */
+    grid-template-columns: repeat(10, 40px);
+    grid-template-rows: repeat(10, 40px);
     gap: 0;
     background-color: #1a73e8;
     border: 3px solid #0d47a1;
@@ -68,8 +226,8 @@ body {
 .board-cell {
     width: 40px;
     height: 40px;
-    box-sizing: border-box; /* Важно! */
-    border: 1px solid rgba(255, 255, 255, 0.5); /* Белые границы видно */
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.5);
     background-color: rgba(255, 255, 255, 0.1);
     transition: all 0.2s;
     cursor: pointer;
@@ -79,64 +237,58 @@ body {
     justify-content: center;
 }
 
-/* ФИКС: Убираем сдвоенные границы */
-.game-board .board-cell {
-    margin: 0;
-    padding: 0;
-}
-
-.board-cell:hover:not(.ship):not(.hit):not(.miss):not(.ship-hit) {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
-}
-
-.board-cell.empty {
-    background-color: rgba(173, 216, 230, 0.7);
-}
-
-.board-cell.ship {
-    background-color: #2c3e50;
-    border-color: #34495e;
-}
-
-    .board-cell.ship::after {
-        content: '';
-        width: 80%;
-        height: 80%;
-        background-color: #34495e;
-        border-radius: 2px;
+    .board-cell:hover:not(.ship):not(.hit):not(.miss):not(.ship-hit) {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
     }
 
-.board-cell.ship-hit {
-    background-color: #e74c3c;
-    border-color: #c0392b;
-}
-
-    .board-cell.ship-hit::after {
-        content: '💥';
-        font-size: 18px;
+    .board-cell.empty {
+        background-color: rgba(173, 216, 230, 0.7);
     }
 
-.board-cell.hit {
-    background-color: #e74c3c;
-}
-
-    .board-cell.hit::after {
-        content: '✕';
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
+    .board-cell.ship {
+        background-color: #2c3e50;
+        border-color: #34495e;
     }
 
-.board-cell.miss {
-    background-color: #3498db;
-}
+        .board-cell.ship::after {
+            content: '';
+            width: 80%;
+            height: 80%;
+            background-color: #34495e;
+            border-radius: 2px;
+        }
 
-    .board-cell.miss::after {
-        content: '●';
-        color: white;
-        font-size: 16px;
+    .board-cell.ship-hit {
+        background-color: #e74c3c;
+        border-color: #c0392b;
     }
+
+        .board-cell.ship-hit::after {
+            content: '💥';
+            font-size: 18px;
+        }
+
+    .board-cell.hit {
+        background-color: #e74c3c;
+    }
+
+        .board-cell.hit::after {
+            content: '✕';
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+    .board-cell.miss {
+        background-color: #3498db;
+    }
+
+        .board-cell.miss::after {
+            content: '●';
+            color: white;
+            font-size: 16px;
+        }
 
 /* Контейнеры досок */
 .game-boards-container {
@@ -154,97 +306,153 @@ body {
 
 .board-section {
     background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 12px;
     border: 2px solid #dee2e6;
     text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
     .board-section h4 {
-        color: #333;
+        color: #1a2980;
         margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
 /* Индикаторы состояния игры */
 .turn-indicator {
-    font-size: 1.2rem;
-    padding: 15px;
-    border-radius: 10px;
+    font-size: 1.3rem;
+    padding: 20px;
+    border-radius: 12px;
     margin: 20px 0;
     text-align: center;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
     .turn-indicator i {
-        margin-right: 10px;
+        margin-right: 15px;
+        font-size: 1.5rem;
     }
+
+.alert-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    border: none;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+    border: none;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+    border: none;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+    color: white;
+    border: none;
+}
 
 .game-finished {
     text-align: center;
-    padding: 40px;
+    padding: 50px 20px;
 }
 
 .winner-message {
-    font-size: 1.5rem;
-    padding: 20px;
+    font-size: 1.8rem;
+    padding: 25px;
     margin: 30px 0;
+    border-radius: 12px;
+    font-weight: 700;
 }
 
     .winner-message i {
-        margin-right: 15px;
-        font-size: 2rem;
+        margin-right: 20px;
+        font-size: 2.5rem;
     }
 
 .waiting-for-players {
     text-align: center;
-    padding: 50px 20px;
+    padding: 60px 20px;
 }
+
+    .waiting-for-players h3 {
+        color: #1a2980;
+        font-size: 2rem;
+        margin: 30px 0;
+    }
 
     .waiting-for-players .spinner-border {
         width: 4rem;
         height: 4rem;
         margin-bottom: 30px;
+        color: #26d0ce;
     }
 
 /* Панель расстановки кораблей */
 .ship-placement-container {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 12px;
 }
+
+    .ship-placement-container h3 {
+        color: #1a2980;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
 
 .placement-board {
     background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
+    padding: 25px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .ships-panel {
     background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
+    padding: 25px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
+
+    .ships-panel h5 {
+        color: #1a2980;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
 
 .ship-item {
     background: white;
-    padding: 15px;
-    margin-bottom: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
     border: 2px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: all 0.3s;
     cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
     .ship-item:hover {
         border-color: #6c757d;
-        transform: translateY(-2px);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
 
     .ship-item.selected {
         border-color: #007bff;
-        background-color: #e7f3ff;
-        box-shadow: 0 0 10px rgba(0,123,255,0.3);
+        background: linear-gradient(135deg, #e7f3ff 0%, #d1e7ff 100%);
+        box-shadow: 0 0 15px rgba(0,123,255,0.3);
     }
 
     .ship-item.placed {
@@ -255,115 +463,152 @@ body {
         opacity: 1;
     }
 
-.ship-preview {
+.ship-info {
     display: flex;
-    margin: 10px 0;
+    flex-direction: column;
+    gap: 8px;
 }
 
-    .ship-preview.horizontal {
-        flex-direction: row;
-    }
-
-    .ship-preview.vertical {
-        flex-direction: column;
-        width: 25px;
-    }
-
-.ship-cell {
-    width: 25px;
-    height: 25px;
-    background-color: #2c3e50;
-    border: 1px solid #34495e;
-    margin: 1px;
+.ship-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: #1a2980;
 }
 
-.ship-actions {
-    margin-top: 10px;
+.ship-size {
+    font-size: 0.95rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.ship-direction {
+    font-size: 0.9rem;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.ship-status .badge {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+    font-weight: 600;
+}
+
+.selected-ship-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 1rem;
 }
 
 .instructions {
     background: white;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
-    border-left: 4px solid #007bff;
+    border-left: 5px solid #007bff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
-    .instructions ul {
-        padding-left: 20px;
-        margin-bottom: 0;
+    .instructions small {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #495057;
     }
 
-    .instructions li {
-        margin-bottom: 5px;
+    .instructions strong {
+        color: #1a2980;
+        font-weight: 600;
     }
 
-/* Контролы игры */
-.game-controls {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .game-board {
-        grid-template-columns: repeat(10, 30px);
-        grid-template-rows: repeat(10, 30px);
+    .instructions em {
+        color: #dc3545;
+        font-style: italic;
     }
 
-    .board-cell {
-        width: 30px;
-        height: 30px;
-    }
-
-    .game-header h1 {
-        font-size: 1.8rem;
-    }
-
-    .game-status {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-}
-
-/* Убираем стандартный blazor error UI */
-#blazor-error-ui {
-    display: none;
-}
-
-/* Стили для маленьких кораблей на поле */
-.ship-cell-small {
-    width: 80%;
-    height: 80%;
-    background-color: #2c3e50;
-    border-radius: 2px;
-}
-
-/* Дополнительные стили для кнопок */
+/* Кнопки */
 .btn {
-    border-radius: 5px;
-    padding: 8px 16px;
+    border-radius: 8px;
+    padding: 10px 20px;
     font-weight: 600;
+    border: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
 
 .btn-sm {
-    padding: 5px 10px;
-    font-size: 0.875rem;
+    padding: 8px 15px;
+    font-size: 0.9rem;
 }
 
 /* Стили для алертов */
 .alert {
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-weight: 500;
 }
 
-/* Простые координаты (упрощенная версия) */
+.alert-dismissible .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* Простые координаты */
 .board-with-coords {
     display: inline-block;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .coord-row {
@@ -373,55 +618,26 @@ body {
 }
 
 .row-number {
-    width: 25px;
+    width: 30px;
     text-align: center;
     font-weight: bold;
-    color: white;
-    margin-right: 5px;
+    color: #1a2980;
+    margin-right: 10px;
+    font-size: 1.1rem;
 }
 
 .coord-header {
     display: flex;
-    margin-left: 30px;
-    margin-bottom: 5px;
+    margin-left: 40px;
+    margin-bottom: 10px;
 }
 
 .column-letter {
     width: 40px;
     text-align: center;
     font-weight: bold;
-    color: white;
-}
-/* Стили для информации о выбранном корабле */
-.selected-ship-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-    border: none;
-    color: white;
-}
-
-/* Направление корабля */
-.ship-direction {
-    font-size: 0.8rem;
-    color: #6c757d;
-    margin-bottom: 5px;
-}
-
-/* Улучшенные стили для кораблей */
-.ship-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.ship-name {
-    font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 2px;
-}
-
-.ship-size {
-    font-size: 0.85rem;
-    color: #6c757d;
+    color: #1a2980;
+    font-size: 1.1rem;
 }
 
 /* Анимация для выбранного корабля */
@@ -441,17 +657,110 @@ body {
 
 .ship-item.selected {
     animation: pulse 2s infinite;
-    border-color: #007bff;
-    background-color: #e7f3ff;
 }
 
-/* Стили для кнопки поворота */
-.btn-light {
-    background-color: white;
+/* Контролы игры */
+.game-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding-top: 25px;
+    border-top: 2px solid #dee2e6;
+    margin-top: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .game-header h1 {
+        font-size: 2rem;
+    }
+
+    .game-board {
+        grid-template-columns: repeat(10, 30px);
+        grid-template-rows: repeat(10, 30px);
+    }
+
+    .board-cell {
+        width: 30px;
+        height: 30px;
+    }
+
+    .menu-options {
+        grid-template-columns: 1fr;
+    }
+
+    .game-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .row-number {
+        width: 25px;
+        margin-right: 5px;
+    }
+
+    .coord-header {
+        margin-left: 30px;
+    }
+}
+
+/* Убираем стандартный blazor error UI */
+#blazor-error-ui {
+    display: none;
+}
+
+/* Стили для маленьких кораблей на поле */
+.ship-cell-small {
+    width: 80%;
+    height: 80%;
+    background-color: #2c3e50;
+    border-radius: 3px;
+}
+
+/* Дополнительные улучшения для видимости */
+code {
+    background: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 5px;
     border: 1px solid #dee2e6;
+    color: #d63384;
+    font-weight: 600;
 }
 
-    .btn-light:hover {
-        background-color: #f8f9fa;
-        border-color: #adb5bd;
+.game-controls .btn {
+    min-width: 150px;
+}
+
+/* Улучшение видимости текста в полях ввода */
+input::placeholder {
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+/* Улучшение видимости текста в списке игр */
+.games-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.games-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.games-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+    .games-list::-webkit-scrollbar-thumb:hover {
+        background: #555;
     }
