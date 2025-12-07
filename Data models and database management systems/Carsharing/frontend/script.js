@@ -629,7 +629,7 @@ function showActiveRentalPanel(rental) {
                 <p>Машина: ${rental.car_id}</p>
                 <p>Статус: ${rental.status}</p>
                 <p>Начало: ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
-                <p>Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
+                <p id="rental-price-${rental.id}">Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
             </div>
             <div class="rental-controls">
                 <button id="end-rental-btn" class="btn end-btn">⏹️ Завершить</button>
@@ -643,7 +643,7 @@ function showActiveRentalPanel(rental) {
             showCompletionModal(rental.id);
         });
         
-        // Обновляем цену каждые 10 секунд
+        // Обновляем цену каждую секунду для реального времени
         const updatePriceInterval = setInterval(() => {
             if (document.getElementById('active-rental-panel')) {
                 const updatedStartedAt = new Date(rental.started_at); // Это время в UTC
@@ -670,14 +670,15 @@ function showActiveRentalPanel(rental) {
                     updatedPrice = 1;
                 }
                 
-                const priceElement = rentalPanel.querySelector('.rental-info p:nth-child(5)');
+                // Обновляем цену в элементе с уникальным ID
+                const priceElement = document.getElementById(`rental-price-${rental.id}`);
                 if (priceElement) {
                     priceElement.textContent = `Текущая цена: ${updatedPrice} BYN за ${updatedMinutesDiff} мин.`;
                 }
             } else {
                 clearInterval(updatePriceInterval);
             }
-        }, 1000); // Обновляем каждые 10 секунд
+        }, 1000); // Обновляем каждую секунду для реального времени
     }
 }
 
