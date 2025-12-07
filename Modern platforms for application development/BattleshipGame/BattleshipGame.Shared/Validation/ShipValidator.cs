@@ -37,6 +37,7 @@ namespace BattleshipGame.Shared.Validation
 
         public static bool ValidateAllShips(List<Ship> ships, int boardSize = 10)
         {
+            // Правила морского боя: 1x4, 2x3, 3x2, 4x1
             var requiredShips = new Dictionary<int, int>
             {
                 {4, 1},  // 1 корабль на 4 клетки

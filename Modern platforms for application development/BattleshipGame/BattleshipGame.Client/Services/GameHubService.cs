@@ -12,6 +12,7 @@ namespace BattleshipGame.Client.Services
         private HubConnection? _hubConnection;
         private readonly ILogger<GameHubService> _logger;
         private readonly NavigationManager _navigationManager;
+        private readonly GameStateService _gameStateService;
         private string? _currentSessionId;
         private string? _playerName;
 
@@ -26,10 +27,11 @@ namespace BattleshipGame.Client.Services
         public string? CurrentSessionId => _currentSessionId;
         public string? PlayerName => _playerName;
 
-        public GameHubService(ILogger<GameHubService> logger, NavigationManager navigationManager)
+        public GameHubService(ILogger<GameHubService> logger, NavigationManager navigationManager, GameStateService gameStateService)
         {
             _logger = logger;
             _navigationManager = navigationManager;
+            _gameStateService = gameStateService;
         }
 
         public async Task InitializeAsync(string hubUrl)
@@ -57,6 +59,7 @@ namespace BattleshipGame.Client.Services
                 OnErrorReceived?.Invoke($"Не удалось подключиться: {ex.Message}");
             }
         }
+
         // Настройка обработчиков сообщений от сервера
         private void SetupHubHandlers()
         {
@@ -213,6 +216,10 @@ namespace BattleshipGame.Client.Services
             _playerName = playerName;
             var sessionId = await _hubConnection.InvokeAsync<string>("CreateGame", playerName);
             _currentSessionId = sessionId;
+
+            // Инициализируем GameStateService
+            _gameStateService.InitializeNewGame("temp", playerName);
+
             return sessionId;
         }
 
@@ -223,6 +230,10 @@ namespace BattleshipGame.Client.Services
 
             _playerName = playerName;
             _currentSessionId = sessionId;
+
+            // Инициализируем GameStateService
+            _gameStateService.InitializeNewGame("temp", playerName);
+
             return await _hubConnection.InvokeAsync<bool>("JoinGame", sessionId, playerName);
         }
 
@@ -248,6 +259,8 @@ namespace BattleshipGame.Client.Services
 
             await _hubConnection.InvokeAsync("LeaveGame", _currentSessionId);
             _currentSessionId = null;
+            _playerName = null;
+            _gameStateService.Reset();
         }
 
         public async Task<GameSession?> GetGameInfoAsync(string sessionId)
@@ -260,7 +273,6 @@ namespace BattleshipGame.Client.Services
             }
             catch (Exception)
             {
-                // Если игра не найдена или произошла ошибка, возвращаем null
                 return null;
             }
         }

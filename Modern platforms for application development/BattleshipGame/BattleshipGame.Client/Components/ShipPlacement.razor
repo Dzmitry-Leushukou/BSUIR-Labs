@@ -1,6 +1,7 @@
 ﻿@using BattleshipGame.Shared.Models
 @using BattleshipGame.Client.Services
 @inject BattleshipGame.Client.Services.GameStateService GameState
+@inject GameHubService GameHub
 
 <div class="ship-placement-container">
     <h3 class="text-center mb-4">Расстановка кораблей</h3>
@@ -80,7 +81,7 @@
                 @if (_selectedShipId.HasValue)
                 {
                     <div class="selected-ship-info mb-3 p-2 bg-info text-white rounded">
-                        <small>Выбран: @GetSelectedShipName()</small>
+                        <small>Выбран: @GetSelectedShipName() (размер: @GetSelectedShipSize())</small>
                         <button class="btn btn-sm btn-light ms-2" @onclick="RotateSelectedShip"
                                 title="Повернуть корабль">
                             <i class="fas fa-redo"></i> Повернуть
@@ -101,6 +102,10 @@
                                     @if (ship.IsPlaced)
                                     {
                                         <span>@(ship.IsHorizontal ? "Горизонтально" : "Вертикально")</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Не размещен</span>
                                     }
                                 </div>
                                 <div class="ship-status">
@@ -136,9 +141,20 @@
 @code {
     private int? _selectedShipId = null;
     private string _errorMessage = string.Empty;
+    private bool _selectedShipHorizontal = true;
 
     [Parameter]
     public EventCallback OnShipsPlaced { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // При инициализации выбираем первый неразмещенный корабль
+        var firstUnplaced = GameState.Ships.FirstOrDefault(s => !s.IsPlaced);
+        if (firstUnplaced != null)
+        {
+            _selectedShipId = firstUnplaced.Id;
+        }
+    }
 
     private string GetCellClass(int x, int y)
     {
@@ -147,7 +163,7 @@
 
         if (cell.HasShip)
         {
-            return cell.IsHit ? "ship-hit" : "ship";
+            return "ship";
         }
 
         return "empty";
@@ -172,12 +188,23 @@
         return ship?.Name ?? string.Empty;
     }
 
+    private int GetSelectedShipSize()
+    {
+        if (!_selectedShipId.HasValue) return 0;
+        var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
+        return ship?.Size ?? 0;
+    }
+
     private void SelectShip(int shipId)
     {
         var ship = GameState.Ships.FirstOrDefault(s => s.Id == shipId);
-        if (ship != null && !ship.IsPlaced)
+        if (ship != null)
         {
             _selectedShipId = shipId;
+            if (ship.IsPlaced)
+            {
+                _selectedShipHorizontal = ship.IsHorizontal;
+            }
             _errorMessage = string.Empty;
         }
         else
@@ -191,12 +218,21 @@
         if (_selectedShipId.HasValue)
         {
             var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
-            if (ship != null && ship.IsPlaced)
+            if (ship != null)
             {
-                var success = GameState.RotateShip(ship.Id);
-                if (!success)
+                if (ship.IsPlaced)
                 {
-                    _errorMessage = "Невозможно повернуть корабль в этом месте!";
+                    // Если корабль уже размещен - пытаемся его повернуть
+                    var success = GameState.RotateShip(ship.Id);
+                    if (!success)
+                    {
+                        _errorMessage = "Невозможно повернуть корабль! Корабль выходит за границы или касается другого корабля.";
+                    }
+                }
+                else
+                {
+                    // Если корабль не размещен - просто меняем ориентацию
+                    _selectedShipHorizontal = !_selectedShipHorizontal;
                 }
             }
         }
@@ -207,33 +243,24 @@
         if (_selectedShipId.HasValue)
         {
             var ship = GameState.Ships.FirstOrDefault(s => s.Id == _selectedShipId.Value);
-            if (ship != null && !ship.IsPlaced)
+            if (ship != null)
             {
-                // Пытаемся разместить корабль с текущей ориентацией
-                var success = GameState.PlaceShip(ship.Id, x, y, true); // Сначала горизонтально
-
-                if (!success)
+                var success = GameState.PlaceShip(ship.Id, x, y, _selectedShipHorizontal);
+                if (success)
                 {
-                    _errorMessage = "Невозможно разместить корабль здесь! Проверьте границы и касания с другими кораблями.";
+                    // Автоматически выбираем следующий неразмещенный корабль
+                    var nextShip = GameState.Ships.FirstOrDefault(s => !s.IsPlaced);
+                    _selectedShipId = nextShip?.Id;
+                    if (nextShip != null)
+                    {
+                        _selectedShipHorizontal = true; // Сбрасываем ориентацию для нового корабля
+                    }
+                    _errorMessage = string.Empty;
                 }
                 else
                 {
-                    // Автоматически выбираем следующий неразмещенный корабль
-                    _selectedShipId = GameState.Ships
-                        .Where(s => !s.IsPlaced)
-                        .Select(s => s.Id)
-                        .FirstOrDefault();
-                    _errorMessage = string.Empty;
+                    _errorMessage = "Невозможно разместить корабль здесь! Проверьте границы и касания с другими кораблями.";
                 }
-            }
-        }
-        else
-        {
-            // Если корабль не выбран, можно кликнуть на уже размещенный корабль для его выбора
-            var shipAtCell = GameState.GetShipAt(x, y);
-            if (shipAtCell != null)
-            {
-                _selectedShipId = shipAtCell.Id;
             }
         }
     }
@@ -248,7 +275,12 @@
     private void ClearAll()
     {
         GameState.ClearShips();
-        _selectedShipId = null;
+        // Выбираем первый корабль после очистки
+        var firstShip = GameState.Ships.FirstOrDefault();
+        if (firstShip != null)
+        {
+            _selectedShipId = firstShip.Id;
+        }
         _errorMessage = string.Empty;
     }
 
@@ -256,48 +288,27 @@
     {
         if (GameState.AreAllShipsPlaced())
         {
-            // Дополнительная валидация
-            if (ValidateShipPlacement())
+            try
             {
-                await OnShipsPlaced.InvokeAsync();
+                // Отправляем корабли на сервер
+                var success = await GameHub.PlaceShipsAsync(GameState.Ships);
+                if (success)
+                {
+                    await OnShipsPlaced.InvokeAsync();
+                }
+                else
+                {
+                    _errorMessage = "Ошибка при отправке расстановки на сервер";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _errorMessage = "Некорректная расстановка! Корабли касаются друг друга.";
+                _errorMessage = $"Ошибка: {ex.Message}";
             }
         }
         else
         {
             _errorMessage = "Не все корабли размещены!";
         }
-    }
-
-    private bool ValidateShipPlacement()
-    {
-        // Проверяем, что ни один корабль не касается другого
-        var placedShips = GameState.Ships.Where(s => s.IsPlaced).ToList();
-
-        for (int i = 0; i < placedShips.Count; i++)
-        {
-            for (int j = i + 1; j < placedShips.Count; j++)
-            {
-                var ship1 = placedShips[i];
-                var ship2 = placedShips[j];
-
-                foreach (var cell1 in ship1.Cells)
-                {
-                    foreach (var cell2 in ship2.Cells)
-                    {
-                        // Проверка касания (расстояние 1 клетка)
-                        if (Math.Abs(cell1.X - cell2.X) <= 1 && Math.Abs(cell1.Y - cell2.Y) <= 1)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
     }
 }
