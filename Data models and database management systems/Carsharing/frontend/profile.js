@@ -11,8 +11,8 @@ let profileMarker;
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProfileInfo();
     
-    // Инициализация карты с местоположением пользователя
-    initProfileMap();
+    // Не инициализируем карту на странице профиля, так как она там не нужна
+    // initProfileMap();
 });
 
 // Функция для инициализации карты на странице профиля
@@ -179,8 +179,8 @@ async function loadProfileInfo() {
                             localStorage.setItem('user_id', userData.id);
                         }
                         
-            // Проверяем активную аренду после успешной загрузки профиля
-            await checkActiveRental();
+            // Убираем проверку активной аренды на странице профиля, так как завершение аренды происходит на главной странице
+            // await checkActiveRental();
             
             // Обновляем видимость кнопки админ панели в зависимости от роли пользователя
             const adminPanelButton = document.getElementById('admin-panel-button');
@@ -409,212 +409,12 @@ document.getElementById('edit-profile-form').addEventListener('submit', async (e
         alert('Ошибка при обновлении профиля');
     }
 });
-
 // Функция для получения ID пользователя из localStorage
 function getUserIdFromToken() {
     const userId = localStorage.getItem('user_id');
     if (!userId) return null;
     
     return parseInt(userId);
-}
-
-// Функция для проверки активной аренды пользователя
-async function checkActiveRental() {
-    const userId = getUserIdFromToken();
-    if (!userId) {
-        // Если пользователь не авторизован, скрываем раздел активной аренды
-        hideActiveRentalSection();
-        return null;
-    }
-    
-    try {
-        const response = await fetch(`/rentals/user/${userId}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const rentals = await response.json();
-            // Находим активную аренду (если есть)
-            const activeRental = rentals.find(rental => rental.status === 'active');
-            if (activeRental) {
-                showActiveRentalSection(activeRental);
-                return activeRental;
-            } else {
-                hideActiveRentalSection();
-                return null;
-            }
-        } else {
-            const errorData = await response.json();
-            console.error(`Ошибка при получении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
-            // В случае ошибки тоже скрываем раздел активной аренды
-            hideActiveRentalSection();
-            return null;
-        }
-    } catch (error) {
-        console.error('Ошибка при запросе аренды:', error);
-        // В случае ошибки тоже скрываем раздел активной аренды
-        hideActiveRentalSection();
-        return null;
-    }
-}
-
-// Функция для отображения информации об активной аренде на странице профиля
-function showActiveRentalSection(rental) {
-    // Убедимся, что раздел активной аренды существует
-    let activeRentalSection = document.getElementById('active-rental-section');
-    
-    if (!activeRentalSection) {
-        // Создаем раздел активной аренды, если его нет
-        activeRentalSection = document.createElement('div');
-        activeRentalSection.id = 'active-rental-section';
-        activeRentalSection.className = 'active-trip-section';
-        
-        // Вставляем после профильной информации
-        const profileContent = document.querySelector('.profile-content');
-        const userCard = document.querySelector('.user-card');
-        profileContent.insertBefore(activeRentalSection, userCard.nextSibling);
-    }
-    
-    // Рассчитываем текущую цену аренды
-    // rental.started_at приходит из API в формате ISO (в UTC)
-    // Используем объекты Date напрямую для корректного вычисления разницы
-    const startedAt = new Date(rental.started_at); // Это время в UTC
-    const now = new Date(); // Это текущее время в локальной таймзоне браузера
-    
-    // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-    // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-    // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-    // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
-    const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-    
-    // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
-    let timeDiff = nowUTC - startedAt;
-    if (timeDiff < 0) {
-        // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
-        timeDiff = 0;
-    }
-    
-    const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
-    const currentPrice = 1 + minutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
-    
-    // Проверяем, чтобы цена не была отрицательной или нулевой
-    if (currentPrice < 1) {
-        currentPrice = 1;
-    }
-    
-    activeRentalSection.innerHTML = `
-        <div class="active-trip-info">
-            <h3>Текущая аренда</h3>
-            <div class="info-row">
-                <span>ID аренды:</span>
-                <span>${rental.id}</span>
-            </div>
-            <div class="info-row">
-                <span>Автомобиль:</span>
-                <span>${rental.car_id}</span>
-            </div>
-            <div class="info-row">
-                <span>Начало:</span>
-                <span>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</span>
-            </div>
-            <div class="info-row">
-                <span>Текущая цена:</span>
-                <span id="profile-rental-price-${rental.id}">${currentPrice} BYN за ${minutesDiff} мин.</span>
-            </div>
-            <div class="info-row">
-                <span>Статус:</span>
-                <span class="status-${rental.status}">${rental.status}</span>
-            </div>
-        </div>
-        <button class="end-trip-btn" onclick="endRentalFromProfile(${rental.id})">Завершить аренду</button>
-    `;
-    
-    // Обновляем цену каждую секунду для реального времени
-    const updatePriceInterval = setInterval(() => {
-        if (document.getElementById('active-rental-section')) {
-            const updatedStartedAt = new Date(rental.started_at); // Это время в UTC
-            const updatedNow = new Date(); // Это текущее время в локальной таймзоне браузера
-            
-            // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-            // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-            // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-            // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
-            const updatedNowUTC = new Date(updatedNow.getTime() + updatedNow.getTimezoneOffset() * 60000);
-            
-            // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
-            let updatedTimeDiff = updatedNowUTC - updatedStartedAt;
-            if (updatedTimeDiff < 0) {
-                // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
-                updatedTimeDiff = 0;
-            }
-            
-            const updatedMinutesDiff = Math.floor(updatedTimeDiff / (1000 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
-            const updatedPrice = 1 + updatedMinutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
-            
-            // Проверяем, чтобы цена не была отрицательной или нулевой
-            if (updatedPrice < 1) {
-                updatedPrice = 1;
-            }
-            
-            // Обновляем цену в элементе с уникальным ID
-            const priceElement = document.getElementById(`profile-rental-price-${rental.id}`);
-            if (priceElement) {
-                priceElement.textContent = `${updatedPrice} BYN за ${updatedMinutesDiff} мин.`;
-            }
-        } else {
-            clearInterval(updatePriceInterval);
-        }
-    }, 1000); // Обновляем каждую секунду для реального времени
-}
-
-// Функция для скрытия раздела активной аренды
-function hideActiveRentalSection() {
-    const activeRentalSection = document.getElementById('active-rental-section');
-    if (activeRentalSection) {
-        activeRentalSection.remove();
-    }
-}
-
-// Функция для завершения аренды со страницы профиля
-async function endRentalFromProfile(rentalId) {
-    const userId = getUserIdFromToken();
-    if (!userId) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    if (!confirm('Вы уверены, что хотите завершить аренду?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/rentals/${rentalId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
-            body: JSON.stringify({
-                status: "completed"
-            })
-        });
-        
-        if (response.ok) {
-            alert('Аренда успешно завершена!');
-            // Обновляем информацию на странице профиля
-            hideActiveRentalSection();
-        } else {
-            const errorData = await response.json();
-            alert(`Ошибка при завершении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
-        }
-    } catch (error) {
-        console.error('Ошибка при завершении аренды:', error);
-        alert('Ошибка при завершении аренды');
-    }
 }
 
 // Функция для отображения заказов пользователя
@@ -646,6 +446,7 @@ async function showMyOrders() {
         alert('Ошибка при получении заказов');
     }
 }
+
 
 // Функция для отображения информации о заказах
 function displayRentalsInfo(rentals) {
@@ -724,8 +525,8 @@ function displayRentalsInfo(rentals) {
     ordersList.appendChild(table);
 }
 
-// Проверяем активную аренду при загрузке страницы профиля
-document.addEventListener('DOMContentLoaded', async () => {
-    // Вызываем функцию проверки активной аренды
-    await checkActiveRental();
-});
+// Убираем проверку активной аренды при загрузке страницы профиля
+// document.addEventListener('DOMContentLoaded', async () => {
+//     // Вызываем функцию проверки активной аренды
+//     await checkActiveRental();
+// });

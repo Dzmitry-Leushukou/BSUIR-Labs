@@ -226,7 +226,7 @@ async function showUserInfo(userData) {
     });
     
     // Проверяем и показываем активную аренду при входе
-    checkAndShowActiveRental();
+    setTimeout(checkAndShowActiveRental, 300); // Используем небольшой таймаут для правильного отображения
 }
 
 // Функция для загрузки информации о пользователе
@@ -356,6 +356,13 @@ document.querySelector('.login-btn').addEventListener('click', () => {
                     // После успешного входа обновляем карту с машинами
                     // Очищаем сохраненные данные формы
                     localStorage.removeItem('loginFormData');
+                    
+                    // Закрываем модальное окно входа
+                    document.body.removeChild(modal);
+                    
+                    // Проверяем и обновляем статус авторизации
+                    checkAuthStatus();
+                    
                     showCarsOnMap();
                 } else {
                     const errorData = await response.json();
@@ -474,6 +481,13 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                         // После успешной регистрации и входа обновляем карту с машинами
                         // Очищаем сохраненные данные формы
                         localStorage.removeItem('registerFormData');
+                        
+                        // Закрываем модальное окно регистрации
+                        document.body.removeChild(modal);
+                        
+                        // Проверяем и обновляем статус авторизации
+                        checkAuthStatus();
+                        
                         showCarsOnMap();
                     } else {
                         alert('Ошибка: сервер не вернул идентификатор пользователя');
@@ -1409,30 +1423,6 @@ async function getUserIP() {
     }
 }
  
-// Функция для перехода на админ панель
-function goToAdminPanel() {
-    window.location.href = '/admin';
-}
-
-// Функция для проверки и отображения активной аренды при загрузке
-async function checkAndShowActiveRental() {
-    const activeRental = await getActiveRental();
-    if (activeRental) {
-        showActiveRentalPanel(activeRental);
-    }
-// Функция для перехода на админ панель
-function goToAdminPanel() {
-    window.location.href = '/admin';
-}
-
-// Функция для проверки и отображения активной аренды при загрузке
-async function checkAndShowActiveRental() {
-    const activeRental = await getActiveRental();
-    if (activeRental) {
-        showActiveRentalPanel(activeRental);
-    }
-}
-}
 
 // Функция для перехода на админ панель
 function goToAdminPanel() {
