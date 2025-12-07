@@ -178,15 +178,40 @@ async function loadProfileInfo() {
                         if (userData.id) {
                             localStorage.setItem('user_id', userData.id);
                         }
+                        
+            // Проверяем активную аренду после успешной загрузки профиля
+            await checkActiveRental();
+            
+            // Обновляем видимость кнопки админ панели в зависимости от роли пользователя
+            const adminPanelButton = document.getElementById('admin-panel-button');
+            if (adminPanelButton) {
+                if (userData.role_id === 1) {  // admin role ID is 1
+                    adminPanelButton.style.display = 'block';
+                } else {
+                    adminPanelButton.style.display = 'none';
+                }
+            }
         } else {
             // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
                         localStorage.removeItem('user_id');
                         window.location.href = '/';
+                        
+            // Также скрываем кнопку админ панели если пользователь не авторизован
+            const adminPanelButton = document.getElementById('admin-panel-button');
+            if (adminPanelButton) {
+                adminPanelButton.style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
         // При ошибке перенаправляем на главную страницу
         window.location.href = '/';
+        
+        // Также скрываем кнопку админ панели в случае ошибки
+        const adminPanelButton = document.getElementById('admin-panel-button');
+        if (adminPanelButton) {
+            adminPanelButton.style.display = 'none';
+        }
     }
     
 }
@@ -397,7 +422,8 @@ function getUserIdFromToken() {
 async function checkActiveRental() {
     const userId = getUserIdFromToken();
     if (!userId) {
-        console.error('Пользователь не авторизован');
+        // Если пользователь не авторизован, скрываем раздел активной аренды
+        hideActiveRentalSection();
         return null;
     }
     
@@ -424,10 +450,14 @@ async function checkActiveRental() {
         } else {
             const errorData = await response.json();
             console.error(`Ошибка при получении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
+            // В случае ошибки тоже скрываем раздел активной аренды
+            hideActiveRentalSection();
             return null;
         }
     } catch (error) {
         console.error('Ошибка при запросе аренды:', error);
+        // В случае ошибки тоже скрываем раздел активной аренды
+        hideActiveRentalSection();
         return null;
     }
 }

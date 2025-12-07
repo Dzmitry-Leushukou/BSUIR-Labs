@@ -224,6 +224,9 @@ async function showUserInfo(userData) {
             window.location.href = '/profile';
         }
     });
+    
+    // Проверяем и показываем активную аренду при входе
+    checkAndShowActiveRental();
 }
 
 // Функция для загрузки информации о пользователе
@@ -266,9 +269,23 @@ function updateAuthStatus(isAuthenticated, userData = null) {
             localStorage.setItem('user_id', userData.id);
         }
         showUserInfo(userData);
+        // Проверяем и показываем активную аренду при входе
+        setTimeout(checkAndShowActiveRental, 500); // Используем таймаут, чтобы дождаться полной загрузки интерфейса
     } else {
         localStorage.removeItem('user_id');
         showAuthButtons();
+        
+        // Удаляем панель активной аренды при выходе из аккаунта
+        const rentalPanel = document.getElementById('active-rental-panel');
+        if (rentalPanel) {
+            rentalPanel.remove();
+        }
+        
+        // Скрываем кнопку админ панели при выходе из аккаунта
+        const adminPanelButton = document.getElementById('admin-panel-button');
+        if (adminPanelButton) {
+            adminPanelButton.style.display = 'none';
+        }
     }
 }
 
@@ -454,6 +471,12 @@ document.querySelector('.logout-btn').addEventListener('click', () => {
     
     // После выхода очищаем маркеры машин
     clearCarMarkers();
+    
+    // Удаляем панель активной аренды при выходе из аккаунта
+    const rentalPanel = document.getElementById('active-rental-panel');
+    if (rentalPanel) {
+        rentalPanel.remove();
+    }
 });
 
 // Функция для перехода к местоположению пользователя на карте
