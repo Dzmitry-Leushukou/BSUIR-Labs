@@ -26,6 +26,20 @@ def get_rental_endpoint(rental_id: int):
 def create_rental_endpoint(request: Request, rental: RentalCreate, current_user: dict = Depends(get_current_user_from_header)):
     # Use the user_id from the header instead of the rental object for security
     rental.user_id = current_user['id']
+    
+    # Check if user has approved and non-expired driver license
+    from crud.driver_licenses_crud import get_driver_license
+    from datetime import datetime
+    try:
+        license = get_driver_license(rental.user_id)
+        if license['status'] != 'approved':
+            raise HTTPException(status_code=403, detail="Driver license is not approved")
+        if license['expiration_date'] < datetime.now().date():
+            raise HTTPException(status_code=403, detail="Driver license has expired")
+    except HTTPException:
+        # If no license found, user can't rent
+        raise HTTPException(status_code=403, detail="User does not have a valid driver license")
+    
     return create_rental(rental)
 
 @router.put("/{rental_id}", response_model=Rental)
