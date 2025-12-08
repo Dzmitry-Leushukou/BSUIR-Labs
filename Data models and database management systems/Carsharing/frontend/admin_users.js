@@ -7,7 +7,8 @@ async function loadUsers() {
     }
     
     try {
-        const response = await fetch('/users/', {
+        // Загружаем всех пользователей (с большим лимитом)
+        const response = await fetch('/users/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,

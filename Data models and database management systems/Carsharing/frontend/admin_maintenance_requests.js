@@ -7,7 +7,8 @@ async function loadMaintenanceRequests() {
     }
     
     try {
-        const response = await fetch('/maintenance_requests/', {
+        // Загружаем все запросы на обслуживание (с большим лимитом)
+        const response = await fetch('/maintenance_requests/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,

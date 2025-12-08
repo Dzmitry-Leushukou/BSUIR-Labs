@@ -7,7 +7,8 @@ async function loadPaymentLogs() {
     }
     
     try {
-        const response = await fetch('/payment_logs/', {
+        // Загружаем все логи платежей (с большим лимитом)
+        const response = await fetch('/payment_logs/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,

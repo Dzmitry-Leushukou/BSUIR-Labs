@@ -7,7 +7,8 @@ async function loadDriverLicenses() {
     }
     
     try {
-        const response = await fetch('/driver_licenses/', {
+        // Загружаем все водительские лицензии (с большим лимитом)
+        const response = await fetch('/driver_licenses/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,

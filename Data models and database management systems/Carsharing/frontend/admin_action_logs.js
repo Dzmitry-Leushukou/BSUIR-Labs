@@ -7,7 +7,8 @@ async function loadActionLogs() {
     }
     
     try {
-        const response = await fetch('/action_logs/', {
+        // Загружаем все логи действий (с большим лимитом)
+        const response = await fetch('/action_logs/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,

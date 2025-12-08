@@ -7,7 +7,8 @@ async function loadRentals() {
     }
     
     try {
-        const response = await fetch('/rentals/', {
+        // Загружаем все аренды (с большим лимитом)
+        const response = await fetch('/rentals/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
