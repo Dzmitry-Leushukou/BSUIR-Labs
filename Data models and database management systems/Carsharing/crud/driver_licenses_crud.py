@@ -2,12 +2,18 @@ from schemas import DriverLicenseCreate, DriverLicenseUpdate, DriverLicense
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+from typing import Optional
 
 # Driver Licenses CRUD
-def get_driver_licenses(offset: int = 0, limit: int = 100):
+def get_driver_licenses(offset: int = 0, limit: int = 100, driver_id: Optional[int] = None):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM driver_licenses ORDER BY driver_id LIMIT %s OFFSET %s", (limit, offset))
+    
+    if driver_id is not None:
+        cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s ORDER BY driver_id LIMIT %s OFFSET %s", (driver_id, limit, offset))
+    else:
+        cur.execute("SELECT * FROM driver_licenses ORDER BY driver_id LIMIT %s OFFSET %s", (limit, offset))
+    
     licenses = cur.fetchall()
     cur.close()
     conn.close()
@@ -24,13 +30,13 @@ def get_driver_license(driver_id: int):
         raise HTTPException(status_code=404, detail="Driver license not found")
     return license
 
-def create_driver_license(license: DriverLicenseCreate):
+def create_driver_license(license: DriverLicenseCreate, driver_id: int):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
-           VALUES (%s, %s, %s, %s, %s, %s) RETURNING *""",
-        (license.license_number, license.issued_by, license.expiration_date, license.document_photo_id, license.document_photo_back_id, license.status)
+        """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status, driver_id)
+           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+        (license.license_number, license.issued_by, license.expiration_date, license.document_photo_id, license.document_photo_back_id, license.status, driver_id)
     )
     new_license = cur.fetchone()
     conn.commit()

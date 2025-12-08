@@ -191,6 +191,9 @@ async function loadProfileInfo() {
                     adminPanelButton.style.display = 'none';
                 }
             }
+            
+            // Загружаем статус водительских прав
+            await loadDriverLicenseStatus(userId);
         } else {
             // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
                         localStorage.removeItem('user_id');
@@ -214,6 +217,45 @@ async function loadProfileInfo() {
         }
     }
     
+}
+
+// Функция для загрузки статуса водительских прав
+async function loadDriverLicenseStatus(userId) {
+    try {
+        // Сначала получаем все водительские права пользователя
+        const response = await fetch('/driver_licenses/', {
+            method: 'GET',
+            headers: {
+                'X-User-ID': userId,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const licenses = await response.json();
+            // Находим права, связанные с текущим пользователем (предполагаем, что driver_id в таблице прав соответствует user_id)
+            const userLicense = licenses.find(license => license.driver_id == userId);
+            
+            if (userLicense) {
+                // Обновляем отображение статуса водительских прав с цветовой индикацией
+                const licenseStatusElement = document.getElementById('profile-license-status');
+                licenseStatusElement.textContent = userLicense.status;
+                licenseStatusElement.className = `status-${userLicense.status}`;
+            } else {
+                // Если права не найдены, отображаем "Не загружены"
+                document.getElementById('profile-license-status').textContent = 'Не загружены';
+                document.getElementById('profile-license-status').className = 'status-not-loaded';
+            }
+        } else {
+            // Если произошла ошибка, отображаем "Не загружены"
+            document.getElementById('profile-license-status').textContent = 'Не загружены';
+            document.getElementById('profile-license-status').className = 'status-not-loaded';
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке статуса водительских прав:', error);
+        document.getElementById('profile-license-status').textContent = 'Не загружены';
+        document.getElementById('profile-license-status').className = 'status-not-loaded';
+    }
 }
 
 // Обработчик для кнопки "Редактировать профиль"
@@ -675,7 +717,8 @@ async function uploadDriverLicense() {
                     expiration_date: expirationDate,
                     document_photo_id: firstPhotoId,
                     document_photo_back_id: secondPhotoId,
-                    status: 'pending'
+                    status: 'pending',
+                    driver_id: parseInt(userId)  // Привязываем права к пользователю
                 };
                 
                 const licenseResponse = await fetch('/driver_licenses/', {

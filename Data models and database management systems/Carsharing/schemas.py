@@ -123,7 +123,7 @@ class DriverLicenseBase(BaseModel):
     status: Optional[str] = "pending"
 
 class DriverLicenseCreate(DriverLicenseBase):
-    pass
+    driver_id: Optional[int] = None  # Make driver_id optional for creation
 
 class DriverLicenseUpdate(BaseModel):
     issued_by: Optional[str] = None
