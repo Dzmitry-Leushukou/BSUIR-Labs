@@ -45,6 +45,7 @@ function displayUsers(users) {
             <td>${user.role_id}</td>
             <td class="status-${user.status}">${user.status}</td>
             <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>${new Date(user.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>
                 <button class="btn action-btn role-btn" onclick="changeRole(${user.id})">Изменить роль</button>
                 <button class="btn action-btn ${user.status === 'active' ? 'block-btn' : 'unblock-btn'}"

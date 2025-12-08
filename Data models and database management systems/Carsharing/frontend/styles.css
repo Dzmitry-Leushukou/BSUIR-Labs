@@ -477,6 +477,7 @@ body {
     margin-top: 10px;
     background: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0.1);
+    table-layout: auto; /* Позволяет таблице автоматически подстраивать ширину столбцов */
 }
 
 .admin-table th,
@@ -484,6 +485,8 @@ body {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    min-width: 120px;
 }
 
 .admin-table th {
@@ -614,6 +617,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    min-width: 100px;
+    width: 100%;
 }
 
 .filter-input {

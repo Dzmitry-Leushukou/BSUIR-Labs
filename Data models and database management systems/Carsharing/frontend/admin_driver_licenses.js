@@ -74,10 +74,9 @@ async function displayDriverLicenses(driverLicenses) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${license.driver_id}</td>
-            <td>${license.driver_id}</td>
             <td>${license.license_number}</td>
             <td>${license.issued_by}</td>
-            <td>${new Date(license.expiration_date).toLocaleDateString('ru-RU')}</td>
+            <td>${new Date(license.expiration_date).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>${license.document_photo_id}</td>
             <td>
                 ${photoUrl ? `<img src="${photoUrl}" alt="Document Photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showPhotoModal('${photoUrl}', 'Фото документа')">` : 'Нет фото'}
@@ -155,8 +154,8 @@ function filterDriverLicenses() {
             const filterValue = filterInputs[i].value.trim();
             if (filterValue) {
                 // Для колонки с фото и действиями пропускаем фильтрацию
-                // В таблице водительских лицензий колонки с фото и действиями находятся в позициях 6 и 8 (0-индексированные)
-                if (i === 6 || i === 8) continue; // Пропускаем колонки с фотографией и действиями
+                // В таблице водительских лицензий колонки с фото и действиями находятся в позициях 5 и 7 (0-индексированные)
+                if (i === 5 || i === 7) continue; // Пропускаем колонки с фотографией и действиями
                 
                 // Проверяем, что ячейка существует
                 if (i < row.cells.length) {

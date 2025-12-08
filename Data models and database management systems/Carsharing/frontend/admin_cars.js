@@ -52,6 +52,8 @@ function displayCars(cars) {
             <td>${car.plate_number}</td>
             <td>${car.model}</td>
             <td>${car.status}</td>
+            <td>${position}</td>
+            <td>${car.main_photo_id || ''}</td>
             <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>
                 <button class="btn edit-btn" onclick="openEditCarModal(${car.id})">Редактировать</button>
@@ -74,10 +76,12 @@ function filterCars() {
             const filterValue = filterInputs[i].value.trim();
             if (filterValue) {
                 // Получаем значение ячейки в той же колонке, что и фильтр
-                const cellValue = row.cells[i].textContent.trim();
-                if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
-                    shouldShow = false;
-                    break;
+                if (i < row.cells.length) {
+                    const cellValue = row.cells[i].textContent.trim();
+                    if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                        shouldShow = false;
+                        break;
+                    }
                 }
             }
         }
