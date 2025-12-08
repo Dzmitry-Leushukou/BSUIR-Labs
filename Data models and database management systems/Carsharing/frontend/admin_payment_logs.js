@@ -47,5 +47,40 @@ function displayPaymentLogs(paymentLogs) {
     });
 }
 
-// Загружаем данные при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadPaymentLogs);
+// Функция для фильтрации данных таблицы Payment logs
+function filterPaymentLogs() {
+    const filterInputs = document.querySelectorAll('input.filter-input');
+    const rows = document.querySelectorAll('#payment-logs-table-body tr');
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // Проверяем каждую ячейку в строке
+        for (let i = 0; i < filterInputs.length; i++) {
+            const filterValue = filterInputs[i].value.trim();
+            if (filterValue) {
+                // Проверяем, что ячейка существует
+                if (i < row.cells.length) {
+                    const cellValue = row.cells[i].textContent.trim();
+                    if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                        shouldShow = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+// Добавляем обработчики событий для фильтров
+document.addEventListener('DOMContentLoaded', () => {
+    loadPaymentLogs();
+    
+    // Устанавливаем обработчики для фильтров
+    const filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(input => {
+        input.addEventListener('input', filterPaymentLogs);
+    });
+});

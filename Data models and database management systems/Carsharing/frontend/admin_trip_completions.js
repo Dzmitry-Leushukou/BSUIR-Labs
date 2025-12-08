@@ -231,8 +231,46 @@ function closePhotoModal() {
     }
 }
 
-// Загружаем данные при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadTripCompletions);
+// Функция для фильтрации данных таблицы Trip completions
+function filterTripCompletions() {
+    const filterInputs = document.querySelectorAll('input.filter-input');
+    const rows = document.querySelectorAll('#trip-completions-table-body tr');
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // Проверяем каждую ячейку в строке (пропускаем колонку с фото и действиями)
+        for (let i = 0; i < filterInputs.length; i++) {
+            const filterValue = filterInputs[i].value.trim();
+            if (filterValue) {
+                // Для колонки с фото и действиями пропускаем фильтрацию
+                if (i === 6 || i === 8) continue; // Пропускаем колонки с фотографиями и действиями
+                
+                // Проверяем, что ячейка существует
+                if (i < row.cells.length) {
+                    const cellValue = row.cells[i].textContent.trim();
+                    if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                        shouldShow = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+// Добавляем обработчики событий для фильтров
+document.addEventListener('DOMContentLoaded', () => {
+    loadTripCompletions();
+    
+    // Устанавливаем обработчики для фильтров
+    const filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(input => {
+        input.addEventListener('input', filterTripCompletions);
+    });
+});
 
 // Добавляем обработчик клика на документ для закрытия модального окна
 document.addEventListener('click', function(event) {

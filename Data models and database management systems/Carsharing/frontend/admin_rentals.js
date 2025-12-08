@@ -49,5 +49,40 @@ function displayRentals(rentals) {
     });
 }
 
-// Загружаем данные при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadRentals);
+// Функция для фильтрации данных таблицы Rentals
+function filterRentals() {
+    const filterInputs = document.querySelectorAll('input.filter-input');
+    const rows = document.querySelectorAll('#rentals-table-body tr');
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // Проверяем каждую ячейку в строке
+        for (let i = 0; i < filterInputs.length; i++) {
+            const filterValue = filterInputs[i].value.trim();
+            if (filterValue) {
+                // Проверяем, что ячейка существует
+                if (i < row.cells.length) {
+                    const cellValue = row.cells[i].textContent.trim();
+                    if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                        shouldShow = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+// Добавляем обработчики событий для фильтров
+document.addEventListener('DOMContentLoaded', () => {
+    loadRentals();
+    
+    // Устанавливаем обработчики для фильтров
+    const filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(input => {
+        input.addEventListener('input', filterRentals);
+    });
+});

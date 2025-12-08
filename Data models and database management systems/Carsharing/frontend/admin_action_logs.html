@@ -18,14 +18,54 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Actor User ID</th>
-                            <th>Action Type</th>
-                            <th>Target User ID</th>
-                            <th>Target Car ID</th>
-                            <th>Target Rental ID</th>
-                            <th>Description</th>
-                            <th>Created At</th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Actor User ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="actor_user_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Action Type</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="action_type">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Target User ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="target_user_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Target Car ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="target_car_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Target Rental ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="target_rental_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Description</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="description">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Created At</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="created_at">
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="action-logs-table-body">

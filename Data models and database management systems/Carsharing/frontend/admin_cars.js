@@ -61,6 +61,40 @@ function displayCars(cars) {
     });
 }
 
+// Функция для фильтрации данных таблицы Cars
+function filterCars() {
+    const filterInputs = document.querySelectorAll('input.filter-input');
+    const rows = document.querySelectorAll('#cars-table-body tr');
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // Проверяем каждую ячейку в строке
+        for (let i = 0; i < filterInputs.length; i++) {
+            const filterValue = filterInputs[i].value.trim();
+            if (filterValue) {
+                // Получаем значение ячейки в той же колонке, что и фильтр
+                const cellValue = row.cells[i].textContent.trim();
+                if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                    shouldShow = false;
+                    break;
+                }
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+// Добавляем обработчики событий для фильтров
+document.addEventListener('DOMContentLoaded', () => {
+    // Устанавливаем обработчики для фильтров
+    const filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(input => {
+        input.addEventListener('input', filterCars);
+    });
+});
+
 // Функция для открытия модального окна создания автомобиля
 function openCreateCarModal() {
     document.getElementById('car-modal-title').textContent = 'Добавить автомобиль';

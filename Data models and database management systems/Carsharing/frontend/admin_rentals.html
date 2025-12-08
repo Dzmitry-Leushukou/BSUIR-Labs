@@ -18,13 +18,48 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>User ID</th>
-                            <th>Car ID</th>
-                            <th>Started At</th>
-                            <th>Ended At</th>
-                            <th>Price</th>
-                            <th>Status</th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>User ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="user_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Car ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="car_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Started At</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="started_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Ended At</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="ended_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Price</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="price">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Status</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="status">
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="rentals-table-body">

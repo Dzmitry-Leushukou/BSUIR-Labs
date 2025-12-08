@@ -18,11 +18,36 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Rental ID</th>
-                            <th>User ID</th>
-                            <th>Pay Type</th>
-                            <th>Price</th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Rental ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="rental_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>User ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="user_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Pay Type</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="pay_type">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Price</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="price">
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="payment-logs-table-body">

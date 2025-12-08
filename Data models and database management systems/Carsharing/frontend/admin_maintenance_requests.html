@@ -18,13 +18,48 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Car ID</th>
-                            <th>Reported By</th>
-                            <th>Created At</th>
-                            <th>Resolved At</th>
-                            <th>Status</th>
-                            <th>Description</th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Car ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="car_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Reported By</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="reported_by">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Created At</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="created_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Resolved At</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="resolved_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Status</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="status">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Description</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="description">
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="maintenance-requests-table-body">
