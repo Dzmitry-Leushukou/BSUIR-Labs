@@ -1077,6 +1077,10 @@ function showCompletionModal(rentalId) {
                         <label for="use-cashback" style="flex: 1;">Использовать кэшбэк</label>
                         <span id="cashback-amount">Доступно: 0 BYN</span>
                     </div>
+                    <div id="cashback-input-container" style="margin-top: 10px; display: none;">
+                        <input type="number" id="cashback-amount-input" placeholder="Сумма кэшбэка" min="0" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <div style="margin-top: 5px; font-size: 0.8em; color: #666;">Максимум можно использовать: <span id="max-cashback-amount">0</span> BYN</div>
+                    </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button id="cancel-completion" style="
@@ -1169,12 +1173,42 @@ function showCompletionModal(rentalId) {
         
         // Обработчик для чекбокса кэшбэка
         const useCashbackCheckbox = document.getElementById('use-cashback');
+        const cashbackInputContainer = document.getElementById('cashback-input-container');
+        const cashbackAmountInput = document.getElementById('cashback-amount-input');
+        const maxCashbackAmountSpan = document.getElementById('max-cashback-amount');
+        
         useCashbackCheckbox.addEventListener('change', function() {
             updateCashbackDisplay();
+            if (this.checked) {
+                cashbackInputContainer.style.display = 'block';
+                cashbackAmountInput.value = ''; // Очищаем поле при отображении
+            } else {
+                cashbackInputContainer.style.display = 'none';
+                cashbackAmountInput.value = ''; // Очищаем поле при скрытии
+            }
         });
         
         // Загружаем информацию о пользователе для отображения кэшбэка
         loadUserInfoForCashback();
+        
+        // Обработчик для поля ввода суммы кэшбэка
+        cashbackAmountInput.addEventListener('input', function() {
+            const userData = getUserData();
+            userData.then(user => {
+                if (user) {
+                    const maxCashback = Math.min(user.cashback, currentPrice);
+                    const inputValue = parseFloat(this.value);
+                    
+                    if (inputValue > maxCashback) {
+                        this.value = maxCashback;
+                    }
+                    
+                    if (inputValue < 0) {
+                        this.value = 0;
+                    }
+                }
+            });
+        });
         
         // Обработчики для кнопок
         document.getElementById('cancel-completion').addEventListener('click', function() {
@@ -1210,6 +1244,7 @@ async function loadUserInfoForCashback() {
         if (response.ok) {
             const userData = await response.json();
             document.getElementById('cashback-amount').textContent = `Доступно: ${userData.cashback} BYN`;
+            document.getElementById('max-cashback-amount').textContent = userData.cashback;
         }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
@@ -1300,11 +1335,41 @@ async function processPaymentAndComplete(rentalId) {
         if (useCashback) {
             const userData = await getUserData();
             if (userData.cashback > 0) {
-                cashbackUsed = Math.min(totalPrice, userData.cashback);
-                finalPrice = totalPrice - cashbackUsed;
-                
-                if (finalPrice < 0) {
-                    finalPrice = 0;
+                // Получаем выбранную сумму кэшбэка
+                const cashbackInputValue = document.getElementById('cashback-amount-input').value;
+                if (cashbackInputValue) {
+                    const requestedCashback = parseFloat(cashbackInputValue);
+                    
+                    // Проверяем, что запрашиваемая сумма не превышает доступный кэшбэк и не больше общей цены
+                    if (requestedCashback > userData.cashback) {
+                        alert(`Вы не можете использовать кэшбэк больше, чем у вас есть. Максимум доступно: ${userData.cashback} BYN`);
+                        return;
+                    }
+                    
+                    if (requestedCashback > totalPrice) {
+                        alert(`Вы не можете использовать кэшбэк больше, чем стоимость поездки. Максимум доступно: ${totalPrice} BYN`);
+                        return;
+                    }
+                    
+                    if (requestedCashback < 0) {
+                        alert('Сумма кэшбэка не может быть отрицательной');
+                        return;
+                    }
+                    
+                    cashbackUsed = requestedCashback;
+                    finalPrice = totalPrice - cashbackUsed;
+                    
+                    if (finalPrice < 0) {
+                        finalPrice = 0;
+                    }
+                } else {
+                    // Если поле пустое, используем минимальное значение из доступного кэшбэка и общей цены
+                    cashbackUsed = Math.min(totalPrice, userData.cashback);
+                    finalPrice = totalPrice - cashbackUsed;
+                    
+                    if (finalPrice < 0) {
+                        finalPrice = 0;
+                    }
                 }
             }
         }
