@@ -438,6 +438,15 @@ def get_cars(skip: int = 0, limit: int = 100):
     conn.close()
     return cars
 
+# The cars router is now in the separate file, so we remove this endpoint from main app
+# @app.get("/cars/all/positions", response_model=List[dict])
+# def get_all_cars_positions(user_id: int):
+#     """
+#     Returns all cars with their positions and information about whether the car is rented by the user
+#     """
+#     from crud.cars_crud import get_all_cars_positions as get_cars_positions_crud
+#     return get_cars_positions_crud(user_id)
+
 @app.get("/cars/{car_id}", response_model=Car)
 def get_car(car_id: int):
     conn = get_db_connection()

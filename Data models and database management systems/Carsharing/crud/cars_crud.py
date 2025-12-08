@@ -92,19 +92,41 @@ def delete_car(car_id: int):
         raise HTTPException(status_code=404, detail="Car not found")
     return {"message": "Car deleted successfully"}
 
-def get_all_cars_positions():
-    """Возвращает все машины с их позициями"""
+def get_cars_positions_with_user_rental_status(user_id: int):
+    """Возвращает машины для отображения на карте: если у пользователя есть активная аренда - только арендованная машина, иначе - только доступные машины"""
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Сначала проверяем, есть ли у пользователя активная аренда
     cur.execute("""
-        SELECT id, vin, plate_number, model, status,
-               ST_AsText(position) as position_text,
-               ST_X(position::geometry) as longitude,
-               ST_Y(position::geometry) as latitude
-        FROM cars
-        WHERE position IS NOT NULL
-    """)
-    cars = cur.fetchall()
+        SELECT c.id, c.vin, c.plate_number, c.model, c.status,
+               ST_AsText(c.position) as position_text,
+               ST_X(c.position::geometry) as longitude,
+               ST_Y(c.position::geometry) as latitude,
+               TRUE as is_rented_by_user
+        FROM cars c
+        JOIN rentals r ON c.id = r.car_id
+        WHERE r.user_id = %s AND r.status = 'active' AND c.position IS NOT NULL
+    """, (user_id,))
+    
+    rented_cars = cur.fetchall()
+    
+    if rented_cars:
+        # Если у пользователя есть активная аренда, возвращаем только арендованные им машины
+        cars = rented_cars
+    else:
+        # Если у пользователя нет активной аренды, возвращаем только доступные машины
+        cur.execute("""
+            SELECT c.id, c.vin, c.plate_number, c.model, c.status,
+                   ST_AsText(c.position) as position_text,
+                   ST_X(c.position::geometry) as longitude,
+                   ST_Y(c.position::geometry) as latitude,
+                   FALSE as is_rented_by_user
+            FROM cars c
+            WHERE c.status = 'available' AND c.position IS NOT NULL
+        """)
+        cars = cur.fetchall()
+    
     cur.close()
     conn.close()
     return cars

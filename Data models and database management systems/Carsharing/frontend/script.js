@@ -93,35 +93,75 @@ async function showCarsOnMap() {
         if (response.ok) {
             const cars = await response.json();
             
-            // Добавить маркеры для каждой машины, кроме арендованных и находящихся на обслуживании
+            // Добавить маркеры для каждой машины
+            // Теперь бэкенд возвращает только те машины, которые нужно показать
             cars.forEach(car => {
-                if (car.latitude && car.longitude && car.status === 'available') {
+                if (car.latitude && car.longitude) {
+                    // Определяем цвет иконки в зависимости от статуса и аренды
+                    let iconColor, iconText;
+                    if (car.is_rented_by_user) {
+                        // Машина арендована текущим пользователем
+                        iconColor = '#ff8c00'; // Оранжевый цвет для арендованной машины
+                        iconText = '🚗'; // Автомобиль с ключами
+                    } else if (car.status === 'available') {
+                        // Машина доступна для аренды
+                        iconColor = '#28a745'; // Зеленый цвет для доступной машины
+                        iconText = '🚗';
+                    } else {
+                        // Машина недоступна (на обслуживании или другая причина)
+                        iconColor = '#dc3545'; // Красный цвет для недоступной машины
+                        iconText = '🚗';
+                    }
+                    
                     // Создаем иконку для маркера машины
                     const carIcon = L.divIcon({
                         className: 'car-marker',
-                        html: '<div style="background-color: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">🚗</div>',
+                        html: `<div style="background-color: ${iconColor}; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0.5);">${iconText}</div>`,
                         iconSize: [24, 24],
                         iconAnchor: [12, 12]
                     });
                     
                     const carMarker = L.marker([car.latitude, car.longitude], {icon: carIcon}).addTo(map);
-                    carMarker.bindPopup(`
-                        <b>Машина: ${car.model}</b><br>
-                        Номер: ${car.plate_number}<br>
-                        Статус: ${car.status}<br>
-                        <button class="rent-car-btn" data-car-id="${car.id}">Арендовать</button>
-                    `);
                     
-                    // Добавляем обработчик клика для кнопки аренды
-                    carMarker.on('popupopen', function() {
-                        const rentButton = this._popup._container.querySelector('.rent-car-btn');
-                        if (rentButton) {
-                            rentButton.addEventListener('click', async function() {
-                                const carId = this.getAttribute('data-car-id');
-                                await rentCar(carId);
-                            });
-                        }
-                    });
+                    // Определяем текст для popup в зависимости от статуса аренды
+                    let popupContent;
+                    if (car.is_rented_by_user) {
+                        popupContent = `
+                            <b>Машина: ${car.model}</b><br>
+                            Номер: ${car.plate_number}<br>
+                            Статус: Арендована вами<br>
+                            <span style="color: orange;">🟢 Вы арендовали этот автомобиль</span>
+                        `;
+                    } else if (car.status === 'available') {
+                        popupContent = `
+                            <b>Машина: ${car.model}</b><br>
+                            Номер: ${car.plate_number}<br>
+                            Статус: ${car.status}<br>
+                            <button class="rent-car-btn" data-car-id="${car.id}">Арендовать</button>
+                        `;
+                    } else {
+                        popupContent = `
+                            <b>Машина: ${car.model}</b><br>
+                            Номер: ${car.plate_number}<br>
+                            Статус: ${car.status}<br>
+                            <span style="color: red;">🔴 Недоступна для аренды</span>
+                        `;
+                    }
+                    
+                    carMarker.bindPopup(popupContent);
+                    
+                    // Добавляем обработчик клика для кнопки аренды, только если машина доступна
+                    if (car.status === 'available' && !car.is_rented_by_user) {
+                        carMarker.on('popupopen', function() {
+                            const rentButton = this._popup._container.querySelector('.rent-car-btn');
+                            if (rentButton) {
+                                rentButton.addEventListener('click', async function() {
+                                    const carId = this.getAttribute('data-car-id');
+                                    await rentCar(carId);
+                                });
+                            }
+                        });
+                    }
                     
                     carMarkers.push(carMarker);
                 }
@@ -660,6 +700,9 @@ async function rentCar(carId) {
             
             // Показываем панель активной аренды сразу после аренды
             showActiveRentalPanel(rentalData);
+            
+            // Обновляем карту, чтобы отобразить только арендованную машину
+            showCarsOnMap();
         } else {
             const errorData = await response.json();
             alert(`Ошибка при аренде автомобиля: ${errorData.detail || 'Неизвестная ошибка'}`);

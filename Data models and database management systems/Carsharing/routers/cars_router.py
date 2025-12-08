@@ -37,6 +37,7 @@ class CarPosition(BaseModel):
     latitude: Optional[float] = None
 
 @router.get("/all/positions", response_model=List[CarPosition])
-def get_all_cars_positions_endpoint(request: Request, current_user: dict = Depends(get_current_user_from_header)):
-    """Возвращает все машины с их позициями"""
-    return get_all_cars_positions()
+def get_cars_positions_with_user_rental_status_endpoint(request: Request, current_user: dict = Depends(get_current_user_from_header)):
+    """Возвращает все машины с информацией о том, арендована ли машина пользователем"""
+    user_id = current_user['id']
+    return get_cars_positions_with_user_rental_status(user_id)
