@@ -3,6 +3,7 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from datetime import datetime
+import pytz
 
 # Trip Completions CRUD
 def get_trip_completions(offset: int = 0, limit: int = 10):
@@ -66,8 +67,16 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
         update_fields.append("admin_reviewed_by = %s")
         values.append(completion.admin_reviewed_by)
     if completion.admin_reviewed_at is not None:
+        # Ensure admin_reviewed_at is in UTC+3 timezone
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        if completion.admin_reviewed_at.tzinfo is None:
+            # If no timezone info, assume it's in UTC+3
+            admin_reviewed_at = utc_plus_3.localize(completion.admin_reviewed_at)
+        else:
+            # Convert to UTC+3
+            admin_reviewed_at = completion.admin_reviewed_at.astimezone(utc_plus_3)
         update_fields.append("admin_reviewed_at = %s")
-        values.append(completion.admin_reviewed_at)
+        values.append(admin_reviewed_at)
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")

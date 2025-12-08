@@ -47,7 +47,7 @@ function displayActionLogs(actionLogs) {
             <td>${JSON.stringify(log.old_values) || ''}</td>
             <td>${JSON.stringify(log.new_values) || ''}</td>
             <td>${log.user_agent || ''}</td>
-            <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
         `;
         tableBody.appendChild(row);
     });

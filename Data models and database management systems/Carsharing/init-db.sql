@@ -115,8 +115,8 @@ CREATE TABLE IF NOT EXISTS rentals (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     car_id INT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
-    started_at TIMESTAMP NOT NULL,
-    ended_at TIMESTAMP CHECK (ended_at > started_at OR ended_at IS NULL),
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    ended_at TIMESTAMP WITH TIME ZONE CHECK (ended_at > started_at OR ended_at IS NULL),
     price DECIMAL(12,2) NOT NULL CHECK (price >= 0),
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','completed','cancelled','pending_completion'))
 );
@@ -163,7 +163,40 @@ CREATE TABLE IF NOT EXISTS logs (
 );
 
 -- Set timezone
-SET TIME ZONE 'Europe/Minsk';
+SET TIME ZONE 'UTC';
+-- Create function to get current timestamp in UTC+3
+CREATE OR REPLACE FUNCTION now_utc3()
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+BEGIN
+ RETURN (NOW() AT TIME ZONE 'UTC') + INTERVAL '3 hours';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update tables to use timezone-aware timestamps and default to UTC+3
+-- Users table
+ALTER TABLE users ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Cars table
+ALTER TABLE cars ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Photos table
+ALTER TABLE photos ALTER COLUMN uploaded_at SET DEFAULT now_utc3();
+
+-- Sessions table
+ALTER TABLE sessions ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE sessions ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Car states table
+ALTER TABLE car_states ALTER COLUMN checked_at SET DEFAULT now_utc3();
+
+-- Maintenance requests table
+ALTER TABLE maintenance_requests ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE maintenance_requests ALTER COLUMN resolved_at TYPE TIMESTAMP WITH TIME ZONE USING resolved_at AT TIME ZONE 'UTC';
+
+-- Trip completions table
+ALTER TABLE trip_completions ALTER COLUMN admin_reviewed_at TYPE TIMESTAMP WITH TIME ZONE USING admin_reviewed_at AT TIME ZONE 'UTC';
+ALTER TABLE trip_completions ALTER COLUMN created_at SET DEFAULT now_utc3();
 
 -- Create action_logs table for logging system
 CREATE TABLE IF NOT EXISTS action_logs (
@@ -186,6 +219,12 @@ CREATE TABLE IF NOT EXISTS action_logs (
     user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Action logs table
+ALTER TABLE action_logs ALTER COLUMN created_at SET DEFAULT now_utc3();
+
+-- Logs table
+ALTER TABLE logs ALTER COLUMN created_at SET DEFAULT now_utc3();
 
 -- Create indexes for optimizing logging queries
 CREATE INDEX IF NOT EXISTS idx_action_logs_actor_user_id ON action_logs(actor_user_id);

@@ -2,7 +2,8 @@ from schemas import RentalCreate, RentalUpdate, Rental
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
+import pytz
 
 # Rentals CRUD
 def get_rentals(offset: int = 0, limit: int = 10):
@@ -63,8 +64,9 @@ def create_rental(rental: RentalCreate):
         conn.close()
         raise HTTPException(status_code=400, detail="User already has an active rental")
     
-    # Если started_at не предоставлен, используем текущее время сервера
-    started_at = rental.started_at if rental.started_at is not None else datetime.utcnow()
+    # Если started_at не предоставлен, используем текущее время сервера в UTC+3
+    utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+    started_at = rental.started_at if rental.started_at is not None else datetime.now(utc_plus_3)
     
     cur.execute(
         """INSERT INTO rentals (user_id, car_id, started_at, price, status)
@@ -101,8 +103,16 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     values = []
     
     if rental.ended_at is not None:
+        # Ensure ended_at is in UTC+3 timezone
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        if rental.ended_at.tzinfo is None:
+            # If no timezone info, assume it's in UTC+3
+            ended_at = utc_plus_3.localize(rental.ended_at)
+        else:
+            # Convert to UTC+3
+            ended_at = rental.ended_at.astimezone(utc_plus_3)
         update_fields.append("ended_at = %s")
-        values.append(rental.ended_at)
+        values.append(ended_at)
     if rental.status is not None:
         update_fields.append("status = %s")
         values.append(rental.status)

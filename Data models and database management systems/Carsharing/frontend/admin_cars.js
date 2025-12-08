@@ -54,7 +54,7 @@ function displayCars(cars) {
             <td>${car.status}</td>
             <td>${position}</td>
             <td>${car.main_photo_id || ''}</td>
-            <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>
                 <button class="btn edit-btn" onclick="openEditCarModal(${car.id})">Редактировать</button>
             </td>

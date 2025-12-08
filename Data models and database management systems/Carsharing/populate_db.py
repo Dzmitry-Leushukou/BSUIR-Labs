@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import random
 import bcrypt
@@ -162,7 +162,7 @@ def populate_driver_licenses():
     for i in range(min(len(user_ids), len(photo_ids))):
         license_number = f"LIC{i+1:04d}"
         issued_by = f"DMV State {i+1}"
-        expiration_date = (datetime.now() + timedelta(days=365*3)).strftime('%Y-%m-%d')
+        expiration_date = (datetime.now(timezone.utc) + timedelta(days=365*3)).strftime('%Y-%m-%d')
         document_photo_id = photo_ids[i]
         status = random.choice(["approved", "pending"])
         
@@ -259,7 +259,7 @@ def populate_rentals():
     for i in range(15):
         user_id = random.choice(user_ids)
         car_id = random.choice(car_ids)
-        started_at = datetime.now() - timedelta(days=random.randint(1, 30))
+        started_at = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 30))
         price = round(random.uniform(20.0, 100.0), 2)
         status = random.choice(["active", "completed", "cancelled"])
         
@@ -304,15 +304,15 @@ def populate_maintenance_requests():
         # Determine dates based on status
         if status == "resolved":
             # For resolved requests, create them in the past and resolve them after some time
-            created_at = datetime.now() - timedelta(days=random.randint(5, 15))
+            created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(5, 15))
             resolved_at = created_at + timedelta(days=random.randint(1, 4))
         elif status == "in_progress":
             # For in-progress requests, they were created in the past but not yet resolved
-            created_at = datetime.now() - timedelta(days=random.randint(1, 7))
+            created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 7))
             resolved_at = None
         else:  # open
             # For open requests, they were just created
-            created_at = datetime.now()
+            created_at = datetime.now(timezone.utc)
             resolved_at = None
         
         cur.execute(

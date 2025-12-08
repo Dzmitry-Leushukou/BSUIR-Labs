@@ -2,6 +2,8 @@ from schemas import MaintenanceRequestCreate, MaintenanceRequestUpdate, Maintena
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+import pytz
+from datetime import datetime
 
 # Maintenance Requests CRUD
 def get_maintenance_requests(offset: int = 0, limit: int = 10):
@@ -50,8 +52,16 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
         update_fields.append("reported_by = %s")
         values.append(request.reported_by)
     if request.resolved_at is not None:
+        # Ensure resolved_at is in UTC+3 timezone
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        if request.resolved_at.tzinfo is None:
+            # If no timezone info, assume it's in UTC+3
+            resolved_at = utc_plus_3.localize(request.resolved_at)
+        else:
+            # Convert to UTC+3
+            resolved_at = request.resolved_at.astimezone(utc_plus_3)
         update_fields.append("resolved_at = %s")
-        values.append(request.resolved_at)
+        values.append(resolved_at)
     if request.status is not None:
         update_fields.append("status = %s")
         values.append(request.status)

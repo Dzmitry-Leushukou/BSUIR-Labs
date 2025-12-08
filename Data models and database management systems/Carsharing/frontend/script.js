@@ -685,7 +685,7 @@ async function rentCar(carId) {
             body: JSON.stringify({
                 user_id: parseInt(userId),
                 car_id: parseInt(carId),
-                started_at: new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Minsk"})).toISOString(), // Устанавливаем время с учетом часового пояса Минска
+                started_at: new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"})).toISOString(), // Устанавливаем время с учетом часового пояса UTC+3 (Москва)
                 price: 1, // Начальная цена 1 BYN
                 status: "active"
             })
@@ -823,7 +823,7 @@ async function showActiveRentalPanel(rental) {
                     <p><strong>Номер:</strong> ${rentalWithCarInfo.plate_number || 'Неизвестен'}</p>
                     <p><strong>Статус:</strong> ${rental.status}</p>
                 </div>
-                <p><strong>Начало:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
+                <p><strong>Начало:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</p>
                 <p id="rental-price-${rental.id}">Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
             </div>
             <div class="rental-controls">
@@ -1048,7 +1048,7 @@ function showCompletionModal(rentalId) {
                 <!-- Информация о поездке -->
                 <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
                     <h4>Информация о поездке</h4>
-                    <p><strong>Начало аренды:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
+                    <p><strong>Начало аренды:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</p>
                     <p><strong>Текущая стоимость:</strong> <span id="current-trip-price">${currentPrice} BYN</span> за ${minutesDiff} мин.</p>
                 </div>
                 

@@ -9,3 +9,4 @@ pydantic-settings
 alembic
 python-dotenv
 bcrypt
+pytz

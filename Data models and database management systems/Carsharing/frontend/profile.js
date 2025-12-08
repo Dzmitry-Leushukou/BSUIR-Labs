@@ -560,8 +560,8 @@ function displayRentalsInfo(rentals) {
                         <td>${rental.car_id}</td>
                         <td>${rental.plate_number}</td>
                         <td>${rental.model}</td>
-                        <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
-                        <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : (rental.status === 'completed' ? 'Не указана' : 'Активный')}</td>
+                        <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
+                        <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : (rental.status === 'completed' ? 'Не указана' : 'Активный')}</td>
                         <td>${rental.price} BYN</td>
                         <td>${rental.status}</td>
                     </tr>

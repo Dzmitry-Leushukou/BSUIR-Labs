@@ -40,8 +40,8 @@ function displayRentals(rentals) {
             <td>${rental.id}</td>
             <td>${rental.user_id}</td>
             <td>${rental.car_id}</td>
-            <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
-            <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : ''}</td>
+            <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
+            <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td>${rental.price} BYN</td>
             <td class="status-${rental.status}">${rental.status}</td>
         `;

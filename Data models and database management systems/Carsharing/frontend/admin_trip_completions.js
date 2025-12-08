@@ -97,8 +97,8 @@ async function displayTripCompletionsData(tripCompletions) {
             <td>${completion.id}</td>
             <td>${rental ? rental.user_id : 'N/A'}</td>
             <td>${rental ? rental.car_id : 'N/A'}</td>
-            <td>${rental ? new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : 'N/A'}</td>
-            <td>${rental ? (rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : '') : ''}</td>
+            <td>${rental ? new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'N/A'}</td>
+            <td>${rental ? (rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : '') : ''}</td>
             <td>${rental ? rental.price + ' BYN' : 'N/A'}</td>
             <td>${photosHtml}</td>
             <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">${statusText}</td>

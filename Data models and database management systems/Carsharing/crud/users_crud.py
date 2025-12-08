@@ -2,6 +2,8 @@ from schemas import UserCreate, UserUpdate, User
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+import pytz
+from datetime import datetime
 
 # Users CRUD
 def get_users(offset: int = 0, limit: int = 100):
@@ -28,10 +30,14 @@ def create_user(user: UserCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
+        # Set created_at and updated_at to current time in UTC+3
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        current_time = datetime.now(utc_plus_3)
+        
         cur.execute(
-            """INSERT INTO users (email, hashed_password, name, surname, cashback, role_id, status)
-               VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-            (user.email, user.hashed_password, user.name, user.surname, user.cashback, user.role_id, user.status)
+            """INSERT INTO users (email, hashed_password, name, surname, cashback, role_id, status, created_at, updated_at)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+            (user.email, user.hashed_password, user.name, user.surname, user.cashback, user.role_id, user.status, current_time, current_time)
         )
         new_user = cur.fetchone()
         conn.commit()
@@ -74,7 +80,11 @@ def update_user(user_id: int, user: UserUpdate):
         update_fields.append("status = %s")
         values.append(user.status)
     
-    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+    # Set updated_at to current time in UTC+3
+    utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+    updated_at = datetime.now(utc_plus_3)
+    update_fields.append("updated_at = %s")
+    values.append(updated_at)
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")

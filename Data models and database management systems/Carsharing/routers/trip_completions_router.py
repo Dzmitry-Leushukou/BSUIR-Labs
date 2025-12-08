@@ -3,6 +3,7 @@ from schemas import *
 from crud.trip_completions_crud import *
 from typing import List
 from .users_router import get_current_user_from_header
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/trip-completions", tags=["Trip Completions"])
 
@@ -31,7 +32,7 @@ def create_trip_completion_endpoint(request: Request, completion: TripCompletion
     # Only admin can approve/reject trip completion, regular users can only create completion request
     if is_admin and completion.admin_approved is not None:
         # Admin approving/rejecting - set review time
-        completion.admin_reviewed_at = datetime.utcnow()
+        completion.admin_reviewed_at = datetime.now(timezone.utc)
     else:
         # Regular user creating a completion request - make sure admin_approved is None
         completion.admin_approved = None
@@ -63,7 +64,7 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
     
     # Set review time if admin is approving/rejecting
     if completion.admin_approved is not None:
-        completion.admin_reviewed_at = datetime.utcnow()
+        completion.admin_reviewed_at = datetime.now(timezone.utc)
         completion.admin_reviewed_by = current_user['id']
         
         # Get the trip completion and associated rental
@@ -74,7 +75,7 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
         rental = get_rental(trip_completion['rental_id'])
         
         # Update rental to completed status
-        rental_update = RentalUpdate(status="completed", ended_at=datetime.utcnow())
+        rental_update = RentalUpdate(status="completed", ended_at=datetime.now(timezone.utc))
         updated_rental = update_rental(rental['id'], rental_update)
         
         # Determine car status based on admin approval and comments

@@ -40,8 +40,8 @@ function displayMaintenanceRequests(maintenanceRequests) {
             <td>${request.id}</td>
             <td>${request.car_id}</td>
             <td>${request.reported_by || ''}</td>
-            <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
-            <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : ''}</td>
+            <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
+            <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td>${request.status}</td>
             <td>${request.description}</td>
         `;

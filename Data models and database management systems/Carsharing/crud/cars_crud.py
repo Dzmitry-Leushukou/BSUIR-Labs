@@ -2,6 +2,8 @@ from schemas import CarCreate, CarUpdate, Car
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+import pytz
+from datetime import datetime
 
 # Cars CRUD
 def get_cars(offset: int = 0, limit: int = 100):
@@ -66,7 +68,11 @@ def update_car(car_id: int, car: CarUpdate):
         update_fields.append("main_photo_id = %s")
         values.append(car.main_photo_id)
     
-    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+    # Set updated_at to current time in UTC+3
+    utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+    updated_at = datetime.now(utc_plus_3)
+    update_fields.append("updated_at = %s")
+    values.append(updated_at)
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")
