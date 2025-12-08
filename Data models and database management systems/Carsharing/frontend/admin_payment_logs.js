@@ -42,7 +42,6 @@ function displayPaymentLogs(paymentLogs) {
             <td>${log.user_id}</td>
             <td>${log.pay_type}</td>
             <td>${log.price} BYN</td>
-            <td>${log.ip || ''}</td>
         `;
         tableBody.appendChild(row);
     });

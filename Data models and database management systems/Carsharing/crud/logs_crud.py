@@ -28,9 +28,9 @@ def create_log(log: LogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO logs (actor_user_id, action_type, target_id, ip) 
-           VALUES (%s, %s, %s, %s) RETURNING *""",
-        (log.actor_user_id, log.action_type, log.target_id, log.ip)
+        """INSERT INTO logs (actor_user_id, action_type, target_id)
+           VALUES (%s, %s, %s) RETURNING *""",
+        (log.actor_user_id, log.action_type, log.target_id)
     )
     new_log = cur.fetchone()
     conn.commit()

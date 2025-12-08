@@ -28,10 +28,10 @@ def create_action_log(log: ActionLogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, description, old_values, new_values, ip, user_agent) 
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-        (log.actor_user_id, log.action_type, log.target_user_id, log.target_car_id, log.target_rental_id, 
-         log.description, log.old_values, log.new_values, log.ip, log.user_agent)
+        """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, description, old_values, new_values, user_agent)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+        (log.actor_user_id, log.action_type, log.target_user_id, log.target_car_id, log.target_rental_id,
+         log.description, log.old_values, log.new_values, log.user_agent)
     )
     new_log = cur.fetchone()
     conn.commit()

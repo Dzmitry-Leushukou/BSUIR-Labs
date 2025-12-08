@@ -83,8 +83,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip INET
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create car_states table
@@ -125,8 +124,7 @@ CREATE TABLE IF NOT EXISTS payment_logs (
     rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     pay_type VARCHAR(30) NOT NULL CHECK (pay_type IN ('card','cashback')),
-    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
-    ip INET
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0)
 );
 
 -- Create logs table
@@ -135,8 +133,7 @@ CREATE TABLE IF NOT EXISTS logs (
     actor_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(255) NOT NULL,
     target_id INT REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip INET
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Set timezone
@@ -160,7 +157,6 @@ CREATE TABLE IF NOT EXISTS action_logs (
     description TEXT,
     old_values JSONB,
     new_values JSONB,
-    ip INET,
     user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -286,8 +282,7 @@ BEGIN
         NEW.user_id, 'payment_success', NEW.rental_id,
         jsonb_build_object(
             'pay_type', NEW.pay_type,
-            'price', NEW.price,
-            'ip', NEW.ip::TEXT
+            'price', NEW.price
         ),
         'Payment completed successfully'
     );

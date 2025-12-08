@@ -28,9 +28,9 @@ def create_session(session: SessionCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO sessions (user_id, ip) 
-           VALUES (%s, %s) RETURNING *""",
-        (session.user_id, session.ip)
+        """INSERT INTO sessions (user_id)
+           VALUES (%s) RETURNING *""",
+        (session.user_id,)
     )
     new_session = cur.fetchone()
     conn.commit()
@@ -42,8 +42,8 @@ def update_session(session_id: int, session: SessionBase):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        "UPDATE sessions SET user_id = %s, ip = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s RETURNING *",
-        (session.user_id, session.ip, session_id)
+        "UPDATE sessions SET user_id = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s RETURNING *",
+        (session.user_id, session_id)
     )
     updated_session = cur.fetchone()
     conn.commit()

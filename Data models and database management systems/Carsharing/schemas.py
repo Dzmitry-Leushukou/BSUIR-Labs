@@ -138,7 +138,6 @@ class DriverLicense(DriverLicenseBase):
 
 class SessionBase(BaseModel):
     user_id: int
-    ip: Optional[str] = None
 
 class SessionCreate(SessionBase):
     pass
@@ -230,7 +229,6 @@ class PaymentLogBase(BaseModel):
     user_id: int
     pay_type: str
     price: float
-    ip: Optional[str] = None
 
 class PaymentLogCreate(PaymentLogBase):
     pass
@@ -245,7 +243,6 @@ class LogBase(BaseModel):
     actor_user_id: int
     action_type: str
     target_id: Optional[int] = None
-    ip: Optional[str] = None
 
 class LogCreate(LogBase):
     pass
@@ -266,7 +263,6 @@ class ActionLogBase(BaseModel):
     description: Optional[str] = None
     old_values: Optional[dict] = None  # Changed from str to dict to handle JSON objects from DB
     new_values: Optional[dict] = None  # Changed from str to dict to handle JSON objects from DB
-    ip: Optional[str] = None
     user_agent: Optional[str] = None
 
 class ActionLogCreate(ActionLogBase):

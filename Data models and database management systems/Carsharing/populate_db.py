@@ -199,13 +199,12 @@ def populate_sessions():
     sessions = []
     for i in range(15):
         user_id = random.choice(user_ids)
-        ip = f"192.168.{random.randint(1, 255)}.{random.randint(1, 255)}"
-        sessions.append((user_id, ip))
+        sessions.append((user_id,))
     
     for session in sessions:
         cur.execute(
-            """INSERT INTO sessions (user_id, ip) 
-               VALUES (%s, %s)""",
+            """INSERT INTO sessions (user_id)
+               VALUES (%s)""",
             session
         )
     
@@ -340,14 +339,13 @@ def populate_payment_logs():
         rental_id, user_id = rental_id, user_id
         pay_type = random.choice(["card", "cashback"])
         price = round(random.uniform(15.0, 80.0), 2)
-        ip = f"10.0.{random.randint(1, 255)}.{random.randint(1, 255)}"
         
-        logs.append((rental_id, user_id, pay_type, price, ip))
+        logs.append((rental_id, user_id, pay_type, price))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO payment_logs (rental_id, user_id, pay_type, price, ip) 
-               VALUES (%s, %s, %s, %s, %s)""",
+            """INSERT INTO payment_logs (rental_id, user_id, pay_type, price)
+               VALUES (%s, %s, %s, %s)""",
             log
         )
     
@@ -368,7 +366,7 @@ def populate_logs():
     for i in range(20):
         actor_user_id = random.choice(user_ids)
         action_type = random.choice([
-            "user_login", "user_logout", "user_registration", 
+            "user_login", "user_logout", "user_registration",
             "car_rental_start", "car_rental_end", "car_rental_cancel",
             "payment_success", "payment_failed",
             "maintenance_request", "maintenance_resolve",
@@ -376,14 +374,13 @@ def populate_logs():
             "car_status_change", "user_status_change"
         ])
         target_id = random.choice(user_ids) if random.random() > 0.5 else None
-        ip = f"172.16.{random.randint(1, 255)}.{random.randint(1, 255)}"
         
-        logs.append((actor_user_id, action_type, target_id, ip))
+        logs.append((actor_user_id, action_type, target_id))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO logs (actor_user_id, action_type, target_id, ip) 
-               VALUES (%s, %s, %s, %s)""",
+            """INSERT INTO logs (actor_user_id, action_type, target_id)
+               VALUES (%s, %s, %s)""",
             log
         )
     
@@ -425,17 +422,16 @@ def populate_action_logs():
         description = f"Action log entry {i+1}: {action_type}"
         old_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
         new_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
-        ip = f"192.168.{random.randint(1, 255)}.{random.randint(1, 255)}"
         user_agent = f"Mozilla/5.0 (compatible; Bot {i+1}; Test Agent)"
         
-        logs.append((actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, 
-                     description, old_values, new_values, ip, user_agent))
+        logs.append((actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
+                     description, old_values, new_values, user_agent))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, 
-                                       description, old_values, new_values, ip, user_agent) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
+                                       description, old_values, new_values, user_agent)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
             log
         )
     

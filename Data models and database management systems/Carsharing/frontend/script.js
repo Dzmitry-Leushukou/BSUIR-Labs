@@ -1314,8 +1314,7 @@ async function processPaymentAndComplete(rentalId) {
             rental_id: rentalId,
             user_id: parseInt(userId),
             pay_type: 'card',
-            price: finalPrice,
-            ip: await getUserIP()
+            price: finalPrice
         };
         
         // Отправляем данные оплаты
@@ -1540,17 +1539,7 @@ async function updateCashbackBalance(amount) {
     }
 }
 
-// Функция для получения IP пользователя
-async function getUserIP() {
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        return data.ip;
-    } catch (error) {
-        console.error('Ошибка при получении IP:', error);
-        return 'unknown';
-    }
-}
+// Function to get user IP has been removed as per requirements
  
 
 // Функция для перехода на админ панель
