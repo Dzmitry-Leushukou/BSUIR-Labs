@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS cars (
     status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance')),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     position geometry(Point, 4326),
+    main_photo_id INT REFERENCES photos(id) ON DELETE SET NULL,
     CONSTRAINT plate_by_format_chk CHECK (plate_number ~ '^[0-9]{4} [A-Z]{2}-[0-8]$')
 );
 

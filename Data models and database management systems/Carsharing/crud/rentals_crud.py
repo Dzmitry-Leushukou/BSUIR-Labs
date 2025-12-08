@@ -23,6 +23,20 @@ def get_rentals_by_user_id(user_id: int, offset: int = 0, limit: int = 10):
     conn.close()
     return rentals
 
+def get_rentals_with_car_info_by_user_id(user_id: int, offset: int = 0, limit: int = 10):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT r.*, c.vin, c.plate_number, c.model, c.main_photo_id
+        FROM rentals r
+        JOIN cars c ON r.car_id = c.id
+        WHERE r.user_id = %s ORDER BY r.id LIMIT %s OFFSET %s
+    """, (user_id, limit, offset))
+    rentals = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rentals
+
 def get_rental(rental_id: int):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)

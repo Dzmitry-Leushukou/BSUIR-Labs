@@ -72,6 +72,7 @@ class CarBase(BaseModel):
     model: str
     status: Optional[str] = "available"
     position: Optional[str] = None  # GeoJSON format
+    main_photo_id: Optional[int] = None
 
 class CarCreate(CarBase):
     pass
@@ -189,6 +190,15 @@ class RentalUpdate(BaseModel):
 class Rental(RentalBase):
     id: int
     ended_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class RentalWithCarInfo(Rental):
+    vin: str
+    plate_number: str
+    model: str
+    main_photo_id: Optional[int] = None
     
     class Config:
         from_attributes = True

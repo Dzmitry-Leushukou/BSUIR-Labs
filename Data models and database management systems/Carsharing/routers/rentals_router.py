@@ -14,6 +14,10 @@ def get_rentals_endpoint(offset: int = 0, limit: int = 10):
 def get_rentals_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10):
     return get_rentals_by_user_id(user_id, offset, limit)
 
+@router.get("/user/{user_id}/with-car-info", response_model=List[RentalWithCarInfo])
+def get_rentals_with_car_info_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10):
+    return get_rentals_with_car_info_by_user_id(user_id, offset, limit)
+
 @router.get("/{rental_id}", response_model=Rental)
 def get_rental_endpoint(rental_id: int):
     return get_rental(rental_id)

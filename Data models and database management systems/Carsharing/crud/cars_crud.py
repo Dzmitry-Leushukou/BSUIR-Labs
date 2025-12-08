@@ -29,15 +29,15 @@ def create_car(car: CarCreate):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     if car.position:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status, position)
-               VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326)) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status, car.position)
+            """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+               VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s) RETURNING *""",
+            (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
         )
     else:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status)
-               VALUES (%s, %s, %s, %s) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status)
+            """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
+               VALUES (%s, %s, %s, %s, %s) RETURNING *""",
+            (car.vin, car.plate_number, car.model, car.status, car.main_photo_id)
         )
     new_car = cur.fetchone()
     conn.commit()
@@ -62,6 +62,9 @@ def update_car(car_id: int, car: CarUpdate):
     if car.position is not None:
         update_fields.append("position = ST_GeomFromText(%s, 4326)")
         values.append(car.position)
+    if car.main_photo_id is not None:
+        update_fields.append("main_photo_id = %s")
+        values.append(car.main_photo_id)
     
     update_fields.append("updated_at = CURRENT_TIMESTAMP")
     
@@ -99,7 +102,7 @@ def get_cars_positions_with_user_rental_status(user_id: int):
     
     # Сначала проверяем, есть ли у пользователя активная аренда
     cur.execute("""
-        SELECT c.id, c.vin, c.plate_number, c.model, c.status,
+        SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
                ST_AsText(c.position) as position_text,
                ST_X(c.position::geometry) as longitude,
                ST_Y(c.position::geometry) as latitude,
@@ -117,7 +120,7 @@ def get_cars_positions_with_user_rental_status(user_id: int):
     else:
         # Если у пользователя нет активной аренды, возвращаем только доступные машины
         cur.execute("""
-            SELECT c.id, c.vin, c.plate_number, c.model, c.status,
+            SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
                    ST_AsText(c.position) as position_text,
                    ST_X(c.position::geometry) as longitude,
                    ST_Y(c.position::geometry) as latitude,
