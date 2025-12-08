@@ -504,7 +504,6 @@ function displayRentalsInfo(rentals) {
                 <th>Машина</th>
                 <th>Номер</th>
                 <th>Модель</th>
-                <th>Фото</th>
                 <th>Дата начала</th>
                 <th>Дата окончания</th>
                 <th>Цена</th>
@@ -513,18 +512,12 @@ function displayRentalsInfo(rentals) {
         </thead>
         <tbody>
             ${rentals.map(rental => {
-                // Формируем изображение, если есть main_photo_id
-                const photoCell = rental.main_photo_id ?
-                    `<img src="/photos/file/${rental.main_photo_id}" alt="Фото машины" style="width: 60px; height: 40px; object-fit: cover;">` :
-                    'Нет фото';
-                
                 return `
                     <tr>
                         <td>${rental.id}</td>
                         <td>${rental.car_id}</td>
                         <td>${rental.plate_number}</td>
                         <td>${rental.model}</td>
-                        <td>${photoCell}</td>
                         <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
                         <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : (rental.status === 'completed' ? 'Не указана' : 'Активный')}</td>
                         <td>${rental.price} BYN</td>

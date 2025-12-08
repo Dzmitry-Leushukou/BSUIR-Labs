@@ -815,23 +815,13 @@ async function showActiveRentalPanel(rental) {
             currentPrice = 1;
         }
         
-        // Формируем HTML для фото машины
-        const photoHtml = rentalWithCarInfo.main_photo_id ?
-            `<img src="/photos/file/${rentalWithCarInfo.main_photo_id}" alt="Фото машины" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;">` :
-            '<div style="width: 100px; height: 60px; background-color: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #99;">Нет фото</div>';
-        
         rentalPanel.innerHTML = `
             <div class="rental-info">
                 <h3>Текущая аренда</h3>
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <div>
-                        ${photoHtml}
-                    </div>
-                    <div>
-                        <p><strong>Модель:</strong> ${rentalWithCarInfo.model || rental.car_id}</p>
-                        <p><strong>Номер:</strong> ${rentalWithCarInfo.plate_number || 'Неизвестен'}</p>
-                        <p><strong>Статус:</strong> ${rental.status}</p>
-                    </div>
+                <div>
+                    <p><strong>Модель:</strong> ${rentalWithCarInfo.model || rental.car_id}</p>
+                    <p><strong>Номер:</strong> ${rentalWithCarInfo.plate_number || 'Неизвестен'}</p>
+                    <p><strong>Статус:</strong> ${rental.status}</p>
                 </div>
                 <p><strong>Начало:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
                 <p id="rental-price-${rental.id}">Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
