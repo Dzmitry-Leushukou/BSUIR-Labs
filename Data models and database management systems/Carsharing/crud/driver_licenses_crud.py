@@ -28,9 +28,9 @@ def create_driver_license(license: DriverLicenseCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, status) 
-           VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-        (license.license_number, license.issued_by, license.expiration_date, license.document_photo_id, license.status)
+        """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
+           VALUES (%s, %s, %s, %s, %s, %s) RETURNING *""",
+        (license.license_number, license.issued_by, license.expiration_date, license.document_photo_id, license.document_photo_back_id, license.status)
     )
     new_license = cur.fetchone()
     conn.commit()
@@ -55,6 +55,9 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     if license.document_photo_id is not None:
         update_fields.append("document_photo_id = %s")
         values.append(license.document_photo_id)
+    if license.document_photo_back_id is not None:
+        update_fields.append("document_photo_back_id = %s")
+        values.append(license.document_photo_back_id)
     if license.status is not None:
         update_fields.append("status = %s")
         values.append(license.status)

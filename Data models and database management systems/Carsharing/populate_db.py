@@ -171,8 +171,8 @@ def populate_driver_licenses():
     for license in licenses:
         user_id, license_number, issued_by, expiration_date, document_photo_id, status = license
         cur.execute(
-            """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, status)
-               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (license_number) DO NOTHING""",
+            """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
+               VALUES (%s, %s, %s, %s, NULL, %s) ON CONFLICT (license_number) DO NOTHING""",
             (license_number, issued_by, expiration_date, document_photo_id, status)
         )
         

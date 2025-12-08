@@ -531,6 +531,181 @@ function displayRentalsInfo(rentals) {
     ordersList.appendChild(table);
 }
 
+// Функция для загрузки водительских прав
+async function uploadDriverLicense() {
+    // Создаем модальное окно для загрузки водительских прав
+    let modal = document.getElementById('upload-driver-license-modal');
+    
+    if (!modal) {
+        // Создаем модальное окно, если его нет
+        modal = document.createElement('div');
+        modal.id = 'upload-driver-license-modal';
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="width: 80%; max-width: 600px;">
+                <span class="close-upload-license-modal">&times;</span>
+                <h2>Загрузить водительские права</h2>
+                <form id="upload-license-form">
+                    <div class="form-group">
+                        <label for="license-number">Номер прав:</label>
+                        <input type="text" id="license-number" name="license_number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="issued-by">Кем выданы:</label>
+                        <input type="text" id="issued-by" name="issued_by" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expiration-date">Дата окончания:</label>
+                        <input type="date" id="expiration-date" name="expiration_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="license-photo">Фото прав (лицевая сторона):</label>
+                        <input type="file" id="license-photo" name="license_photo" accept="image/*" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="license-photo-back">Фото прав (обратная сторона):</label>
+                        <input type="file" id="license-photo-back" name="license_photo_back" accept="image/*" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                        <button type="button" class="btn btn-secondary cancel-upload-license">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Добавляем обработчик для закрытия модального окна
+        document.querySelector('.close-upload-license-modal').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Закрытие модального окна при клике на кнопку "Отмена"
+        document.querySelector('.cancel-upload-license').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Закрытие модального окна при клике вне его области
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Обработчик отправки формы загрузки водительских прав
+        document.getElementById('upload-license-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                alert('Пользователь не авторизован');
+                return;
+            }
+            
+            const licenseNumber = document.getElementById('license-number').value;
+            const issuedBy = document.getElementById('issued-by').value;
+            const expirationDate = document.getElementById('expiration-date').value;
+            const licensePhoto = document.getElementById('license-photo').files[0];
+            const licensePhotoBack = document.getElementById('license-photo-back').files[0];
+            
+            if (!licensePhoto || !licensePhotoBack) {
+                alert('Пожалуйста, загрузите обе фотографии водительских прав');
+                return;
+            }
+            
+            try {
+                // Загружаем первую фотографию
+                const photoFormData = new FormData();
+                photoFormData.append('file', licensePhoto);
+                photoFormData.append('object_type', 'document');
+                photoFormData.append('user_id', userId);
+                photoFormData.append('uploaded_by', userId);
+                
+                const photoResponse = await fetch('/photos/upload', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-ID': userId
+                    },
+                    body: photoFormData
+                });
+                
+                if (!photoResponse.ok) {
+                    const errorData = await photoResponse.json();
+                    alert(`Ошибка при загрузке первой фотографии: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    return;
+                }
+                
+                const photoData = await photoResponse.json();
+                const firstPhotoId = photoData.id;
+                
+                // Загружаем вторую фотографию
+                const photoBackFormData = new FormData();
+                photoBackFormData.append('file', licensePhotoBack);
+                photoBackFormData.append('object_type', 'document');
+                photoBackFormData.append('user_id', userId);
+                photoBackFormData.append('uploaded_by', userId);
+                
+                const photoBackResponse = await fetch('/photos/upload', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-ID': userId
+                    },
+                    body: photoBackFormData
+                });
+                
+                if (!photoBackResponse.ok) {
+                    const errorData = await photoBackResponse.json();
+                    alert(`Ошибка при загрузке второй фотографии: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    return;
+                }
+                
+                const photoBackData = await photoBackResponse.json();
+                const secondPhotoId = photoBackData.id;
+                
+                // Создаем запись о водительских правах
+                const licenseData = {
+                    license_number: licenseNumber,
+                    issued_by: issuedBy,
+                    expiration_date: expirationDate,
+                    document_photo_id: firstPhotoId,
+                    document_photo_back_id: secondPhotoId,
+                    status: 'pending'
+                };
+                
+                const licenseResponse = await fetch('/driver_licenses/', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-ID': userId,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(licenseData)
+                });
+                
+                if (licenseResponse.ok) {
+                    alert('Водительские права успешно загружены и отправлены на проверку');
+                    modal.style.display = 'none';
+                } else {
+                    const errorData = await licenseResponse.json();
+                    alert(`Ошибка при создании записи о водительских правах: ${errorData.detail || 'Неизвестная ошибка'}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке водительских прав:', error);
+                alert('Ошибка при загрузке водительских прав');
+            }
+        });
+    } else {
+        // Если модальное окно уже существует, очищаем форму и показываем его
+        document.getElementById('upload-license-form').reset();
+        modal.style.display = 'block';
+    }
+}
+
 // Убираем проверку активной аренды при загрузке страницы профиля
 // document.addEventListener('DOMContentLoaded', async () => {
 //     // Вызываем функцию проверки активной аренды

@@ -49,27 +49,9 @@ async function displayDriverLicenses(driverLicenses) {
     tableBody.innerHTML = '';
     
     for (const license of driverLicenses) {
-        // Загружаем информацию о фотографии
-        let photoUrl = '';
-        if (license.document_photo_id) {
-            try {
-                const userId = localStorage.getItem('user_id');
-                const photoResponse = await fetch(`/photos/${license.document_photo_id}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-User-ID': userId,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (photoResponse.ok) {
-                    const photo = await photoResponse.json();
-                    photoUrl = photo.url;
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке информации о фотографии:', error);
-            }
-        }
+        // Формируем URL для изображений напрямую
+        let photoUrl = license.document_photo_id ? `/photos/file/${license.document_photo_id}` : '';
+        let photoBackUrl = license.document_photo_back_id ? `/photos/file/${license.document_photo_back_id}` : '';
         
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -79,7 +61,11 @@ async function displayDriverLicenses(driverLicenses) {
             <td>${new Date(license.expiration_date).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>${license.document_photo_id}</td>
             <td>
-                ${photoUrl ? `<img src="${photoUrl}" alt="Document Photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showPhotoModal('${photoUrl}', 'Фото документа')">` : 'Нет фото'}
+                ${photoUrl ? `<img src="${photoUrl}" alt="Document Photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showPhotoModal('${photoUrl}', 'Фото документа (лицевая сторона)')">` : '-'}
+            </td>
+            <td>${license.document_photo_back_id}</td>
+            <td>
+                ${photoBackUrl ? `<img src="${photoBackUrl}" alt="Document Back Photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="showPhotoModal('${photoBackUrl}', 'Фото документа (обратная сторона)')">` : '-'}
             </td>
             <td class="status-${license.status}">${license.status}</td>
             <td>
@@ -149,13 +135,13 @@ function filterDriverLicenses() {
     rows.forEach(row => {
         let shouldShow = true;
         
-        // Проверяем каждую ячейку в строке (пропускаем колонку с фото и действиями)
+        // Проверяем каждую ячейку в строке (пропускаем колонки с фото и действиями)
         for (let i = 0; i < filterInputs.length; i++) {
             const filterValue = filterInputs[i].value.trim();
             if (filterValue) {
-                // Для колонки с фото и действиями пропускаем фильтрацию
-                // В таблице водительских лицензий колонки с фото и действиями находятся в позициях 5 и 7 (0-индексированные)
-                if (i === 5 || i === 7) continue; // Пропускаем колонки с фотографией и действиями
+                // Для колонок с фото и действиями пропускаем фильтрацию
+                // В таблице водительских лицензий колонки с фото и действиями находятся в позициях 5, 7 и 9 (0-индексированные)
+                if (i === 5 || i === 7 || i === 9) continue; // Пропускаем колонки с фотографиями и действиями
                 
                 // Проверяем, что ячейка существует
                 if (i < row.cells.length) {

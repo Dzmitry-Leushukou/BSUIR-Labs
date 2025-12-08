@@ -119,6 +119,7 @@ class DriverLicenseBase(BaseModel):
     issued_by: str
     expiration_date: datetime  # Changed from str to datetime to handle date objects from DB
     document_photo_id: int
+    document_photo_back_id: Optional[int] = None  # ID второй фотографии (например, обратной стороны)
     status: Optional[str] = "pending"
 
 class DriverLicenseCreate(DriverLicenseBase):
@@ -128,6 +129,7 @@ class DriverLicenseUpdate(BaseModel):
     issued_by: Optional[str] = None
     expiration_date: Optional[datetime] = None  # Changed from str to datetime
     document_photo_id: Optional[int] = None
+    document_photo_back_id: Optional[int] = None
     status: Optional[str] = None
 
 class DriverLicense(DriverLicenseBase):

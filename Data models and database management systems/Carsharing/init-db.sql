@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS driver_licenses (
     issued_by VARCHAR(255) NOT NULL,
     expiration_date DATE NOT NULL CHECK (expiration_date > CURRENT_DATE),
     document_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    document_photo_back_id INT REFERENCES photos(id) ON DELETE CASCADE,
     status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected'))
 );
 
@@ -74,6 +75,19 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'driver_id') THEN
         ALTER TABLE users ADD COLUMN driver_id INT UNIQUE REFERENCES driver_licenses(driver_id) ON DELETE SET NULL;
+    END IF;
+END
+$$;
+
+-- Add document_photo_back_id column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'driver_licenses'
+                   AND column_name = 'document_photo_back_id') THEN
+        ALTER TABLE driver_licenses
+        ADD COLUMN document_photo_back_id INT
+        REFERENCES photos(id) ON DELETE CASCADE;
     END IF;
 END
 $$;
