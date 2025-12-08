@@ -34,7 +34,8 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "python populate_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
 
 volumes:

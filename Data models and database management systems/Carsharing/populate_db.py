@@ -122,22 +122,22 @@ def populate_photos():
     car_ids = [row[0] for row in cur.fetchall()]
     
     photos = [
-        ("driver", user_ids[1], None, "https://example.com/photos/driver1.jpg", user_ids[0]),
-        ("driver", user_ids[2], None, "https://example.com/photos/driver2.jpg", user_ids[0]),
-        ("car", None, car_ids[0], "https://example.com/photos/car1.jpg", user_ids[0]),
-        ("car", None, car_ids[1], "https://example.com/photos/car2.jpg", user_ids[0]),
-        ("document", user_ids[1], None, "https://example.com/photos/license1.jpg", user_ids[0]),
-        ("car", None, car_ids[2], "https://example.com/photos/car3.jpg", user_ids[0]),
-        ("driver", user_ids[3], None, "https://example.com/photos/driver3.jpg", user_ids[0]),
-        ("document", user_ids[2], None, "https://example.com/photos/license2.jpg", user_ids[0]),
-        ("car", None, car_ids[3], "https://example.com/photos/car4.jpg", user_ids[0]),
-        ("car", None, car_ids[4], "https://example.com/photos/car5.jpg", user_ids[0])
+        ("driver", user_ids[1], None, b"fake_image_data_1", "driver1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("driver", user_ids[2], None, b"fake_image_data_2", "driver2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[0], b"fake_image_data_3", "car1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[1], b"fake_image_data_4", "car2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("document", user_ids[1], None, b"fake_image_data_5", "license1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[2], b"fake_image_data_6", "car3.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("driver", user_ids[3], None, b"fake_image_data_7", "driver3.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("document", user_ids[2], None, b"fake_image_data_8", "license2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[3], b"fake_image_data_9", "car4.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[4], b"fake_image_data_10", "car5.jpg", "image/jpeg", 1024, user_ids[0])
     ]
     
     for photo in photos:
         cur.execute(
-            """INSERT INTO photos (object_type, user_id, car_id, url, uploaded_by) 
-               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (url) DO NOTHING""",
+            """INSERT INTO photos (object_type, user_id, car_id, file_data, filename, content_type, file_size, uploaded_by)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
             photo
         )
     
