@@ -188,6 +188,7 @@ class RentalUpdate(BaseModel):
 
 class Rental(RentalBase):
     id: int
+    ended_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

@@ -74,6 +74,14 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
+    # Сначала получаем текущую запись, чтобы знать начальное состояние
+    cur.execute("SELECT ended_at, status, car_id FROM rentals WHERE id = %s", (rental_id,))
+    current_rental = cur.fetchone()
+    if not current_rental:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
     # Build dynamic update query
     update_fields = []
     values = []
@@ -98,6 +106,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     updated_rental = cur.fetchone()
     
     # Если статус аренды изменяется на "completed", обновляем статус машины на "available"
+    # и устанавливаем ended_at, если он еще не был установлен до обновления
     if rental.status == "completed":
         # Получаем ID машины из обновленной аренды
         car_id = updated_rental['car_id']
@@ -105,12 +114,30 @@ def update_rental(rental_id: int, rental: RentalUpdate):
             "UPDATE cars SET status = 'available' WHERE id = %s",
             (car_id,)
         )
+        
+        # Проверяем, был ли ended_at передан в обновлении
+        ended_at_provided = rental.ended_at is not None
+        
+        # Если ended_at не был передан в обновлении, но статус меняется на completed и в базе ended_at все еще NULL
+        if not ended_at_provided and current_rental['ended_at'] is None:
+            # Устанавливаем ended_at в текущее время
+            cur.execute(
+                "UPDATE rentals SET ended_at = %s WHERE id = %s",
+                (datetime.utcnow(), rental_id)
+            )
+            # Обновляем возвращаемый объект с новым ended_at
+            cur.execute("SELECT * FROM rentals WHERE id = %s", (rental_id,))
+            updated_rental = cur.fetchone()
+        # Если ended_at был передан в обновлении, то он уже установлен в SQL запросе
     
     conn.commit()
     cur.close()
     conn.close()
+    
+    # Проверяем, что обновленная аренда существует
     if not updated_rental:
-        raise HTTPException(status_code=404, detail="Rental not found")
+        raise HTTPException(status_code=404, detail="Rental not found after update")
+    
     return updated_rental
 
 def delete_rental(rental_id: int):

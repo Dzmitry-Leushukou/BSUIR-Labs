@@ -514,7 +514,7 @@ function displayRentalsInfo(rentals) {
                     <td>${rental.id}</td>
                     <td>${rental.car_id}</td>
                     <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
-                    <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : 'Активный'}</td>
+                    <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : (rental.status === 'completed' ? 'Не указана' : 'Активный')}</td>
                     <td>${rental.price} BYN</td>
                     <td>${rental.status}</td>
                 </tr>
