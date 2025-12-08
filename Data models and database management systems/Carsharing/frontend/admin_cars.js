@@ -7,7 +7,8 @@ async function loadCars() {
     }
     
     try {
-        const response = await fetch('/cars/', {
+        // Загружаем все автомобили (с большим лимитом)
+        const response = await fetch('/cars/?offset=0&limit=10000', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -53,10 +54,173 @@ function displayCars(cars) {
             <td>${car.status}</td>
             <td>${position}</td>
             <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
+            <td>
+                <button class="btn edit-btn" onclick="openEditCarModal(${car.id})">Редактировать</button>
+            </td>
         `;
         tableBody.appendChild(row);
     });
 }
+
+// Функция для открытия модального окна создания автомобиля
+function openCreateCarModal() {
+    document.getElementById('car-modal-title').textContent = 'Добавить автомобиль';
+    document.getElementById('car-form').reset();
+    document.getElementById('car-id').value = '';
+    document.getElementById('car-modal').style.display = 'block';
+}
+
+// Функция для открытия модального окна редактирования автомобиля
+async function openEditCarModal(carId) {
+    try {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            alert('Пользователь не авторизован');
+            return;
+        }
+        
+        const response = await fetch(`/cars/${carId}`, {
+            method: 'GET',
+            headers: {
+                'X-User-ID': userId,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const car = await response.json();
+            
+            // Форматируем координаты из геометрии для редактирования
+            let position = '';
+            if (car.position) {
+                const match = car.position.match(/POINT\(([-+]?\d*\.\d+|\d+) ([-+]?\d*\.\d+|\d+)\)/);
+                if (match) {
+                    position = `${match[2]}, ${match[1]}`; // широта, долгота
+                }
+            }
+            
+            document.getElementById('car-modal-title').textContent = 'Редактировать автомобиль';
+            document.getElementById('car-id').value = car.id;
+            document.getElementById('vin').value = car.vin;
+            document.getElementById('plate_number').value = car.plate_number;
+            document.getElementById('model').value = car.model;
+            document.getElementById('status').value = car.status;
+            document.getElementById('position').value = position;
+            document.getElementById('main_photo_id').value = car.main_photo_id || '';
+            
+            document.getElementById('car-modal').style.display = 'block';
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при загрузке данных автомобиля: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке данных автомобиля:', error);
+        alert('Ошибка при загрузке данных автомобиля');
+    }
+}
+
+// Функция для закрытия модального окна
+function closeCarModal() {
+    document.getElementById('car-modal').style.display = 'none';
+}
+
+// Функция для отправки формы создания/редактирования автомобиля
+async function submitCarForm(event) {
+    event.preventDefault();
+    
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+    
+    const carId = document.getElementById('car-id').value;
+    const vin = document.getElementById('vin').value;
+    const plateNumber = document.getElementById('plate_number').value;
+    const model = document.getElementById('model').value;
+    const status = document.getElementById('status').value;
+    const position = document.getElementById('position').value;
+    const mainPhotoId = document.getElementById('main_photo_id').value ? parseInt(document.getElementById('main_photo_id').value) : null;
+    
+    // Форматируем позицию в формат POINT для отправки на сервер
+    let positionFormatted = null;
+    if (position) {
+        const coords = position.split(',').map(coord => coord.trim());
+        if (coords.length === 2) {
+            const lat = parseFloat(coords[0]);
+            const lng = parseFloat(coords[1]);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                positionFormatted = `POINT(${lng} ${lat})`;
+            }
+        }
+    }
+    
+    const carData = {
+        vin,
+        plate_number: plateNumber,
+        model,
+        status,
+        main_photo_id: mainPhotoId
+    };
+    
+    if (positionFormatted) {
+        carData.position = positionFormatted;
+    }
+    
+    try {
+        let response;
+        if (carId) {
+            // Режим обновления
+            response = await fetch(`/cars/${carId}`, {
+                method: 'PUT',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(carData)
+            });
+        } else {
+            // Режим создания
+            response = await fetch('/cars/', {
+                method: 'POST',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(carData)
+            });
+        }
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(`Автомобиль ${carId ? 'обновлен' : 'создан'} успешно`);
+            closeCarModal();
+            loadCars(); // Перезагружаем таблицу
+        } else {
+            const errorData = await response.json();
+            alert(`Ошибка при ${carId ? 'обновлении' : 'создании'} автомобиля: ${errorData.detail || 'Неизвестная ошибка'}`);
+        }
+    } catch (error) {
+        console.error(`Ошибка при ${carId ? 'обновлении' : 'создании'} автомобиля:`, error);
+        alert(`Ошибка при ${carId ? 'обновлении' : 'создании'} автомобиля`);
+    }
+}
+
+// Добавляем обработчик события для формы
+document.addEventListener('DOMContentLoaded', () => {
+    loadCars();
+    
+    // Добавляем обработчик отправки формы
+    document.getElementById('car-form').addEventListener('submit', submitCarForm);
+    
+    // Закрытие модального окна при клике вне его
+    window.onclick = function(event) {
+        const modal = document.getElementById('car-modal');
+        if (event.target === modal) {
+            closeCarModal();
+        }
+    };
+});
 
 // Загружаем данные при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadCars);

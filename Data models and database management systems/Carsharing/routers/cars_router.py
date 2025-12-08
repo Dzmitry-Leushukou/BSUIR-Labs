@@ -7,7 +7,7 @@ from .users_router import get_current_user_from_header
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
 @router.get("/", response_model=List[Car])
-def get_cars_endpoint(offset: int = 0, limit: int = 10):
+def get_cars_endpoint(offset: int = 0, limit: int = 1000):
     return get_cars(offset, limit)
 
 @router.get("/{car_id}", response_model=Car)

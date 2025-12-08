@@ -465,6 +465,10 @@ body {
 
 .table-container {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 60vh;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .admin-table {
@@ -472,7 +476,7 @@ body {
     border-collapse: collapse;
     margin-top: 10px;
     background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0.1);
 }
 
 .admin-table th,
@@ -488,6 +492,7 @@ body {
     color: #555;
     position: sticky;
     top: 0;
+    z-index: 10;
 }
 
 .admin-table tr:hover {
