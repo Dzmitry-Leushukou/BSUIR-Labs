@@ -1368,11 +1368,15 @@ async function processPaymentAndComplete(rentalId) {
             // Если использовался кэшбэк, обновляем баланс пользователя
             if (useCashback && cashbackUsed > 0) {
                 await updateCashbackBalance(-cashbackUsed);
+                // Обновляем информацию о пользователе (включая кэшбэк)
+                await loadUserInfo();
             }
             
             // Рассчитываем и добавляем кэшбэк (3% от стоимости поездки)
             const cashbackToAdd = totalPrice * 0.03;
             await updateCashbackBalance(cashbackToAdd);
+            // Обновляем информацию о пользователе (включая кэшбэк)
+            await loadUserInfo();
             
             // Удаляем панель активной аренды
             const rentalPanel = document.getElementById('active-rental-panel');
@@ -1387,6 +1391,9 @@ async function processPaymentAndComplete(rentalId) {
             }
             
             alert(`Аренда успешно завершена! С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
+            
+            // Обновляем информацию о пользователе (включая кэшбэк)
+            loadUserInfo();
             
             // Обновляем карту
             showCarsOnMap();
