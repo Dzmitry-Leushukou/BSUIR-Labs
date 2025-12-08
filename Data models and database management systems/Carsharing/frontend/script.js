@@ -984,167 +984,220 @@ function showCompletionModal(rentalId) {
         existingModal.remove();
     }
     
-    // Создаем модальное окно
-    const modal = document.createElement('div');
-    modal.id = 'completion-modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-    `;
+    // Получаем информацию о текущей аренде для расчета цены
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        alert('Необходима авторизация для завершения аренды');
+        return;
+    }
     
-    modal.innerHTML = `
-        <div style="
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0.3);
-        ">
-            <h3>Завершение аренды</h3>
-            
-            <!-- Фотографии -->
-            <div style="margin-bottom: 20px;">
-                <h4>Добавить фотографии</h4>
-                <div id="photo-preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
-                <input type="file" id="photo-upload" accept="image/*" multiple style="margin-top: 10px;">
-            </div>
-            
-            <!-- Оплата -->
-            <div style="margin-bottom: 20px;">
-                <h4>Оплата</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="card-number" placeholder="Номер карты" maxlength="19" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <input type="text" id="card-holder" placeholder="Имя держателя" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <input type="text" id="expiry-date" placeholder="ММ/ГГ" maxlength="5" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <input type="text" id="cvv" placeholder="CVV" maxlength="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    // Асинхронно получаем информацию об аренде и рассчитываем цену
+    fetch(`/rentals/${rentalId}`, {
+        method: 'GET',
+        headers: {
+            'X-User-ID': userId,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(rental => {
+        // rental.started_at приходит из API в формате ISO (в UTC)
+        // Используем объекты Date напрямую для корректного вычисления разницы
+        const startedAt = new Date(rental.started_at); // Это время в UTC
+        const now = new Date(); // Это текущее время в локальной таймзоне браузера
+        
+        // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
+        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
+        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
+        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
+        const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+        
+        // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
+        let timeDiff = nowUTC - startedAt;
+        if (timeDiff < 0) {
+            // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
+            timeDiff = 0;
+        }
+        
+        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Округляем вниз, чтобы избежать мгновенного округления вверх
+        const currentPrice = 1 + minutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
+        
+        // Проверяем, чтобы цена не была отрицательной или нулевой
+        if (currentPrice < 1) {
+            currentPrice = 1;
+        }
+        
+        // Создаем модальное окно
+        const modal = document.createElement('div');
+        modal.id = 'completion-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                width: 90%;
+                max-width: 500px;
+                position: relative;
+                box-shadow: 0 4px 12px rgba(0,0,0.3);
+            ">
+                <h3>Завершение аренды</h3>
+                
+                <!-- Информация о поездке -->
+                <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                    <h4>Информация о поездке</h4>
+                    <p><strong>Начало аренды:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
+                    <p><strong>Текущая стоимость:</strong> <span id="current-trip-price">${currentPrice} BYN</span> за ${minutesDiff} мин.</p>
+                </div>
+                
+                <!-- Фотографии -->
+                <div style="margin-bottom: 20px;">
+                    <h4>Добавить фотографии</h4>
+                    <div id="photo-preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                    <input type="file" id="photo-upload" accept="image/*" multiple style="margin-top: 10px;">
+                </div>
+                
+                <!-- Оплата -->
+                <div style="margin-bottom: 20px;">
+                    <h4>Оплата</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="card-number" placeholder="Номер карты" maxlength="19" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" id="card-holder" placeholder="Имя держателя" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" id="expiry-date" placeholder="ММ/ГГ" maxlength="5" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" id="cvv" placeholder="CVV" maxlength="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                
+                <!-- Кэшбэк -->
+                <div style="margin-bottom: 20px;">
+                    <h4>Кэшбэк</h4>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                        <input type="checkbox" id="use-cashback" style="width: 16px; height: 16px;">
+                        <label for="use-cashback" style="flex: 1;">Использовать кэшбэк</label>
+                        <span id="cashback-amount">Доступно: 0 BYN</span>
+                    </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="cancel-completion" style="
+                        flex: 1;
+                        padding: 10px;
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Отмена</button>
+                    <button id="pay-and-complete" style="
+                        flex: 1;
+                        padding: 10px;
+                        background: #28a745;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Оплатить и завершить</button>
                 </div>
             </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Добавляем обработчики для элементов формы
+        const photoUpload = document.getElementById('photo-upload');
+        const photoPreviewContainer = document.getElementById('photo-preview-container');
+        
+        // Обработчик для загрузки фотографий
+        photoUpload.addEventListener('change', function(e) {
+            const files = e.target.files;
+            photoPreviewContainer.innerHTML = ''; // Очищаем предыдущие превью
             
-            <!-- Кэшбэк -->
-            <div style="margin-bottom: 20px;">
-                <h4>Кэшбэк</h4>
-                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                    <input type="checkbox" id="use-cashback" style="width: 16px; height: 16px;">
-                    <label for="use-cashback" style="flex: 1;">Использовать кэшбэк</label>
-                    <span id="cashback-amount">Доступно: 0 BYN</span>
-                </div>
-            </div>
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.border = '1px solid #ddd';
+                        img.style.borderRadius = '4px';
+                        photoPreviewContainer.appendChild(img);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+        
+        // Форматирование номера карты
+        const cardNumberInput = document.getElementById('card-number');
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+            let formattedValue = '';
             
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="cancel-completion" style="
-                    flex: 1;
-                    padding: 10px;
-                    background: #6c757d;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                ">Отмена</button>
-                <button id="pay-and-complete" style="
-                    flex: 1;
-                    padding: 10px;
-                    background: #28a745;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                ">Оплатить и завершить</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Добавляем обработчики для элементов формы
-    const photoUpload = document.getElementById('photo-upload');
-    const photoPreviewContainer = document.getElementById('photo-preview-container');
-    
-    // Обработчик для загрузки фотографий
-    photoUpload.addEventListener('change', function(e) {
-        const files = e.target.files;
-        photoPreviewContainer.innerHTML = ''; // Очищаем предыдущие превью
-        
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.width = '80px';
-                    img.style.height = '80px';
-                    img.style.objectFit = 'cover';
-                    img.style.border = '1px solid #ddd';
-                    img.style.borderRadius = '4px';
-                    photoPreviewContainer.appendChild(img);
-                };
-                
-                reader.readAsDataURL(file);
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
             }
-        }
-    });
-    
-    // Форматирование номера карты
-    const cardNumberInput = document.getElementById('card-number');
-    cardNumberInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
-        let formattedValue = '';
+            
+            e.target.value = formattedValue;
+        });
         
-        for (let i = 0; i < value.length; i++) {
-            if (i > 0 && i % 4 === 0) {
-                formattedValue += ' ';
+        // Форматирование даты
+        const expiryDateInput = document.getElementById('expiry-date');
+        expiryDateInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+            
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
             }
-            formattedValue += value[i];
-        }
+            
+            e.target.value = value;
+        });
         
-        e.target.value = formattedValue;
-    });
-    
-    // Форматирование даты
-    const expiryDateInput = document.getElementById('expiry-date');
-    expiryDateInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+        // Валидация CVV
+        const cvvInput = document.getElementById('cvv');
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+        });
         
-        if (value.length > 2) {
-            value = value.substring(0, 2) + '/' + value.substring(2, 4);
-        }
+        // Обработчик для чекбокса кэшбэка
+        const useCashbackCheckbox = document.getElementById('use-cashback');
+        useCashbackCheckbox.addEventListener('change', function() {
+            updateCashbackDisplay();
+        });
         
-        e.target.value = value;
-    });
-    
-    // Валидация CVV
-    const cvvInput = document.getElementById('cvv');
-    cvvInput.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
-    });
-    
-    // Обработчик для чекбокса кэшбэка
-    const useCashbackCheckbox = document.getElementById('use-cashback');
-    useCashbackCheckbox.addEventListener('change', function() {
-        updateCashbackDisplay();
-    });
-    
-    // Загружаем информацию о пользователе для отображения кэшбэка
-    loadUserInfoForCashback();
-    
-    // Обработчики для кнопок
-    document.getElementById('cancel-completion').addEventListener('click', function() {
-        document.body.removeChild(modal);
-    });
-    
-    document.getElementById('pay-and-complete').addEventListener('click', function() {
-        processPaymentAndComplete(rentalId);
+        // Загружаем информацию о пользователе для отображения кэшбэка
+        loadUserInfoForCashback();
+        
+        // Обработчики для кнопок
+        document.getElementById('cancel-completion').addEventListener('click', function() {
+            document.body.removeChild(modal);
+        });
+        
+        document.getElementById('pay-and-complete').addEventListener('click', function() {
+            processPaymentAndComplete(rentalId);
+        });
+    })
+    .catch(error => {
+        console.error('Ошибка при получении информации об аренде:', error);
+        alert('Ошибка при получении информации об аренде');
     });
 }
 
