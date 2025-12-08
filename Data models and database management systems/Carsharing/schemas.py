@@ -81,6 +81,7 @@ class CarUpdate(BaseModel):
     model: Optional[str] = None
     status: Optional[str] = None
     position: Optional[str] = None
+    main_photo_id: Optional[int] = None
 
 class Car(CarBase):
     id: int
@@ -250,6 +251,31 @@ class LogCreate(LogBase):
     pass
 
 class Log(LogBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class TripCompletionBase(BaseModel):
+    rental_id: int
+    completion_photo_id: Optional[int] = None
+    admin_approved: Optional[bool] = None
+    admin_comment: Optional[str] = None
+    admin_reviewed_by: Optional[int] = None
+    admin_reviewed_at: Optional[datetime] = None
+
+class TripCompletionCreate(TripCompletionBase):
+    rental_id: int
+    completion_photo_id: int  # Required for creation
+
+class TripCompletionUpdate(BaseModel):
+    admin_approved: Optional[bool] = None
+    admin_comment: Optional[str] = None
+    admin_reviewed_by: Optional[int] = None
+    admin_reviewed_at: Optional[datetime] = None
+
+class TripCompletion(TripCompletionBase):
     id: int
     created_at: datetime
     

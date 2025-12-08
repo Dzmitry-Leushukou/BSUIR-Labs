@@ -7,7 +7,7 @@ async function loadTripCompletions() {
     }
     
     try {
-        const response = await fetch('/rentals/', {
+        const response = await fetch('/trip-completions/', {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -16,10 +16,8 @@ async function loadTripCompletions() {
         });
         
         if (response.ok) {
-            const rentals = await response.json();
-            // Отображаем поездки, которые требуют подтверждения администратором (у которых есть время окончания, но статус еще не 'completed')
-            const tripCompletions = rentals.filter(rental => rental.status === 'active' && rental.ended_at !== null);
-            displayTripCompletions(tripCompletions);
+            const tripCompletions = await response.json();
+            displayTripCompletionsData(tripCompletions);
         } else {
             let errorDetail = 'Неизвестная ошибка';
             try {
@@ -38,16 +36,35 @@ async function loadTripCompletions() {
 }
 
 // Функция для отображения данных в таблице Trip completions
-async function displayTripCompletions(rentals) {
+async function displayTripCompletionsData(tripCompletions) {
     const tableBody = document.getElementById('trip-completions-table-body');
     tableBody.innerHTML = '';
     
-    for (const rental of rentals) {
-        // Загружаем фотографии автомобиля
+    for (const completion of tripCompletions) {
+        // First get the associated rental to get user_id, car_id, etc.
+        let rental = null;
+        try {
+            const userId = localStorage.getItem('user_id');
+            const rentalResponse = await fetch(`/rentals/${completion.rental_id}`, {
+                method: 'GET',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (rentalResponse.ok) {
+                rental = await rentalResponse.json();
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке данных аренды:', error);
+        }
+        
+        // Загружаем фотографии завершения поездки
         let photosHtml = 'Нет фото';
         try {
             const userId = localStorage.getItem('user_id');
-            const photosResponse = await fetch(`/photos/?object_type=car&car_id=${rental.car_id}`, {
+            const photosResponse = await fetch(`/photos/${completion.completion_photo_id}`, {
                 method: 'GET',
                 headers: {
                     'X-User-ID': userId,
@@ -56,56 +73,67 @@ async function displayTripCompletions(rentals) {
             });
             
             if (photosResponse.ok) {
-                const photos = await photosResponse.json();
-                if (photos && photos.length > 0) {
-                    photosHtml = photos.map(photo =>
-                        `<img src="${photo.url}" alt="Car Photo" style="max-width: 50px; max-height: 50px; margin: 2px; cursor: pointer;" onclick="showPhotoModal('${photo.url}', 'Фото автомобиля')">`
-                    ).join('');
+                const photo = await photosResponse.json();
+                if (photo) {
+                    // Using the correct endpoint to download the photo
+                    const photoUrl = `/photos/file/${photo.id}`; // Correct endpoint based on the backend implementation
+                    photosHtml = `<img src="${photoUrl}" alt="Completion Photo" style="max-width: 50px; max-height: 50px; margin: 2px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoUrl}', 'Фото завершения поездки')" title="Кликните для просмотра в полном размере">`;
                 }
             }
         } catch (error) {
-            console.error('Ошибка при загрузке фотографий автомобиля:', error);
+            console.error('Ошибка при загрузке фотографии завершения поездки:', error);
+        }
+        
+        // Determine status text based on admin approval
+        let statusText = 'Ожидает проверки';
+        if (completion.admin_approved === true) {
+            statusText = 'Подтверждено';
+        } else if (completion.admin_approved === false) {
+            statusText = 'Отклонено';
         }
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${rental.id}</td>
-            <td>${rental.user_id}</td>
-            <td>${rental.car_id}</td>
-            <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
-            <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : ''}</td>
-            <td>${rental.price} BYN</td>
+            <td>${completion.id}</td>
+            <td>${rental ? rental.user_id : 'N/A'}</td>
+            <td>${rental ? rental.car_id : 'N/A'}</td>
+            <td>${rental ? new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : 'N/A'}</td>
+            <td>${rental ? (rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' }) : '') : ''}</td>
+            <td>${rental ? rental.price + ' BYN' : 'N/A'}</td>
             <td>${photosHtml}</td>
-            <td class="status-${rental.status}">${rental.status}</td>
+            <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">${statusText}</td>
             <td>
-                <button class="btn action-btn approve-btn" onclick="confirmTrip(${rental.id})">Подтвердить</button>
-                <button class="btn action-btn reject-btn" onclick="rejectTrip(${rental.id})">Отклонить</button>
+                <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
+                <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
             </td>
         `;
         tableBody.appendChild(row);
     }
 }
 
-// Функция для подтверждения завершения поездки
-async function confirmTrip(rentalId) {
+// Функция для подтверждения завершения поездки (без повреждений)
+async function confirmTrip(completionId) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
-    if (!confirm('Вы уверены, что хотите подтвердить завершение поездки?')) {
+    if (!confirm('Вы уверены, что хотите подтвердить завершение поездки (без повреждений)?')) {
         return;
     }
     
     try {
-        const response = await fetch(`/rentals/${rentalId}`, {
+        const response = await fetch(`/trip-completions/${completionId}`, {
             method: 'PUT',
             headers: {
                 'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'completed' })
+            body: JSON.stringify({
+                admin_approved: true,
+                admin_comment: null
+            })
         });
         
         if (response.ok) {
@@ -129,30 +157,40 @@ async function confirmTrip(rentalId) {
     }
 }
 
-// Функция для отклонения завершения поездки
-async function rejectTrip(rentalId) {
+// Функция для сообщения о повреждениях
+async function reportDamage(completionId) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
-    if (!confirm('Вы уверены, что хотите отклонить завершение поездки?')) {
+    const damageDescription = prompt('Введите описание повреждений:');
+    if (damageDescription === null) {
+        // User cancelled
+        return;
+    }
+    
+    if (damageDescription.trim() === '') {
+        alert('Пожалуйста, введите описание повреждений');
         return;
     }
     
     try {
-        const response = await fetch(`/rentals/${rentalId}`, {
+        const response = await fetch(`/trip-completions/${completionId}`, {
             method: 'PUT',
             headers: {
                 'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status: 'cancelled' }) // Устанавливаем статус отмененной поездки
+            body: JSON.stringify({
+                admin_approved: false,  // Mark as not approved due to damage
+                admin_comment: damageDescription
+            })
         });
         
         if (response.ok) {
-            alert('Поездка отмечена как отмененная');
+            alert('Повреждения успешно зарегистрированы. Создан запрос на обслуживание.');
             // Перезагружаем таблицу
             loadTripCompletions();
         } else {
@@ -164,11 +202,11 @@ async function rejectTrip(rentalId) {
                 // Если не удалось распарсить JSON, используем текст ошибки
                 errorDetail = await response.text() || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при отклонении поездки: ${errorDetail}`);
+            alert(`Ошибка при регистрации повреждений: ${errorDetail}`);
         }
     } catch (error) {
-        console.error('Ошибка при отклонении поездки:', error);
-        alert('Ошибка при отклонении поездки');
+        console.error('Ошибка при регистрации повреждений:', error);
+        alert('Ошибка при регистрации повреждений');
     }
 }
 

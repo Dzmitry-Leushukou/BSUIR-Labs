@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS cars (
     vin VARCHAR(17) UNIQUE NOT NULL,
     plate_number VARCHAR(12) UNIQUE NOT NULL,
     model VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance')),
+    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance','pending_completion')),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     position geometry(Point, 4326),
     main_photo_id INT,
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS rentals (
     started_at TIMESTAMP NOT NULL,
     ended_at TIMESTAMP CHECK (ended_at > started_at OR ended_at IS NULL),
     price DECIMAL(12,2) NOT NULL CHECK (price >= 0),
-    status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active','completed','cancelled'))
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','completed','cancelled','pending_completion'))
 );
 
 -- Create maintenance_requests table
@@ -130,6 +130,18 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     resolved_at TIMESTAMP CHECK (resolved_at >= created_at OR resolved_at IS NULL),
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open','in_progress','resolved')),
     description TEXT NOT NULL
+);
+
+-- Create trip_completions table
+CREATE TABLE IF NOT EXISTS trip_completions (
+    id SERIAL PRIMARY KEY,
+    rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
+    completion_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    admin_approved BOOLEAN,
+    admin_comment TEXT,
+    admin_reviewed_by INT REFERENCES users(id) ON DELETE SET NULL,
+    admin_reviewed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create payment_logs table
@@ -158,8 +170,8 @@ CREATE TABLE IF NOT EXISTS action_logs (
     id SERIAL PRIMARY KEY,
     actor_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
-        'user_login', 'user_logout', 'user_registration', 
-        'car_rental_start', 'car_rental_end', 'car_rental_cancel',
+        'user_login', 'user_logout', 'user_registration',
+        'car_rental_start', 'car_rental_end', 'car_rental_cancel', 'car_rental_pending_completion',
         'payment_success', 'payment_failed',
         'maintenance_request', 'maintenance_resolve',
         'profile_update', 'driver_license_upload',
@@ -262,9 +274,10 @@ BEGIN
         )
         VALUES (
             NEW.user_id, 
-            CASE 
+            CASE
                 WHEN NEW.status = 'completed' THEN 'car_rental_end'
                 WHEN NEW.status = 'cancelled' THEN 'car_rental_cancel'
+                WHEN NEW.status = 'pending_completion' THEN 'car_rental_pending_completion'
                 ELSE 'car_rental_update'
             END,
             NEW.id, NEW.car_id,
@@ -322,6 +335,9 @@ CREATE INDEX IF NOT EXISTS idx_rentals_car_id ON rentals(car_id);
 CREATE INDEX IF NOT EXISTS idx_rentals_status ON rentals(status);
 CREATE INDEX IF NOT EXISTS idx_rentals_started_at ON rentals(started_at);
 CREATE INDEX IF NOT EXISTS idx_rentals_ended_at ON rentals(ended_at);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_rental_id ON trip_completions(rental_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_completion_photo_id ON trip_completions(completion_photo_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_admin_reviewed_by ON trip_completions(admin_reviewed_by);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_car_id ON maintenance_requests(car_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status ON maintenance_requests(status);
 CREATE INDEX IF NOT EXISTS idx_payment_logs_rental_id ON payment_logs(rental_id);

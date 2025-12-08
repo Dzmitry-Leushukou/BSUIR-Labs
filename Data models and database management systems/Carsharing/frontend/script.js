@@ -1396,39 +1396,47 @@ async function processPaymentAndComplete(rentalId) {
             throw new Error('Ошибка при создании записи об оплате');
         }
         
-        // Загружаем фотографии, если они были выбраны
+        // Проверяем, загружены ли фотографии (минимум 1 обязательно)
         const photoUpload = document.getElementById('photo-upload');
         const files = photoUpload.files;
-        const uploadedPhotoIds = [];
         
-        if (files.length > 0) {
-            // Загружаем каждую фотографию
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.type.startsWith('image/')) {
-                    const photoId = await uploadPhoto(file, rental.car_id, parseInt(userId));
-                    if (photoId) {
-                        uploadedPhotoIds.push(photoId);
-                    }
+        if (files.length === 0) {
+            alert('Пожалуйста, загрузите хотя бы одну фотографию завершения поездки.');
+            return;
+        }
+        
+        // Загружаем первую фотографию и создаем запрос на подтверждение завершения поездки
+        let completionPhotoId = null;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const photoId = await uploadPhoto(file, rental.car_id, parseInt(userId));
+                if (photoId) {
+                    completionPhotoId = photoId; // Используем первую загруженную фотографию
+                    break;
                 }
             }
         }
         
-        // Обновляем аренду
-        const response = await fetch(`/rentals/${rentalId}`, {
-            method: 'PUT',
+        if (!completionPhotoId) {
+            alert('Не удалось загрузить фотографии. Пожалуйста, попробуйте снова.');
+            return;
+        }
+        
+        // Создаем запрос на подтверждение завершения поездки
+        const tripCompletionResponse = await fetch('/trip-completions/', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-User-ID': userId
             },
             body: JSON.stringify({
-                ended_at: endedAt.toISOString(),
-                status: "completed",
-                price: totalPrice  // Обновляем цену при завершении аренды
+                rental_id: rentalId,
+                completion_photo_id: completionPhotoId
             })
         });
         
-        if (response.ok) {
+        if (tripCompletionResponse.ok) {
             // Если использовался кэшбэк, обновляем баланс пользователя
             if (useCashback && cashbackUsed > 0) {
                 await updateCashbackBalance(-cashbackUsed);
@@ -1454,7 +1462,7 @@ async function processPaymentAndComplete(rentalId) {
                 modal.remove();
             }
             
-            alert(`Аренда успешно завершена! С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
+            alert(`Запрос на завершение аренды отправлен! Ожидайте подтверждения администратором. С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
             
             // Обновляем информацию о пользователе (включая кэшбэк)
             loadUserInfo();
@@ -1462,8 +1470,8 @@ async function processPaymentAndComplete(rentalId) {
             // Обновляем карту
             showCarsOnMap();
         } else {
-            const errorData = await response.json();
-            alert(`Ошибка при завершении аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
+            const errorData = await tripCompletionResponse.json();
+            alert(`Ошибка при отправке запроса на завершение аренды: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
     } catch (error) {
         console.error('Ошибка при завершении аренды:', error);

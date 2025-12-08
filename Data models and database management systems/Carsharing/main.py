@@ -11,6 +11,7 @@ from routers.maintenance_requests_router import router as maintenance_requests_r
 from routers.payment_logs_router import router as payment_logs_router
 from routers.logs_router import router as logs_router
 from routers.action_logs_router import router as action_logs_router
+from routers.trip_completions_router import router as trip_completions_router
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -62,6 +63,7 @@ app.include_router(maintenance_requests_router)
 app.include_router(payment_logs_router)
 app.include_router(logs_router)
 app.include_router(action_logs_router)
+app.include_router(trip_completions_router)
 
 # Маршрут для главной страницы
 @app.get("/")

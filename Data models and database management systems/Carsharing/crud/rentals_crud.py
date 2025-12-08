@@ -128,21 +128,13 @@ def update_rental(rental_id: int, rental: RentalUpdate):
             "UPDATE cars SET status = 'available' WHERE id = %s",
             (car_id,)
         )
-        
-        # Проверяем, был ли ended_at передан в обновлении
-        ended_at_provided = rental.ended_at is not None
-        
-        # Если ended_at не был передан в обновлении, но статус меняется на completed и в базе ended_at все еще NULL
-        if not ended_at_provided and current_rental['ended_at'] is None:
-            # Устанавливаем ended_at в текущее время
-            cur.execute(
-                "UPDATE rentals SET ended_at = %s WHERE id = %s",
-                (datetime.utcnow(), rental_id)
-            )
-            # Обновляем возвращаемый объект с новым ended_at
-            cur.execute("SELECT * FROM rentals WHERE id = %s", (rental_id,))
-            updated_rental = cur.fetchone()
-        # Если ended_at был передан в обновлении, то он уже установлен в SQL запросе
+    # Если статус аренды изменяется на "pending_completion", обновляем статус машины на "pending_completion"
+    elif rental.status == "pending_completion":
+        car_id = updated_rental['car_id']
+        cur.execute(
+            "UPDATE cars SET status = 'pending_completion' WHERE id = %s",
+            (car_id,)
+        )
     
     conn.commit()
     cur.close()
