@@ -52,7 +52,6 @@ function displayCars(cars) {
             <td>${car.plate_number}</td>
             <td>${car.model}</td>
             <td>${car.status}</td>
-            <td>${position}</td>
             <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</td>
             <td>
                 <button class="btn edit-btn" onclick="openEditCarModal(${car.id})">Редактировать</button>
@@ -105,7 +104,6 @@ async function openEditCarModal(carId) {
             document.getElementById('plate_number').value = car.plate_number;
             document.getElementById('model').value = car.model;
             document.getElementById('status').value = car.status;
-            document.getElementById('position').value = position;
             document.getElementById('main_photo_id').value = car.main_photo_id || '';
             
             document.getElementById('car-modal').style.display = 'block';
@@ -139,21 +137,7 @@ async function submitCarForm(event) {
     const plateNumber = document.getElementById('plate_number').value;
     const model = document.getElementById('model').value;
     const status = document.getElementById('status').value;
-    const position = document.getElementById('position').value;
     const mainPhotoId = document.getElementById('main_photo_id').value ? parseInt(document.getElementById('main_photo_id').value) : null;
-    
-    // Форматируем позицию в формат POINT для отправки на сервер
-    let positionFormatted = null;
-    if (position) {
-        const coords = position.split(',').map(coord => coord.trim());
-        if (coords.length === 2) {
-            const lat = parseFloat(coords[0]);
-            const lng = parseFloat(coords[1]);
-            if (!isNaN(lat) && !isNaN(lng)) {
-                positionFormatted = `POINT(${lng} ${lat})`;
-            }
-        }
-    }
     
     const carData = {
         vin,
@@ -162,10 +146,6 @@ async function submitCarForm(event) {
         status,
         main_photo_id: mainPhotoId
     };
-    
-    if (positionFormatted) {
-        carData.position = positionFormatted;
-    }
     
     try {
         let response;
