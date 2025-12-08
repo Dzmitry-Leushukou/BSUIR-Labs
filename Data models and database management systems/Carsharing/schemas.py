@@ -92,18 +92,22 @@ class PhotoBase(BaseModel):
     object_type: str
     user_id: Optional[int] = None
     car_id: Optional[int] = None
-    url: str
     uploaded_by: int
 
 class PhotoCreate(PhotoBase):
-    pass
+    file_data: bytes
+    filename: str
+    content_type: str
+    file_size: int
 
 class PhotoUpdate(BaseModel):
-    url: Optional[str] = None
     uploaded_by: Optional[int] = None
 
 class Photo(PhotoBase):
     id: int
+    filename: str
+    content_type: str
+    file_size: int
     uploaded_at: datetime
     
     class Config:

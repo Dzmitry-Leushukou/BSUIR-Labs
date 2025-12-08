@@ -43,7 +43,10 @@ CREATE TABLE IF NOT EXISTS photos (
     object_type VARCHAR(50) NOT NULL CHECK (object_type IN ('driver','car','document')),
     user_id INT,
     car_id INT,
-    url VARCHAR(500) NOT NULL,
+    file_data BYTEA NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    file_size INT NOT NULL,
     uploaded_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT photos_object_match_chk CHECK (
@@ -54,9 +57,6 @@ CREATE TABLE IF NOT EXISTS photos (
     CONSTRAINT photos_object_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT photos_object_car_fk  FOREIGN KEY (car_id)  REFERENCES cars(id)  ON DELETE CASCADE
 );
-
--- Add unique constraint to photos url column for ON CONFLICT to work
-ALTER TABLE photos ADD CONSTRAINT uk_photos_url UNIQUE (url);
 
 -- Create driver_licenses table
 CREATE TABLE IF NOT EXISTS driver_licenses (
