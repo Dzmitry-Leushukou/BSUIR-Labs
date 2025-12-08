@@ -699,7 +699,7 @@ async function rentCar(carId) {
             updateCarMarkerStatus(carId, "rented");
             
             // Показываем панель активной аренды сразу после аренды
-            showActiveRentalPanel(rentalData);
+            await showActiveRentalPanel(rentalData);
             
             // Обновляем карту, чтобы отобразить только арендованную машину
             showCarsOnMap();
@@ -727,8 +727,8 @@ async function getActiveRental() {
     }
     
     try {
-        // Запрашиваем все аренды пользователя
-        const response = await fetch(`/rentals/user/${userId}`, {
+        // Запрашиваем все аренды пользователя с информацией о машинах
+        const response = await fetch(`/rentals/user/${userId}/with-car-info`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -752,7 +752,7 @@ async function getActiveRental() {
 }
 
 // Функция для отображения панели активной аренды
-function showActiveRentalPanel(rental) {
+async function showActiveRentalPanel(rental) {
     // Если панель уже существует, удаляем её
     const existingPanel = document.getElementById('active-rental-panel');
     if (existingPanel) {
@@ -760,6 +760,29 @@ function showActiveRentalPanel(rental) {
     }
     
     if (rental) {
+        // Загружаем информацию о машине, связанной с арендой
+        const userId = localStorage.getItem('user_id');
+        let rentalWithCarInfo = rental;
+        
+        // Запрашиваем расширенную информацию об аренде с информацией о машине
+        try {
+            const response = await fetch(`/rentals/user/${userId}/with-car-info?limit=100`, {
+                method: 'GET',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const rentalsWithCarInfo = await response.json();
+                rentalWithCarInfo = rentalsWithCarInfo.find(r => r.id === rental.id) || rental;
+            }
+        } catch (error) {
+            console.error('Ошибка при получении информации об аренде с данными автомобиля:', error);
+            // Используем базовую информацию об аренде, если не удалось получить расширенную
+        }
+        
         // Создаем панель активной аренды
         const rentalPanel = document.createElement('div');
         rentalPanel.id = 'active-rental-panel';
@@ -774,7 +797,7 @@ function showActiveRentalPanel(rental) {
         // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
         // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
         // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
         const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
         
         // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
@@ -784,7 +807,7 @@ function showActiveRentalPanel(rental) {
             timeDiff = 0;
         }
         
-        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
+        const minutesDiff = Math.floor(timeDiff / (100 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
         const currentPrice = 1 + minutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
         
         // Проверяем, чтобы цена не была отрицательной или нулевой
@@ -792,12 +815,25 @@ function showActiveRentalPanel(rental) {
             currentPrice = 1;
         }
         
+        // Формируем HTML для фото машины
+        const photoHtml = rentalWithCarInfo.main_photo_id ?
+            `<img src="/photos/file/${rentalWithCarInfo.main_photo_id}" alt="Фото машины" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;">` :
+            '<div style="width: 100px; height: 60px; background-color: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #99;">Нет фото</div>';
+        
         rentalPanel.innerHTML = `
             <div class="rental-info">
                 <h3>Текущая аренда</h3>
-                <p>Машина: ${rental.car_id}</p>
-                <p>Статус: ${rental.status}</p>
-                <p>Начало: ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div>
+                        ${photoHtml}
+                    </div>
+                    <div>
+                        <p><strong>Модель:</strong> ${rentalWithCarInfo.model || rental.car_id}</p>
+                        <p><strong>Номер:</strong> ${rentalWithCarInfo.plate_number || 'Неизвестен'}</p>
+                        <p><strong>Статус:</strong> ${rental.status}</p>
+                    </div>
+                </div>
+                <p><strong>Начало:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Minsk' })}</p>
                 <p id="rental-price-${rental.id}">Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>
             </div>
             <div class="rental-controls">
@@ -821,7 +857,7 @@ function showActiveRentalPanel(rental) {
                 // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
                 // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
                 // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-                // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
+                // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
                 const updatedNowUTC = new Date(updatedNow.getTime() + updatedNow.getTimezoneOffset() * 60000);
                 
                 // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
@@ -1476,6 +1512,6 @@ function goToAdminPanel() {
 async function checkAndShowActiveRental() {
     const activeRental = await getActiveRental();
     if (activeRental) {
-        showActiveRentalPanel(activeRental);
+        await showActiveRentalPanel(activeRental);
     }
 }

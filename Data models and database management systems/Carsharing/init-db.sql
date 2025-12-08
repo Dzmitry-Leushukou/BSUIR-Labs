@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS cars (
     status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance')),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     position geometry(Point, 4326),
-    main_photo_id INT REFERENCES photos(id) ON DELETE SET NULL,
+    main_photo_id INT,
     CONSTRAINT plate_by_format_chk CHECK (plate_number ~ '^[0-9]{4} [A-Z]{2}-[0-8]$')
 );
 
@@ -331,8 +331,23 @@ INSERT INTO roles (name, description) VALUES
 INSERT INTO roles (name, description) VALUES 
     ('user', 'Regular user role') 
     ON CONFLICT (name) DO NOTHING;
-INSERT INTO roles (name, description) VALUES 
-    ('manager', 'Manager role with limited admin access') 
+INSERT INTO roles (name, description) VALUES
+    ('manager', 'Manager role with limited admin access')
     ON CONFLICT (name) DO NOTHING;
+
+-- Add foreign key constraint for main_photo_id after both tables are created
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.table_constraints
+        WHERE constraint_name = 'cars_main_photo_id_fkey'
+        AND table_name = 'cars'
+    ) THEN
+        ALTER TABLE cars ADD CONSTRAINT cars_main_photo_id_fkey
+        FOREIGN KEY (main_photo_id) REFERENCES photos(id) ON DELETE SET NULL;
+    END IF;
+END
+$$;
 
 \echo '✅ DB Created'
