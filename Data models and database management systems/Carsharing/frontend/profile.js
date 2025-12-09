@@ -239,7 +239,7 @@ async function loadDriverLicenseStatus(userId) {
             if (userLicense) {
                 // Обновляем отображение статуса водительских прав с цветовой индикацией
                 const licenseStatusElement = document.getElementById('profile-license-status');
-                licenseStatusElement.textContent = userLicense.status;
+                licenseStatusElement.textContent = userLicense.status === 'pending' ? 'Ожидает проверки' : userLicense.status === 'approved' ? 'Подтверждено' : userLicense.status === 'rejected' ? 'Отклонено' : userLicense.status;
                 licenseStatusElement.className = `status-${userLicense.status}`;
             } else {
                 // Если права не найдены, отображаем "Не загружены"

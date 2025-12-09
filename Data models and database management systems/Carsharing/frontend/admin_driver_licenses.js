@@ -67,7 +67,7 @@ async function displayDriverLicenses(driverLicenses) {
             <td>
                 ${photoBackUrl ? `<img src="${photoBackUrl}" alt="Document Back Photo" style="max-width: 100px; max-height: 100px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoBackUrl}', 'Фото документа (обратная сторона)')" title="Кликните для просмотра в полном размере">` : '-'}
             </td>
-            <td class="status-${license.status}">${license.status}</td>
+            <td class="status-${license.status}">${license.status === 'pending' ? 'Ожидает проверки' : license.status === 'approved' ? 'Подтверждено' : license.status === 'rejected' ? 'Отклонено' : license.status}</td>
             <td>
                 <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
                 <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>

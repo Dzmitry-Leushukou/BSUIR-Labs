@@ -42,7 +42,7 @@ function displayMaintenanceRequests(maintenanceRequests) {
             <td>${request.reported_by || ''}</td>
             <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
-            <td>${request.status}</td>
+            <td>${request.status === 'open' ? 'Открыт' : request.status === 'in_progress' ? 'В процессе' : request.status === 'resolved' ? 'Решен' : request.status}</td>
             <td>${request.description}</td>
         `;
         tableBody.appendChild(row);

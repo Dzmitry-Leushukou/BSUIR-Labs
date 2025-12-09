@@ -101,7 +101,7 @@ async function displayTripCompletionsData(tripCompletions) {
             <td>${rental ? (rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : '') : ''}</td>
             <td>${rental ? rental.price + ' BYN' : 'N/A'}</td>
             <td>${photosHtml}</td>
-            <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">${statusText}</td>
+            <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">${completion.admin_approved === null ? 'Ожидает проверки' : completion.admin_approved ? 'Подтверждено' : 'Отклонено'}</td>
             <td>
                 <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
                 <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>

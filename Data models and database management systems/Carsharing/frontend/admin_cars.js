@@ -51,7 +51,7 @@ function displayCars(cars) {
             <td>${car.vin}</td>
             <td>${car.plate_number}</td>
             <td>${car.model}</td>
-            <td>${car.status}</td>
+            <td>${car.status === 'available' ? 'Доступен' : car.status === 'rented' ? 'Арендован' : car.status === 'maintenance' ? 'На обслуживании' : car.status === 'pending_completion' ? 'Ожидает завершения' : car.status}</td>
             <td>${position}</td>
             <td>${car.main_photo_id || ''}</td>
             <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>

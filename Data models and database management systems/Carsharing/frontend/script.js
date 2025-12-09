@@ -136,14 +136,14 @@ async function showCarsOnMap() {
                         popupContent = `
                             <b>Машина: ${car.model}</b><br>
                             Номер: ${car.plate_number}<br>
-                            Статус: ${car.status}<br>
+                            Статус: ${car.status === 'available' ? 'Доступен' : car.status === 'rented' ? 'Арендован' : car.status === 'maintenance' ? 'На обслуживании' : car.status === 'pending_completion' ? 'Ожидает завершения' : car.status}<br>
                             <button class="rent-car-btn" data-car-id="${car.id}">Арендовать</button>
                         `;
                     } else {
                         popupContent = `
                             <b>Машина: ${car.model}</b><br>
                             Номер: ${car.plate_number}<br>
-                            Статус: ${car.status}<br>
+                            Статус: ${car.status === 'available' ? 'Доступен' : car.status === 'rented' ? 'Арендован' : car.status === 'maintenance' ? 'На обслуживании' : car.status === 'pending_completion' ? 'Ожидает завершения' : car.status}<br>
                             <span style="color: red;">🔴 Недоступна для аренды</span>
                         `;
                     }
@@ -821,7 +821,7 @@ async function showActiveRentalPanel(rental) {
                 <div>
                     <p><strong>Модель:</strong> ${rentalWithCarInfo.model || rental.car_id}</p>
                     <p><strong>Номер:</strong> ${rentalWithCarInfo.plate_number || 'Неизвестен'}</p>
-                    <p><strong>Статус:</strong> ${rental.status}</p>
+                    <p><strong>Статус:</strong> ${rental.status === 'active' ? 'Активна' : rental.status === 'completed' ? 'Завершена' : rental.status === 'cancelled' ? 'Отменена' : rental.status === 'pending_completion' ? 'Ожидает завершения' : rental.status}</p>
                 </div>
                 <p><strong>Начало:</strong> ${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</p>
                 <p id="rental-price-${rental.id}">Текущая цена: ${currentPrice} BYN за ${minutesDiff} мин.</p>

@@ -43,7 +43,7 @@ function displayRentals(rentals) {
             <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td>${rental.price} BYN</td>
-            <td class="status-${rental.status}">${rental.status}</td>
+            <td class="status-${rental.status}">${rental.status === 'active' ? 'Активна' : rental.status === 'completed' ? 'Завершена' : rental.status === 'cancelled' ? 'Отменена' : rental.status === 'pending_completion' ? 'Ожидает завершения' : rental.status}</td>
         `;
         tableBody.appendChild(row);
     });

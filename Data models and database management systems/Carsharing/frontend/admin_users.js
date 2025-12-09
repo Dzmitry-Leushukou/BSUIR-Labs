@@ -43,7 +43,7 @@ function displayUsers(users) {
             <td>${user.surname}</td>
             <td>${user.cashback} BYN</td>
             <td>${user.role_id}</td>
-            <td class="status-${user.status}">${user.status}</td>
+            <td class="status-${user.status}">${user.status === 'active' ? 'Активен' : user.status === 'banned' ? 'Заблокирован' : user.status}</td>
             <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${new Date(user.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>
