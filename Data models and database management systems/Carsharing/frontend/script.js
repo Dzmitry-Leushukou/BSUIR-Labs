@@ -933,6 +933,27 @@ async function endRental(rentalId) {
             price = 1;
         }
         
+        // Создаем запись в логе оплаты
+        const paymentLog = {
+            rental_id: rentalId,
+            user_id: parseInt(userId),
+            pay_type: 'card',  // По умолчанию оплата картой в этой функции
+            price: price
+        };
+        
+        const paymentLogResponse = await fetch('/payment_logs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': userId
+            },
+            body: JSON.stringify(paymentLog)
+        });
+        
+        if (!paymentLogResponse.ok) {
+            throw new Error('Ошибка при создании записи об оплате');
+        }
+        
         const response = await fetch(`/rentals/${rentalId}`, {
             method: 'PUT',
             headers: {
@@ -1375,26 +1396,60 @@ async function processPaymentAndComplete(rentalId) {
         }
         
         // Создаем запись в логе оплаты
-        const paymentLog = {
-            rental_id: rentalId,
-            user_id: parseInt(userId),
-            pay_type: 'card',
-            price: finalPrice
-        };
-        
-        // Отправляем данные оплаты
-        const paymentLogResponse = await fetch('/payment_logs/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
-            body: JSON.stringify(paymentLog)
-        });
-        
-        if (!paymentLogResponse.ok) {
-            throw new Error('Ошибка при создании записи об оплате');
+        // Если использовался кэшбэк, создаем отдельные записи для кэшбэка и для оплаты картой
+        if (useCashback && cashbackUsed > 0) {
+            // Создаем запись для использованного кэшбэка
+            const cashbackPaymentLog = {
+                rental_id: rentalId,
+                user_id: parseInt(userId),
+                pay_type: 'cashback',
+                price: cashbackUsed
+            };
+            
+            // Отправляем данные оплаты кэшбэком
+            const cashbackPaymentLogResponse = await fetch('/payment_logs/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': userId
+                },
+                body: JSON.stringify(cashbackPaymentLog)
+            });
+            
+            if (!cashbackPaymentLogResponse.ok) {
+                throw new Error('Ошибка при создании записи об оплате кэшбэком');
+            }
         }
+        
+        // Если осталась цена для оплаты картой (не вся оплата была кэшбэком)
+        if (finalPrice > 0) {
+            const cardPaymentLog = {
+                rental_id: rentalId,
+                user_id: parseInt(userId),
+                pay_type: 'card',
+                price: finalPrice
+            };
+            
+            // Отправляем данные оплаты картой
+            const cardPaymentLogResponse = await fetch('/payment_logs/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': userId
+                },
+                body: JSON.stringify(cardPaymentLog)
+            });
+            
+            if (!cardPaymentLogResponse.ok) {
+                throw new Error('Ошибка при создании записи об оплате картой');
+            }
+        }
+        
+        // Если вся оплата была кэшбэком (finalPrice = 0), создаем только запись о кэшбэке
+        else if (finalPrice === 0 && useCashback && cashbackUsed > 0) {
+            // Запись уже создана выше, ничего дополнительно не нужно
+        }
+        
         
         // Проверяем, загружены ли фотографии (минимум 1 обязательно)
         const photoUpload = document.getElementById('photo-upload');
