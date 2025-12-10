@@ -169,8 +169,7 @@ async function loadProfileInfo() {
             } else {
                 // В случае ошибки используем резервный вариант
                 const roleName = userData.role_id === 1 ? 'Администратор' :
-                               userData.role_id === 2 ? 'Пользователь' :
-                               userData.role_id === 3 ? 'Менеджер' : 'Неизвестная роль';
+                               userData.role_id === 2 ? 'Пользователь' : 'Неизвестная роль';
                 document.getElementById('profile-role').textContent = roleName;
             }
             

@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- Create roles table
 CREATE TABLE IF NOT EXISTS roles (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL CHECK (name IN ('admin','user','manager')),
+    name VARCHAR(50) UNIQUE NOT NULL CHECK (name IN ('admin','user')),
     description TEXT
 );
 
@@ -396,7 +396,8 @@ INSERT INTO roles (name, description) VALUES
     ('user', 'Regular user role') 
     ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name, description) VALUES
-    ('manager', 'Manager role with limited admin access')
+    ('admin', 'Administrator role with full access'),
+    ('user', 'Regular user role with basic access')
     ON CONFLICT (name) DO NOTHING;
 
 -- Add foreign key constraint for main_photo_id after both tables are created

@@ -67,7 +67,7 @@ async function changeRole(userId) {
         return;
     }
     
-    const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user, 3 - manager):');
+    const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user):');
     if (!newRoleId) return;
     
     if (!confirm(`Вы уверены, что хотите изменить роль пользователя на ${newRoleId}?`)) {

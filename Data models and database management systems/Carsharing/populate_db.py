@@ -23,8 +23,7 @@ def populate_roles():
     
     roles = [
         ("admin", "Administrator role with full access"),
-        ("user", "Regular user role"),
-        ("manager", "Manager role with limited admin access")
+        ("user", "Regular user role")
     ]
     
     for role in roles:
@@ -53,7 +52,7 @@ def populate_users():
         ("bob.johnson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Bob", "Johnson", 10.75, roles["user"], "active"),
         ("alice.brown@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Alice", "Brown", 30.25, roles["user"], "active"),
         ("charlie.wilson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Charlie", "Wilson", 5.50, roles["user"], "active"),
-        ("diana.miller@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Diana", "Miller", 40.00, roles["manager"], "active"),
+        ("diana.miller@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Diana", "Miller", 40.00, roles["user"], "active"),
         ("eve.taylor@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Eve", "Taylor", 22.30, roles["user"], "banned"),
         ("frank.moore@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Frank", "Moore", 18.90, roles["user"], "active"),
         ("grace.lee@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Grace", "Lee", 35.75, roles["user"], "active")
