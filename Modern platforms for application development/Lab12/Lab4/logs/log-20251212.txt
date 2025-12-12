@@ -1,0 +1,47 @@
+2025-12-12 13:00:51.190 +03:00 [INF] User profile is available. Using 'C:\Users\dmitr\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-12 13:00:51.914 +03:00 [INF] Now listening on: https://localhost:7001
+2025-12-12 13:00:52.009 +03:00 [INF] Now listening on: http://localhost:5001
+2025-12-12 13:00:52.166 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-12 13:00:52.192 +03:00 [INF] Hosting environment: Development
+2025-12-12 13:00:52.193 +03:00 [INF] Content root path: C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4
+2025-12-12 13:00:53.282 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/ - null null
+2025-12-12 13:00:54.100 +03:00 [WRN] Error unprotecting the session cookie.
+System.Security.Cryptography.CryptographicException: The payload was invalid. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+   at Microsoft.AspNetCore.DataProtection.Cng.CbcAuthenticatedEncryptor.DecryptImpl(Byte* pbCiphertext, UInt32 cbCiphertext, Byte* pbAdditionalAuthenticatedData, UInt32 cbAdditionalAuthenticatedData)
+   at Microsoft.AspNetCore.DataProtection.Cng.Internal.CngAuthenticatedEncryptorBase.Decrypt(ArraySegment`1 ciphertext, ArraySegment`1 additionalAuthenticatedData)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+   at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+2025-12-12 13:01:04.994 +03:00 [INF] AppCookie was not authenticated. Failure message: Unprotect ticket failed
+2025-12-12 13:01:05.006 +03:00 [INF] Executing endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-12 13:01:05.070 +03:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller Lab1.UI.Controllers.HomeController (Lab1).
+2025-12-12 13:01:05.181 +03:00 [INF] Executing ViewResult, running view Index.
+2025-12-12 13:01:05.591 +03:00 [INF] Executed ViewResult - view Index executed in 418.2108ms.
+2025-12-12 13:01:05.599 +03:00 [INF] Executed action Lab1.UI.Controllers.HomeController.Index (Lab1) in 523.481ms
+2025-12-12 13:01:05.602 +03:00 [INF] Executed endpoint 'Lab1.UI.Controllers.HomeController.Index (Lab1)'
+2025-12-12 13:01:05.641 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/ - 200 null text/html; charset=utf-8 12360.0807ms
+2025-12-12 13:01:05.668 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css - null null
+2025-12-12 13:01:05.668 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/css/site.css?v=JoPpvJ6jynZs_lqwshSouCMJB-imV-dyGAx6JgxsRr4 - null null
+2025-12-12 13:01:05.668 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/font-awesome/css/all.min.css - null null
+2025-12-12 13:01:05.689 +03:00 [INF] Sending file. Request path: '/css/site.css'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\css\site.css'
+2025-12-12 13:01:05.693 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/css/site.css?v=JoPpvJ6jynZs_lqwshSouCMJB-imV-dyGAx6JgxsRr4 - 200 126 text/css 25.249ms
+2025-12-12 13:01:05.698 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/jquery/dist/jquery.min.js - null null
+2025-12-12 13:01:05.719 +03:00 [INF] Sending file. Request path: '/lib/font-awesome/css/all.min.css'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\lib\font-awesome\css\all.min.css'
+2025-12-12 13:01:05.719 +03:00 [INF] Sending file. Request path: '/lib/bootstrap/dist/css/bootstrap.min.css'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css'
+2025-12-12 13:01:05.726 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/font-awesome/css/all.min.css - 200 73890 text/css 57.5121ms
+2025-12-12 13:01:05.730 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/css/bootstrap.min.css - 200 162726 text/css 62.3225ms
+2025-12-12 13:01:05.737 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js - null null
+2025-12-12 13:01:05.737 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/js/site.js?v=yI9Wq3IouOs3n2m9O9lX7lBhOuYikX2a6pONjp05jFo - null null
+2025-12-12 13:01:05.746 +03:00 [INF] Sending file. Request path: '/js/site.js'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\js\site.js'
+2025-12-12 13:01:05.749 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/js/site.js?v=yI9Wq3IouOs3n2m9O9lX7lBhOuYikX2a6pONjp05jFo - 200 1511 text/javascript 11.9963ms
+2025-12-12 13:01:05.754 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - null null
+2025-12-12 13:01:05.763 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_framework/aspnetcore-browser-refresh.js - 200 16493 application/javascript; charset=utf-8 9.0784ms
+2025-12-12 13:01:05.767 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/_vs/browserLink - null null
+2025-12-12 13:01:05.830 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/_vs/browserLink - 200 null text/javascript; charset=UTF-8 62.6728ms
+2025-12-12 13:01:05.834 +03:00 [INF] Sending file. Request path: '/lib/bootstrap/dist/js/bootstrap.bundle.min.js'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js'
+2025-12-12 13:01:05.840 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/bootstrap/dist/js/bootstrap.bundle.min.js - 200 78474 text/javascript 103.1759ms
+2025-12-12 13:01:05.866 +03:00 [INF] Sending file. Request path: '/lib/jquery/dist/jquery.min.js'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\lib\jquery\dist\jquery.min.js'
+2025-12-12 13:01:05.870 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/jquery/dist/jquery.min.js - 200 89503 text/javascript 171.8023ms
+2025-12-12 13:01:05.932 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7001/lib/font-awesome/webfonts/fa-brands-400.woff2 - null null
+2025-12-12 13:01:05.958 +03:00 [INF] Sending file. Request path: '/lib/font-awesome/webfonts/fa-brands-400.woff2'. Physical path: 'C:\Prog\BSUIR-Labs\Modern platforms for application development\Lab12\Lab4\wwwroot\lib\font-awesome\webfonts\fa-brands-400.woff2'
+2025-12-12 13:01:05.962 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7001/lib/font-awesome/webfonts/fa-brands-400.woff2 - 200 118684 font/woff2 30.0237ms
