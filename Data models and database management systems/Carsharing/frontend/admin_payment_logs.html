@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица Логи платежей - Админ панель</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
+            <h1>Таблица Payment logs</h1>
+        </div>
+        
+        <div class="admin-content">
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID аренды</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="rental_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID пользователя</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="user_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Тип оплаты</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="pay_type">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Price</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="price">
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-logs-table-body">
+                        <!-- Содержимое таблицы будет загружено через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+    <script src="/static/admin_common.js"></script>
+    <script src="/static/admin_payment_logs.js"></script>
+</body>
+</html>

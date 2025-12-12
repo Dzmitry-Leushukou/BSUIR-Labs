@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица Пользователи - Админ панель</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
+            <h1>Таблица Users</h1>
+        </div>
+        
+        <div class="admin-content">
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Email</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="email">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Имя</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="name">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Фамилия</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="surname">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Кэшбэк</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="cashback">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>ID роли</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="role_id">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Status</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="status">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Создан</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="created_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Обновлен</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="updated_at">
+                                </div>
+                            </th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Содержимое таблицы будет загружено через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+    <script src="/static/admin_common.js"></script>
+    <script src="/static/admin_users.js"></script>
+</body>
+</html>

@@ -2,6 +2,8 @@ from schemas import CarCreate, CarUpdate, Car
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+import pytz
+from datetime import datetime
 
 # Cars CRUD
 def get_cars(offset: int = 0, limit: int = 100):
@@ -29,15 +31,15 @@ def create_car(car: CarCreate):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     if car.position:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status, position) 
-               VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326)) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status, car.position)
+            """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+               VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s) RETURNING *""",
+            (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
         )
     else:
         cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status) 
-               VALUES (%s, %s, %s, %s) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status)
+            """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
+               VALUES (%s, %s, %s, %s, %s) RETURNING *""",
+            (car.vin, car.plate_number, car.model, car.status, car.main_photo_id)
         )
     new_car = cur.fetchone()
     conn.commit()
@@ -62,8 +64,15 @@ def update_car(car_id: int, car: CarUpdate):
     if car.position is not None:
         update_fields.append("position = ST_GeomFromText(%s, 4326)")
         values.append(car.position)
+    if car.main_photo_id is not None:
+        update_fields.append("main_photo_id = %s")
+        values.append(car.main_photo_id)
     
-    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+    # Set updated_at to current time in UTC+3
+    utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+    updated_at = datetime.now(utc_plus_3)
+    update_fields.append("updated_at = %s")
+    values.append(updated_at)
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -91,3 +100,42 @@ def delete_car(car_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Car not found")
     return {"message": "Car deleted successfully"}
+
+def get_cars_positions_with_user_rental_status(user_id: int):
+    """Возвращает машины для отображения на карте: если у пользователя есть активная аренда - только арендованная машина, иначе - только доступные машины"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Сначала проверяем, есть ли у пользователя активная аренда
+    cur.execute("""
+        SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
+               ST_AsText(c.position) as position_text,
+               ST_X(c.position::geometry) as longitude,
+               ST_Y(c.position::geometry) as latitude,
+               TRUE as is_rented_by_user
+        FROM cars c
+        JOIN rentals r ON c.id = r.car_id
+        WHERE r.user_id = %s AND r.status = 'active' AND c.position IS NOT NULL
+    """, (user_id,))
+    
+    rented_cars = cur.fetchall()
+    
+    if rented_cars:
+        # Если у пользователя есть активная аренда, возвращаем только арендованные им машины
+        cars = rented_cars
+    else:
+        # Если у пользователя нет активной аренды, возвращаем только доступные машины
+        cur.execute("""
+            SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
+                   ST_AsText(c.position) as position_text,
+                   ST_X(c.position::geometry) as longitude,
+                   ST_Y(c.position::geometry) as latitude,
+                   FALSE as is_rented_by_user
+            FROM cars c
+            WHERE c.status = 'available' AND c.position IS NOT NULL
+        """)
+        cars = cur.fetchall()
+    
+    cur.close()
+    conn.close()
+    return cars

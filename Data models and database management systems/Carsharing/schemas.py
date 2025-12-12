@@ -28,21 +28,27 @@ class UserBase(BaseModel):
     role_id: int
     status: Optional[str] = "active"
 
+from pydantic import BaseModel, EmailStr
+
 class UserRegistration(BaseModel):
-    email: str
+    email: EmailStr
     password: str  # plain text password
     name: str
     surname: str
     cashback: Optional[float] = 0
-    role_id: int = 1  # по умолчанию
+    role_id: int = 2  # по умолчанию (user role)
     status: Optional[str] = "active"
 
 class UserLogin(BaseModel):
     email: str
     password: str
 
+class UserPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
 class UserCreate(UserBase):
-    pass
+    role_id: int = 2  # по умолчанию (user role)
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
@@ -66,6 +72,7 @@ class CarBase(BaseModel):
     model: str
     status: Optional[str] = "available"
     position: Optional[str] = None  # GeoJSON format
+    main_photo_id: Optional[int] = None
 
 class CarCreate(CarBase):
     pass
@@ -74,6 +81,7 @@ class CarUpdate(BaseModel):
     model: Optional[str] = None
     status: Optional[str] = None
     position: Optional[str] = None
+    main_photo_id: Optional[int] = None
 
 class Car(CarBase):
     id: int
@@ -86,18 +94,22 @@ class PhotoBase(BaseModel):
     object_type: str
     user_id: Optional[int] = None
     car_id: Optional[int] = None
-    url: str
     uploaded_by: int
 
 class PhotoCreate(PhotoBase):
-    pass
+    file_data: bytes
+    filename: str
+    content_type: str
+    file_size: int
 
 class PhotoUpdate(BaseModel):
-    url: Optional[str] = None
     uploaded_by: Optional[int] = None
 
 class Photo(PhotoBase):
     id: int
+    filename: str
+    content_type: str
+    file_size: int
     uploaded_at: datetime
     
     class Config:
@@ -108,15 +120,17 @@ class DriverLicenseBase(BaseModel):
     issued_by: str
     expiration_date: datetime  # Changed from str to datetime to handle date objects from DB
     document_photo_id: int
+    document_photo_back_id: Optional[int] = None  # ID второй фотографии (например, обратной стороны)
     status: Optional[str] = "pending"
 
 class DriverLicenseCreate(DriverLicenseBase):
-    pass
+    driver_id: Optional[int] = None  # Make driver_id optional for creation
 
 class DriverLicenseUpdate(BaseModel):
     issued_by: Optional[str] = None
     expiration_date: Optional[datetime] = None  # Changed from str to datetime
     document_photo_id: Optional[int] = None
+    document_photo_back_id: Optional[int] = None
     status: Optional[str] = None
 
 class DriverLicense(DriverLicenseBase):
@@ -127,7 +141,6 @@ class DriverLicense(DriverLicenseBase):
 
 class SessionBase(BaseModel):
     user_id: int
-    ip: Optional[str] = None
 
 class SessionCreate(SessionBase):
     pass
@@ -164,7 +177,7 @@ class CarState(CarStateBase):
 class RentalBase(BaseModel):
     user_id: int
     car_id: int
-    started_at: datetime
+    started_at: Optional[datetime] = None
     price: float
     status: Optional[str] = "active"
 
@@ -174,9 +187,20 @@ class RentalCreate(RentalBase):
 class RentalUpdate(BaseModel):
     ended_at: Optional[datetime] = None
     status: Optional[str] = None
+    price: Optional[float] = None
 
 class Rental(RentalBase):
     id: int
+    ended_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class RentalWithCarInfo(Rental):
+    vin: str
+    plate_number: str
+    model: str
+    main_photo_id: Optional[int] = None
     
     class Config:
         from_attributes = True
@@ -208,7 +232,6 @@ class PaymentLogBase(BaseModel):
     user_id: int
     pay_type: str
     price: float
-    ip: Optional[str] = None
 
 class PaymentLogCreate(PaymentLogBase):
     pass
@@ -223,12 +246,36 @@ class LogBase(BaseModel):
     actor_user_id: int
     action_type: str
     target_id: Optional[int] = None
-    ip: Optional[str] = None
 
 class LogCreate(LogBase):
     pass
 
 class Log(LogBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class TripCompletionBase(BaseModel):
+    rental_id: int
+    completion_photo_id: Optional[int] = None
+    admin_approved: Optional[bool] = None
+    admin_comment: Optional[str] = None
+    admin_reviewed_by: Optional[int] = None
+    admin_reviewed_at: Optional[datetime] = None
+
+class TripCompletionCreate(TripCompletionBase):
+    rental_id: int
+    completion_photo_id: int  # Required for creation
+
+class TripCompletionUpdate(BaseModel):
+    admin_approved: Optional[bool] = None
+    admin_comment: Optional[str] = None
+    admin_reviewed_by: Optional[int] = None
+    admin_reviewed_at: Optional[datetime] = None
+
+class TripCompletion(TripCompletionBase):
     id: int
     created_at: datetime
     
@@ -244,7 +291,6 @@ class ActionLogBase(BaseModel):
     description: Optional[str] = None
     old_values: Optional[dict] = None  # Changed from str to dict to handle JSON objects from DB
     new_values: Optional[dict] = None  # Changed from str to dict to handle JSON objects from DB
-    ip: Optional[str] = None
     user_agent: Optional[str] = None
 
 class ActionLogCreate(ActionLogBase):

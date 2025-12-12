@@ -135,7 +135,6 @@ class DriverLicense(DriverLicenseBase):
 
 class SessionBase(BaseModel):
     user_id: int
-    ip: Optional[str] = None
 
 class SessionCreate(SessionBase):
     pass
@@ -216,7 +215,6 @@ class PaymentLogBase(BaseModel):
     user_id: int
     pay_type: str
     price: float
-    ip: Optional[str] = None
 
 class PaymentLogCreate(PaymentLogBase):
     pass
@@ -231,7 +229,6 @@ class LogBase(BaseModel):
     actor_user_id: int
     action_type: str
     target_id: Optional[int] = None
-    ip: Optional[str] = None
 
 class LogCreate(LogBase):
     pass
@@ -252,7 +249,6 @@ class ActionLogBase(BaseModel):
     description: Optional[str] = None
     old_values: Optional[str] = None
     new_values: Optional[str] = None
-    ip: Optional[str] = None
     user_agent: Optional[str] = None
 
 class ActionLogCreate(ActionLogBase):
@@ -437,6 +433,15 @@ def get_cars(skip: int = 0, limit: int = 100):
     cur.close()
     conn.close()
     return cars
+
+# The cars router is now in the separate file, so we remove this endpoint from main app
+# @app.get("/cars/all/positions", response_model=List[dict])
+# def get_all_cars_positions(user_id: int):
+#     """
+#     Returns all cars with their positions and information about whether the car is rented by the user
+#     """
+#     from crud.cars_crud import get_all_cars_positions as get_cars_positions_crud
+#     return get_cars_positions_crud(user_id)
 
 @app.get("/cars/{car_id}", response_model=Car)
 def get_car(car_id: int):
@@ -719,9 +724,9 @@ def create_session(session: SessionCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO sessions (user_id, ip) 
-           VALUES (%s, %s) RETURNING *""",
-        (session.user_id, session.ip)
+        """INSERT INTO sessions (user_id)
+           VALUES (%s) RETURNING *""",
+        (session.user_id,)
     )
     new_session = cur.fetchone()
     conn.commit()
@@ -734,8 +739,8 @@ def update_session(session_id: int, session: SessionBase):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        "UPDATE sessions SET user_id = %s, ip = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s RETURNING *",
-        (session.user_id, session.ip, session_id)
+        "UPDATE sessions SET user_id = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s RETURNING *",
+        (session.user_id, session_id)
     )
     updated_session = cur.fetchone()
     conn.commit()
@@ -1041,9 +1046,9 @@ def create_payment_log(log: PaymentLogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO payment_logs (rental_id, user_id, pay_type, price, ip) 
-           VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-        (log.rental_id, log.user_id, log.pay_type, log.price, log.ip)
+        """INSERT INTO payment_logs (rental_id, user_id, pay_type, price)
+           VALUES (%s, %s, %s, %s) RETURNING *""",
+        (log.rental_id, log.user_id, log.pay_type, log.price)
     )
     new_log = cur.fetchone()
     conn.commit()
@@ -1092,9 +1097,9 @@ def create_log(log: LogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO logs (actor_user_id, action_type, target_id, ip) 
-           VALUES (%s, %s, %s, %s) RETURNING *""",
-        (log.actor_user_id, log.action_type, log.target_id, log.ip)
+        """INSERT INTO logs (actor_user_id, action_type, target_id)
+           VALUES (%s, %s, %s) RETURNING *""",
+        (log.actor_user_id, log.action_type, log.target_id)
     )
     new_log = cur.fetchone()
     conn.commit()
@@ -1143,10 +1148,10 @@ def create_action_log(log: ActionLogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, description, old_values, new_values, ip, user_agent) 
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-        (log.actor_user_id, log.action_type, log.target_user_id, log.target_car_id, log.target_rental_id, 
-         log.description, log.old_values, log.new_values, log.ip, log.user_agent)
+        """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, description, old_values, new_values, user_agent)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+        (log.actor_user_id, log.action_type, log.target_user_id, log.target_car_id, log.target_rental_id,
+         log.description, log.old_values, log.new_values, log.user_agent)
     )
     new_log = cur.fetchone()
     conn.commit()

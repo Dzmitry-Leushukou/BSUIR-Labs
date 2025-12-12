@@ -28,9 +28,9 @@ def create_photo(photo: PhotoCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO photos (object_type, user_id, car_id, url, uploaded_by) 
-           VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-        (photo.object_type, photo.user_id, photo.car_id, photo.url, photo.uploaded_by)
+        """INSERT INTO photos (object_type, user_id, car_id, file_data, filename, content_type, file_size, uploaded_by)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+        (photo.object_type, photo.user_id, photo.car_id, photo.file_data, photo.filename, photo.content_type, photo.file_size, photo.uploaded_by)
     )
     new_photo = cur.fetchone()
     conn.commit()
@@ -46,9 +46,6 @@ def update_photo(photo_id: int, photo: PhotoUpdate):
     update_fields = []
     values = []
     
-    if photo.url is not None:
-        update_fields.append("url = %s")
-        values.append(photo.url)
     if photo.uploaded_by is not None:
         update_fields.append("uploaded_by = %s")
         values.append(photo.uploaded_by)

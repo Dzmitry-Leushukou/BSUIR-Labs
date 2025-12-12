@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой профиль - Carsharing App</title>
+    <title>Мой профиль - Приложение каршеринга</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="profile-container">
         <div class="profile-header">
+            <button class="btn back-btn" onclick="goBack()">&larr; Назад</button>
             <h1>Мой профиль</h1>
         </div>
         
         <div class="profile-content">
             <div class="user-card">
                 <div class="user-avatar">
-                    <img src="https://via.placeholder.com/100" alt="User Avatar" class="avatar-large">
+                    <!-- Удалено изображение аватара -->
                 </div>
                 
                 <div class="user-info-details">
@@ -43,13 +44,21 @@
                         <label>Роль:</label>
                         <span id="profile-role">Пользователь</span>
                     </div>
+                    
+                    <div class="info-row">
+                        <label>Статус прав:</label>
+                        <span id="profile-license-status">Не загружены</span>
+                    </div>
                 </div>
-            </div>
+            
             
             <div class="profile-actions">
                 <button class="btn edit-profile-btn">Редактировать профиль</button>
                 <button class="btn change-password-btn">Сменить пароль</button>
+                <button class="btn my-orders-btn" onclick="showMyOrders()">Мои заказы</button>
+                <button class="btn upload-driver-license-btn" onclick="uploadDriverLicense()">Загрузить водительские права</button>
             </div>
+            
         </div>
     </div>
     
@@ -82,6 +91,35 @@
         </div>
     </div>
     
+    <!-- Модальное окно для смены пароля -->
+    <div id="change-password-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-change-password">&times;</span>
+            <h2>Сменить пароль</h2>
+            <form id="change-password-form">
+                <div class="form-group">
+                    <label for="current-password">Текущий пароль:</label>
+                    <input type="password" id="current-password" name="current_password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-password">Новый пароль:</label>
+                    <input type="password" id="new-password" name="new_password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm-new-password">Подтвердите новый пароль:</label>
+                    <input type="password" id="confirm-new-password" name="confirm_new_password" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Сменить пароль</button>
+                    <button type="button" class="btn btn-secondary cancel-change-password">Отмена</button>
+                </div>
+            </form>
+        </div>
+    
     <script src="/static/profile.js"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>

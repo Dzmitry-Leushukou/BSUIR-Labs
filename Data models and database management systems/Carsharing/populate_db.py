@@ -1,8 +1,9 @@
 import psycopg2
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import random
+import bcrypt
 
 load_dotenv()
 
@@ -46,16 +47,16 @@ def populate_users():
     roles = {name: id for id, name in cur.fetchall()}
     
     users = [
-        ("admin@example.com", "hashed_password_1", "Admin", "User", 0.0, roles["admin"], "active"),
-        ("john.doe@example.com", "hashed_password_2", "John", "Doe", 15.50, roles["user"], "active"),
-        ("jane.smith@example.com", "hashed_password_3", "Jane", "Smith", 25.00, roles["user"], "active"),
-        ("bob.johnson@example.com", "hashed_password_4", "Bob", "Johnson", 10.75, roles["user"], "active"),
-        ("alice.brown@example.com", "hashed_password_5", "Alice", "Brown", 30.25, roles["user"], "active"),
-        ("charlie.wilson@example.com", "hashed_password_6", "Charlie", "Wilson", 5.50, roles["user"], "active"),
-        ("diana.miller@example.com", "hashed_password_7", "Diana", "Miller", 40.00, roles["manager"], "active"),
-        ("eve.taylor@example.com", "hashed_password_8", "Eve", "Taylor", 22.30, roles["user"], "banned"),
-        ("frank.moore@example.com", "hashed_password_9", "Frank", "Moore", 18.90, roles["user"], "active"),
-        ("grace.lee@example.com", "hashed_password_10", "Grace", "Lee", 35.75, roles["user"], "active")
+        ("admin@example.com", bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Admin", "User", 0.0, roles["admin"], "active"),
+        ("john.doe@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "John", "Doe", 15.50, roles["user"], "active"),
+        ("jane.smith@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Jane", "Smith", 25.00, roles["user"], "active"),
+        ("bob.johnson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Bob", "Johnson", 10.75, roles["user"], "active"),
+        ("alice.brown@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Alice", "Brown", 30.25, roles["user"], "active"),
+        ("charlie.wilson@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Charlie", "Wilson", 5.50, roles["user"], "active"),
+        ("diana.miller@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Diana", "Miller", 40.00, roles["manager"], "active"),
+        ("eve.taylor@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Eve", "Taylor", 22.30, roles["user"], "banned"),
+        ("frank.moore@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Frank", "Moore", 18.90, roles["user"], "active"),
+        ("grace.lee@example.com", bcrypt.hashpw("password123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), "Grace", "Lee", 35.75, roles["user"], "active")
     ]
     
     for user in users:
@@ -75,16 +76,26 @@ def populate_cars():
     cur = conn.cursor()
     
     cars = [
-        ("1HGBH41JXMN109186", "1234 AB-1", "Toyota Camry", "available", "POINT(-122.4194 37.7749)"),
-        ("2T1BURHE5JC012345", "5678 CD-2", "Honda Civic", "available", "POINT(-122.4184 37.7759)"),
-        ("WBAVA33598NL67890", "9012 EF-3", "BMW X3", "rented", "POINT(-122.4174 37.7769)"),
-        ("1FTFW1E83GKD12345", "3456 GH-4", "Ford F-150", "available", "POINT(-122.4164 37.7779)"),
-        ("JH4NA21691T000123", "7890 IJ-5", "Acura TLX", "maintenance", "POINT(-122.4154 37.7789)"),
-        ("KMHDH4AE2CU456789", "2345 JK-6", "Hyundai Sonata", "available", "POINT(-122.4144 37.7799)"),
-        ("1C4RJFAG4FC123456", "6789 KL-7", "Jeep Cherokee", "available", "POINT(-122.4134 37.7809)"),
-        ("WBAVA53589NL78901", "1011 LM-7", "BMW 3 Series", "rented", "POINT(-122.4124 37.7819)"),
-        ("2T1BURHE6JC023456", "1213 MN-7", "Honda Accord", "available", "POINT(-122.4114 37.7829)"),
-        ("1HGBH41JXMN110197", "1415 OP-1", "Toyota Corolla", "available", "POINT(-122.4104 37.7839)")
+        ("1HGBH41JXMN109186", "1234 AB-1", "Toyota Camry", "available", "POINT(27.5615 53.9041)"),  # Минск
+        ("2T1BURHE5JC012345", "5678 CD-2", "Honda Civic", "available", "POINT(27.5575 53.9025)"), # Минск
+        ("WBAVA33598NL67890", "9012 EF-3", "BMW X3", "rented", "POINT(27.5634 53.9062)"),  # Минск
+        ("1FTFW1E83GKD12345", "3456 GH-4", "Ford F-150", "available", "POINT(27.5598 53.9012)"),  # Минск
+        ("JH4NA21691T000123", "7890 IJ-5", "Acura TLX", "maintenance", "POINT(27.5651 53.9038)"),  # Минск
+        ("KMHDH4AE2CU456789", "2345 JK-6", "Hyundai Sonata", "available", "POINT(27.587 53.9056)"),  # Минск
+        ("1C4RJFAG4FC123456", "6789 KL-7", "Jeep Cherokee", "available", "POINT(27.5623 53.9071)"),  # Минск
+        ("WBAVA53589NL78901", "1011 LM-7", "BMW 3 Series", "rented", "POINT(27.5569 53.9021)"),  # Минск
+        ("2T1BURHE6JC023456", "1213 MN-7", "Honda Accord", "available", "POINT(27.5642 53.9049)"),  # Минск
+        ("1HGBH41JXMN110197", "1415 OP-1", "Toyota Corolla", "available", "POINT(27.578 53.9067)"), # Минск
+        ("1HGBH41JXMN109187", "1234 AB-2", "Toyota Camry", "available", "POINT(-122.4194 37.7749)"),
+        ("2T1BURHE5JC012346", "5678 CD-3", "Honda Civic", "available", "POINT(-122.4184 37.759)"),
+        ("WBAVA33598NL67891", "9012 EF-4", "BMW X3", "rented", "POINT(-122.4174 37.769)"),
+        ("1FTFW1E83GKD12346", "3456 GH-5", "Ford F-150", "available", "POINT(-122.4164 37.7779)"),
+        ("JH4NA21691T000124", "7890 IJ-6", "Acura TLX", "maintenance", "POINT(-122.4154 37.789)"),
+        ("KMHDH4AE2CU456790", "2345 JK-7", "Hyundai Sonata", "available", "POINT(-122.4144 37.7799)"),
+        ("1C4RJFAG4FC123457", "6789 KL-8", "Jeep Cherokee", "available", "POINT(-122.4134 37.7809)"),
+        ("WBAVA53589NL78902", "1011 LM-8", "BMW 3 Series", "rented", "POINT(-122.4124 37.7819)"),
+        ("2T1BURHE6JC023457", "1213 MN-8", "Honda Accord", "available", "POINT(-122.414 37.7829)"),
+        ("1HGBH41JXMN110198", "1415 OP-2", "Toyota Corolla", "available", "POINT(-122.4104 37.7839)")
     ]
     
     for car in cars:
@@ -111,22 +122,22 @@ def populate_photos():
     car_ids = [row[0] for row in cur.fetchall()]
     
     photos = [
-        ("driver", user_ids[1], None, "https://example.com/photos/driver1.jpg", user_ids[0]),
-        ("driver", user_ids[2], None, "https://example.com/photos/driver2.jpg", user_ids[0]),
-        ("car", None, car_ids[0], "https://example.com/photos/car1.jpg", user_ids[0]),
-        ("car", None, car_ids[1], "https://example.com/photos/car2.jpg", user_ids[0]),
-        ("document", user_ids[1], None, "https://example.com/photos/license1.jpg", user_ids[0]),
-        ("car", None, car_ids[2], "https://example.com/photos/car3.jpg", user_ids[0]),
-        ("driver", user_ids[3], None, "https://example.com/photos/driver3.jpg", user_ids[0]),
-        ("document", user_ids[2], None, "https://example.com/photos/license2.jpg", user_ids[0]),
-        ("car", None, car_ids[3], "https://example.com/photos/car4.jpg", user_ids[0]),
-        ("car", None, car_ids[4], "https://example.com/photos/car5.jpg", user_ids[0])
+        ("driver", user_ids[1], None, b"fake_image_data_1", "driver1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("driver", user_ids[2], None, b"fake_image_data_2", "driver2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[0], b"fake_image_data_3", "car1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[1], b"fake_image_data_4", "car2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("document", user_ids[1], None, b"fake_image_data_5", "license1.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[2], b"fake_image_data_6", "car3.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("driver", user_ids[3], None, b"fake_image_data_7", "driver3.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("document", user_ids[2], None, b"fake_image_data_8", "license2.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[3], b"fake_image_data_9", "car4.jpg", "image/jpeg", 1024, user_ids[0]),
+        ("car", None, car_ids[4], b"fake_image_data_10", "car5.jpg", "image/jpeg", 1024, user_ids[0])
     ]
     
     for photo in photos:
         cur.execute(
-            """INSERT INTO photos (object_type, user_id, car_id, url, uploaded_by) 
-               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (url) DO NOTHING""",
+            """INSERT INTO photos (object_type, user_id, car_id, file_data, filename, content_type, file_size, uploaded_by)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
             photo
         )
     
@@ -151,7 +162,7 @@ def populate_driver_licenses():
     for i in range(min(len(user_ids), len(photo_ids))):
         license_number = f"LIC{i+1:04d}"
         issued_by = f"DMV State {i+1}"
-        expiration_date = (datetime.now() + timedelta(days=365*3)).strftime('%Y-%m-%d')
+        expiration_date = (datetime.now(timezone.utc) + timedelta(days=365*3)).strftime('%Y-%m-%d')
         document_photo_id = photo_ids[i]
         status = random.choice(["approved", "pending"])
         
@@ -160,8 +171,8 @@ def populate_driver_licenses():
     for license in licenses:
         user_id, license_number, issued_by, expiration_date, document_photo_id, status = license
         cur.execute(
-            """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, status)
-               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (license_number) DO NOTHING""",
+            """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
+               VALUES (%s, %s, %s, %s, NULL, %s) ON CONFLICT (license_number) DO NOTHING""",
             (license_number, issued_by, expiration_date, document_photo_id, status)
         )
         
@@ -188,13 +199,12 @@ def populate_sessions():
     sessions = []
     for i in range(15):
         user_id = random.choice(user_ids)
-        ip = f"192.168.{random.randint(1, 255)}.{random.randint(1, 255)}"
-        sessions.append((user_id, ip))
+        sessions.append((user_id,))
     
     for session in sessions:
         cur.execute(
-            """INSERT INTO sessions (user_id, ip) 
-               VALUES (%s, %s)""",
+            """INSERT INTO sessions (user_id)
+               VALUES (%s)""",
             session
         )
     
@@ -249,7 +259,7 @@ def populate_rentals():
     for i in range(15):
         user_id = random.choice(user_ids)
         car_id = random.choice(car_ids)
-        started_at = datetime.now() - timedelta(days=random.randint(1, 30))
+        started_at = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 30))
         price = round(random.uniform(20.0, 100.0), 2)
         status = random.choice(["active", "completed", "cancelled"])
         
@@ -294,15 +304,15 @@ def populate_maintenance_requests():
         # Determine dates based on status
         if status == "resolved":
             # For resolved requests, create them in the past and resolve them after some time
-            created_at = datetime.now() - timedelta(days=random.randint(5, 15))
+            created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(5, 15))
             resolved_at = created_at + timedelta(days=random.randint(1, 4))
         elif status == "in_progress":
             # For in-progress requests, they were created in the past but not yet resolved
-            created_at = datetime.now() - timedelta(days=random.randint(1, 7))
+            created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 7))
             resolved_at = None
         else:  # open
             # For open requests, they were just created
-            created_at = datetime.now()
+            created_at = datetime.now(timezone.utc)
             resolved_at = None
         
         cur.execute(
@@ -329,14 +339,13 @@ def populate_payment_logs():
         rental_id, user_id = rental_id, user_id
         pay_type = random.choice(["card", "cashback"])
         price = round(random.uniform(15.0, 80.0), 2)
-        ip = f"10.0.{random.randint(1, 255)}.{random.randint(1, 255)}"
         
-        logs.append((rental_id, user_id, pay_type, price, ip))
+        logs.append((rental_id, user_id, pay_type, price))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO payment_logs (rental_id, user_id, pay_type, price, ip) 
-               VALUES (%s, %s, %s, %s, %s)""",
+            """INSERT INTO payment_logs (rental_id, user_id, pay_type, price)
+               VALUES (%s, %s, %s, %s)""",
             log
         )
     
@@ -357,7 +366,7 @@ def populate_logs():
     for i in range(20):
         actor_user_id = random.choice(user_ids)
         action_type = random.choice([
-            "user_login", "user_logout", "user_registration", 
+            "user_login", "user_logout", "user_registration",
             "car_rental_start", "car_rental_end", "car_rental_cancel",
             "payment_success", "payment_failed",
             "maintenance_request", "maintenance_resolve",
@@ -365,14 +374,13 @@ def populate_logs():
             "car_status_change", "user_status_change"
         ])
         target_id = random.choice(user_ids) if random.random() > 0.5 else None
-        ip = f"172.16.{random.randint(1, 255)}.{random.randint(1, 255)}"
         
-        logs.append((actor_user_id, action_type, target_id, ip))
+        logs.append((actor_user_id, action_type, target_id))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO logs (actor_user_id, action_type, target_id, ip) 
-               VALUES (%s, %s, %s, %s)""",
+            """INSERT INTO logs (actor_user_id, action_type, target_id)
+               VALUES (%s, %s, %s)""",
             log
         )
     
@@ -414,17 +422,16 @@ def populate_action_logs():
         description = f"Action log entry {i+1}: {action_type}"
         old_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
         new_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
-        ip = f"192.168.{random.randint(1, 255)}.{random.randint(1, 255)}"
         user_agent = f"Mozilla/5.0 (compatible; Bot {i+1}; Test Agent)"
         
-        logs.append((actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, 
-                     description, old_values, new_values, ip, user_agent))
+        logs.append((actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
+                     description, old_values, new_values, user_agent))
     
     for log in logs:
         cur.execute(
-            """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, 
-                                       description, old_values, new_values, ip, user_agent) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
+                                       description, old_values, new_values, user_agent)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
             log
         )
     

@@ -31,9 +31,10 @@ CREATE TABLE IF NOT EXISTS cars (
     vin VARCHAR(17) UNIQUE NOT NULL,
     plate_number VARCHAR(12) UNIQUE NOT NULL,
     model VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance')),
+    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available','rented','maintenance','pending_completion')),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     position geometry(Point, 4326),
+    main_photo_id INT,
     CONSTRAINT plate_by_format_chk CHECK (plate_number ~ '^[0-9]{4} [A-Z]{2}-[0-8]$')
 );
 
@@ -43,7 +44,10 @@ CREATE TABLE IF NOT EXISTS photos (
     object_type VARCHAR(50) NOT NULL CHECK (object_type IN ('driver','car','document')),
     user_id INT,
     car_id INT,
-    url VARCHAR(500) NOT NULL,
+    file_data BYTEA NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    file_size INT NOT NULL,
     uploaded_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT photos_object_match_chk CHECK (
@@ -55,9 +59,6 @@ CREATE TABLE IF NOT EXISTS photos (
     CONSTRAINT photos_object_car_fk  FOREIGN KEY (car_id)  REFERENCES cars(id)  ON DELETE CASCADE
 );
 
--- Add unique constraint to photos url column for ON CONFLICT to work
-ALTER TABLE photos ADD CONSTRAINT uk_photos_url UNIQUE (url);
-
 -- Create driver_licenses table
 CREATE TABLE IF NOT EXISTS driver_licenses (
     driver_id SERIAL PRIMARY KEY,
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS driver_licenses (
     issued_by VARCHAR(255) NOT NULL,
     expiration_date DATE NOT NULL CHECK (expiration_date > CURRENT_DATE),
     document_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    document_photo_back_id INT REFERENCES photos(id) ON DELETE CASCADE,
     status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected'))
 );
 
@@ -77,13 +79,25 @@ BEGIN
 END
 $$;
 
+-- Add document_photo_back_id column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'driver_licenses'
+                   AND column_name = 'document_photo_back_id') THEN
+        ALTER TABLE driver_licenses
+        ADD COLUMN document_photo_back_id INT
+        REFERENCES photos(id) ON DELETE CASCADE;
+    END IF;
+END
+$$;
+
 -- Create sessions table
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip INET
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create car_states table
@@ -101,10 +115,10 @@ CREATE TABLE IF NOT EXISTS rentals (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     car_id INT NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
-    started_at TIMESTAMP NOT NULL,
-    ended_at TIMESTAMP CHECK (ended_at > started_at OR ended_at IS NULL),
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    ended_at TIMESTAMP WITH TIME ZONE CHECK (ended_at > started_at OR ended_at IS NULL),
     price DECIMAL(12,2) NOT NULL CHECK (price >= 0),
-    status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active','completed','cancelled'))
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','completed','cancelled','pending_completion'))
 );
 
 -- Create maintenance_requests table
@@ -118,14 +132,25 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     description TEXT NOT NULL
 );
 
+-- Create trip_completions table
+CREATE TABLE IF NOT EXISTS trip_completions (
+    id SERIAL PRIMARY KEY,
+    rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
+    completion_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    admin_approved BOOLEAN,
+    admin_comment TEXT,
+    admin_reviewed_by INT REFERENCES users(id) ON DELETE SET NULL,
+    admin_reviewed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create payment_logs table
 CREATE TABLE IF NOT EXISTS payment_logs (
     id SERIAL PRIMARY KEY,
     rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     pay_type VARCHAR(30) NOT NULL CHECK (pay_type IN ('card','cashback')),
-    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
-    ip INET
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0)
 );
 
 -- Create logs table
@@ -134,20 +159,52 @@ CREATE TABLE IF NOT EXISTS logs (
     actor_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(255) NOT NULL,
     target_id INT REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip INET
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Set timezone
-SET TIME ZONE 'Europe/Minsk';
+SET TIME ZONE 'UTC';
+-- Create function to get current timestamp in UTC+3
+CREATE OR REPLACE FUNCTION now_utc3()
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+BEGIN
+ RETURN (NOW() AT TIME ZONE 'UTC') + INTERVAL '3 hours';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update tables to use timezone-aware timestamps and default to UTC+3
+-- Users table
+ALTER TABLE users ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Cars table
+ALTER TABLE cars ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Photos table
+ALTER TABLE photos ALTER COLUMN uploaded_at SET DEFAULT now_utc3();
+
+-- Sessions table
+ALTER TABLE sessions ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE sessions ALTER COLUMN updated_at SET DEFAULT now_utc3();
+
+-- Car states table
+ALTER TABLE car_states ALTER COLUMN checked_at SET DEFAULT now_utc3();
+
+-- Maintenance requests table
+ALTER TABLE maintenance_requests ALTER COLUMN created_at SET DEFAULT now_utc3();
+ALTER TABLE maintenance_requests ALTER COLUMN resolved_at TYPE TIMESTAMP WITH TIME ZONE USING resolved_at AT TIME ZONE 'UTC';
+
+-- Trip completions table
+ALTER TABLE trip_completions ALTER COLUMN admin_reviewed_at TYPE TIMESTAMP WITH TIME ZONE USING admin_reviewed_at AT TIME ZONE 'UTC';
+ALTER TABLE trip_completions ALTER COLUMN created_at SET DEFAULT now_utc3();
 
 -- Create action_logs table for logging system
 CREATE TABLE IF NOT EXISTS action_logs (
     id SERIAL PRIMARY KEY,
     actor_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
-        'user_login', 'user_logout', 'user_registration', 
-        'car_rental_start', 'car_rental_end', 'car_rental_cancel',
+        'user_login', 'user_logout', 'user_registration',
+        'car_rental_start', 'car_rental_end', 'car_rental_cancel', 'car_rental_pending_completion',
         'payment_success', 'payment_failed',
         'maintenance_request', 'maintenance_resolve',
         'profile_update', 'driver_license_upload',
@@ -159,10 +216,15 @@ CREATE TABLE IF NOT EXISTS action_logs (
     description TEXT,
     old_values JSONB,
     new_values JSONB,
-    ip INET,
     user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Action logs table
+ALTER TABLE action_logs ALTER COLUMN created_at SET DEFAULT now_utc3();
+
+-- Logs table
+ALTER TABLE logs ALTER COLUMN created_at SET DEFAULT now_utc3();
 
 -- Create indexes for optimizing logging queries
 CREATE INDEX IF NOT EXISTS idx_action_logs_actor_user_id ON action_logs(actor_user_id);
@@ -251,9 +313,10 @@ BEGIN
         )
         VALUES (
             NEW.user_id, 
-            CASE 
+            CASE
                 WHEN NEW.status = 'completed' THEN 'car_rental_end'
                 WHEN NEW.status = 'cancelled' THEN 'car_rental_cancel'
+                WHEN NEW.status = 'pending_completion' THEN 'car_rental_pending_completion'
                 ELSE 'car_rental_update'
             END,
             NEW.id, NEW.car_id,
@@ -285,8 +348,7 @@ BEGIN
         NEW.user_id, 'payment_success', NEW.rental_id,
         jsonb_build_object(
             'pay_type', NEW.pay_type,
-            'price', NEW.price,
-            'ip', NEW.ip::TEXT
+            'price', NEW.price
         ),
         'Payment completed successfully'
     );
@@ -312,6 +374,9 @@ CREATE INDEX IF NOT EXISTS idx_rentals_car_id ON rentals(car_id);
 CREATE INDEX IF NOT EXISTS idx_rentals_status ON rentals(status);
 CREATE INDEX IF NOT EXISTS idx_rentals_started_at ON rentals(started_at);
 CREATE INDEX IF NOT EXISTS idx_rentals_ended_at ON rentals(ended_at);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_rental_id ON trip_completions(rental_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_completion_photo_id ON trip_completions(completion_photo_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completions_admin_reviewed_by ON trip_completions(admin_reviewed_by);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_car_id ON maintenance_requests(car_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status ON maintenance_requests(status);
 CREATE INDEX IF NOT EXISTS idx_payment_logs_rental_id ON payment_logs(rental_id);
@@ -330,8 +395,23 @@ INSERT INTO roles (name, description) VALUES
 INSERT INTO roles (name, description) VALUES 
     ('user', 'Regular user role') 
     ON CONFLICT (name) DO NOTHING;
-INSERT INTO roles (name, description) VALUES 
-    ('manager', 'Manager role with limited admin access') 
+INSERT INTO roles (name, description) VALUES
+    ('manager', 'Manager role with limited admin access')
     ON CONFLICT (name) DO NOTHING;
+
+-- Add foreign key constraint for main_photo_id after both tables are created
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.table_constraints
+        WHERE constraint_name = 'cars_main_photo_id_fkey'
+        AND table_name = 'cars'
+    ) THEN
+        ALTER TABLE cars ADD CONSTRAINT cars_main_photo_id_fkey
+        FOREIGN KEY (main_photo_id) REFERENCES photos(id) ON DELETE SET NULL;
+    END IF;
+END
+$$;
 
 \echo '✅ DB Created'
