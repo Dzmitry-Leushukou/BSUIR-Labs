@@ -21,7 +21,7 @@ def get_action_log(log_id: int):
     cur.close()
     conn.close()
     if not log:
-        raise HTTPException(status_code=404, detail="Action log not found")
+        raise HTTPException(status_code=404, detail="Лог действий не найден")
     return log
 
 def create_action_log(log: ActionLogCreate):
@@ -48,5 +48,5 @@ def delete_action_log(log_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Action log not found")
-    return {"message": "Action log deleted successfully"}
+        raise HTTPException(status_code=404, detail="Лог действий не найден")
+    return {"message": "Лог действий успешно удален"}

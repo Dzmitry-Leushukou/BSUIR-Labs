@@ -21,7 +21,7 @@ def get_payment_log(log_id: int):
     cur.close()
     conn.close()
     if not log:
-        raise HTTPException(status_code=404, detail="Payment log not found")
+        raise HTTPException(status_code=404, detail="Лог платежа не найден")
     return log
 
 def create_payment_log(log: PaymentLogCreate):
@@ -47,5 +47,5 @@ def delete_payment_log(log_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Payment log not found")
-    return {"message": "Payment log deleted successfully"}
+        raise HTTPException(status_code=404, detail="Лог платежа не найден")
+    return {"message": "Лог платежа успешно удален"}

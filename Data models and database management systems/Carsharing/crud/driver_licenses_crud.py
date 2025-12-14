@@ -27,7 +27,7 @@ def get_driver_license(driver_id: int):
     cur.close()
     conn.close()
     if not license:
-        raise HTTPException(status_code=404, detail="Driver license not found")
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
     return license
 
 def create_driver_license(license: DriverLicenseCreate, driver_id: int):

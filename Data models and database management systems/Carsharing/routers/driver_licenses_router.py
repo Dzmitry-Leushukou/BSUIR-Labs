@@ -5,7 +5,7 @@ from typing import List
 from .users_router import get_current_user_from_header
 from crud.users_crud import get_user
 
-router = APIRouter(prefix="/driver_licenses", tags=["Driver Licenses"])
+router = APIRouter(prefix="/driver_licenses", tags=["Водительские удостоверения"])
 
 @router.get("/", response_model=List[DriverLicense])
 def get_driver_licenses_endpoint(request: Request, offset: int = 0, limit: int = 10, current_user: dict = Depends(get_current_user_from_header)):

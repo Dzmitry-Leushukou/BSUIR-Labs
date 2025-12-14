@@ -3,7 +3,7 @@ from schemas import *
 from crud.logs_crud import *
 from typing import List
 
-router = APIRouter(prefix="/logs", tags=["Logs"])
+router = APIRouter(prefix="/logs", tags=["Логи"])
 
 @router.get("/", response_model=List[Log])
 def get_logs_endpoint(offset: int = 0, limit: int = 10):

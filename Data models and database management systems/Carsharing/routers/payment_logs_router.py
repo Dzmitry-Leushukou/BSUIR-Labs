@@ -3,7 +3,7 @@ from schemas import *
 from crud.payment_logs_crud import *
 from typing import List
 
-router = APIRouter(prefix="/payment_logs", tags=["Payment Logs"])
+router = APIRouter(prefix="/payment_logs", tags=["Логи платежей"])
 
 @router.get("/", response_model=List[PaymentLog])
 def get_payment_logs_endpoint(offset: int = 0, limit: int = 10):

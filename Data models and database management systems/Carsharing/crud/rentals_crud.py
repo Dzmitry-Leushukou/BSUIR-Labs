@@ -46,7 +46,7 @@ def get_rental(rental_id: int):
     cur.close()
     conn.close()
     if not rental:
-        raise HTTPException(status_code=404, detail="Rental not found")
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
     return rental
 
 def create_rental(rental: RentalCreate):

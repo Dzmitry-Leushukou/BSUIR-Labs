@@ -5,7 +5,7 @@ from typing import List
 from .users_router import get_current_user_from_header
 from datetime import datetime, timezone
 
-router = APIRouter(prefix="/trip-completions", tags=["Trip Completions"])
+router = APIRouter(prefix="/trip-completions", tags=["Завершения поездок"])
 
 @router.get("/", response_model=List[TripCompletion])
 def get_trip_completions_endpoint(offset: int = 0, limit: int = 10):

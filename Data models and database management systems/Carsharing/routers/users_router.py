@@ -29,7 +29,7 @@ def hash_password(password: str) -> str:
     """Хеширует пароль с использованием bcrypt"""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Пользователи"])
 
 def get_current_user_from_header(request: Request):
     """

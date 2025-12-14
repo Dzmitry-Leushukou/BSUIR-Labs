@@ -3,7 +3,7 @@ from schemas import *
 from crud.maintenance_requests_crud import *
 from typing import List
 
-router = APIRouter(prefix="/maintenance_requests", tags=["Maintenance Requests"])
+router = APIRouter(prefix="/maintenance_requests", tags=["Запросы на обслуживание"])
 
 @router.get("/", response_model=List[MaintenanceRequest])
 def get_maintenance_requests_endpoint(offset: int = 0, limit: int = 10):

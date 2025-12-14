@@ -23,7 +23,7 @@ def get_maintenance_request(request_id: int):
     cur.close()
     conn.close()
     if not request:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
     return request
 
 def create_maintenance_request(request: MaintenanceRequestCreate):

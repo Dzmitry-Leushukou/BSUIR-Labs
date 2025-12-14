@@ -1100,7 +1100,7 @@ function showCompletionModal(rentalId) {
                     </div>
                     <div id="cashback-input-container" style="margin-top: 10px; display: none;">
                         <input type="number" id="cashback-amount-input" placeholder="Сумма кэшбэка" min="0" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #666;">Максимум можно использовать: <span id="max-cashback-amount">0</span> BYN</div>
+                        <div style="margin-top: 5px; font-size: 0.8em; color: #66;">Максимум можно использовать: <span id="max-cashback-amount">0</span> BYN</div>
                     </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">

@@ -23,7 +23,7 @@ def get_trip_completion(completion_id: int):
     cur.close()
     conn.close()
     if not completion:
-        raise HTTPException(status_code=404, detail="Trip completion not found")
+        raise HTTPException(status_code=404, detail="Завершение поездки не найдено")
     return completion
 
 def get_trip_completion_by_rental_id(rental_id: int):

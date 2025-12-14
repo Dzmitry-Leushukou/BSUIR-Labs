@@ -23,7 +23,7 @@ def get_user(user_id: int):
     cur.close()
     conn.close()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     return user
 
 def create_user(user: UserCreate):

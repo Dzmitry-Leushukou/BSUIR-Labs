@@ -4,7 +4,7 @@ from crud.rentals_crud import *
 from typing import List
 from .users_router import get_current_user_from_header
 
-router = APIRouter(prefix="/rentals", tags=["Rentals"])
+router = APIRouter(prefix="/rentals", tags=["Аренды"])
 
 @router.get("/", response_model=List[Rental])
 def get_rentals_endpoint(offset: int = 0, limit: int = 10):

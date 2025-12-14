@@ -39,11 +39,11 @@ function displayActionLogs(actionLogs) {
         row.innerHTML = `
             <td>${log.id}</td>
             <td>${log.actor_user_id}</td>
-            <td>${log.action_type}</td>
+            <td>${translateActionType(log.action_type)}</td>
             <td>${log.target_user_id || ''}</td>
             <td>${log.target_car_id || ''}</td>
             <td>${log.target_rental_id || ''}</td>
-            <td>${log.description || ''}</td>
+            <td>${translateDescription(log.description || '')}</td>
             <td>${JSON.stringify(log.old_values) || ''}</td>
             <td>${JSON.stringify(log.new_values) || ''}</td>
             <td>${log.user_agent || ''}</td>

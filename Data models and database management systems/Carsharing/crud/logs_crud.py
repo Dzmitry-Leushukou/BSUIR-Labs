@@ -21,7 +21,7 @@ def get_log(log_id: int):
     cur.close()
     conn.close()
     if not log:
-        raise HTTPException(status_code=404, detail="Log not found")
+        raise HTTPException(status_code=404, detail="Лог не найден")
     return log
 
 def create_log(log: LogCreate):
@@ -47,5 +47,5 @@ def delete_log(log_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Log not found")
-    return {"message": "Log deleted successfully"}
+        raise HTTPException(status_code=404, detail="Лог не найден")
+    return {"message": "Лог успешно удален"}
