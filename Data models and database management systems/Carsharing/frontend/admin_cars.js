@@ -311,6 +311,7 @@ async function openEditCarModal(carId) {
             document.getElementById('plate_number').value = car.plate_number;
             document.getElementById('model').value = car.model;
             document.getElementById('status').value = car.status;
+            document.getElementById('position').value = position;
             
             document.getElementById('car-modal').style.display = 'block';
         } else {
@@ -355,6 +356,7 @@ async function submitCarForm(event) {
     const plateNumber = document.getElementById('plate_number').value;
     const model = document.getElementById('model').value;
     const status = document.getElementById('status').value;
+    const position = document.getElementById('position').value;
     
     const carData = {
         vin,
@@ -362,6 +364,21 @@ async function submitCarForm(event) {
         model,
         status
     };
+    
+    // Добавляем позицию если она указана
+    if (position.trim()) {
+        // Преобразуем строку позиции в формат POINT для PostgreSQL
+        // Ожидаем формат "широта, долгота" (например, "53.9041, 27.5615")
+        const coords = position.trim().split(',').map(coord => coord.trim());
+        if (coords.length === 2) {
+            const lat = parseFloat(coords[0]);
+            const lng = parseFloat(coords[1]);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                // Форматируем как POINT(longitude latitude) для PostGIS
+                carData.position = `POINT(${lng} ${lat})`;
+            }
+        }
+    }
     
     try {
         let response;

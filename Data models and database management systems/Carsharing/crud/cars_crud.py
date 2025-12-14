@@ -29,65 +29,105 @@ def get_car(car_id: int):
 def create_car(car: CarCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    if car.position:
-        cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
-               VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
-        )
-    else:
-        cur.execute(
-            """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
-               VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-            (car.vin, car.plate_number, car.model, car.status, car.main_photo_id)
-        )
-    new_car = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_car
+    try:
+        if car.position:
+            # Проверяем, является ли позиция в формате POINT
+            if car.position.startswith('POINT'):
+                # Если это уже формат POINT, используем ST_GeomFromText без SRID
+                cur.execute(
+                    """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+                       VALUES (%s, %s, %s, %s, ST_GeomFromText(%s), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
+                )
+            else:
+                # Если это строка координат, используем ST_GeomFromText с SRID 4326
+                cur.execute(
+                    """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+                       VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
+                )
+        else:
+            cur.execute(
+                """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
+                   VALUES (%s, %s, %s, %s, %s) RETURNING *""",
+                (car.vin, car.plate_number, car.model, car.status, car.main_photo_id)
+            )
+        new_car = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return new_car
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        # Проверяем тип ошибки и возвращаем соответствующее сообщение
+        if 'duplicate key value violates unique constraint "cars_vin_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким VIN уже существует")
+        elif 'duplicate key value violates unique constraint "cars_plate_number_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким номерным знаком уже существует")
+        else:
+            raise HTTPException(status_code=400, detail=f"Ошибка при создании автомобиля: {str(e)}")
 
 def update_car(car_id: int, car: CarUpdate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # Build dynamic update query
-    update_fields = []
-    values = []
-    
-    if car.model is not None:
-        update_fields.append("model = %s")
-        values.append(car.model)
-    if car.status is not None:
-        update_fields.append("status = %s")
-        values.append(car.status)
-    if car.position is not None:
-        update_fields.append("position = ST_GeomFromText(%s, 4326)")
-        values.append(car.position)
-    if car.main_photo_id is not None:
-        update_fields.append("main_photo_id = %s")
-        values.append(car.main_photo_id)
-    
-    # Set updated_at to current time in UTC+3
-    utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
-    updated_at = datetime.now(utc_plus_3)
-    update_fields.append("updated_at = %s")
-    values.append(updated_at)
-    
-    if not update_fields:
-        raise HTTPException(status_code=400, detail="Нет полей для обновления")
-    
-    query = f"UPDATE cars SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
-    values.append(car_id)
-    
-    cur.execute(query, values)
-    updated_car = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    if not updated_car:
-        raise HTTPException(status_code=404, detail="Автомобиль не найден")
-    return updated_car
+    try:
+        # Build dynamic update query
+        update_fields = []
+        values = []
+        
+        if car.model is not None:
+            update_fields.append("model = %s")
+            values.append(car.model)
+        if car.status is not None:
+            update_fields.append("status = %s")
+            values.append(car.status)
+        if car.position is not None:
+            # Проверяем, является ли позиция в формате POINT
+            if car.position.startswith('POINT'):
+                # Если это уже формат POINT, используем ST_GeomFromText без SRID
+                update_fields.append("position = ST_GeomFromText(%s)")
+            else:
+                # Если это строка координат, используем ST_GeomFromText с SRID 4326
+                update_fields.append("position = ST_GeomFromText(%s, 4326)")
+            values.append(car.position)
+        if car.main_photo_id is not None:
+            update_fields.append("main_photo_id = %s")
+            values.append(car.main_photo_id)
+        
+        # Set updated_at to current time in UTC+3
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        updated_at = datetime.now(utc_plus_3)
+        update_fields.append("updated_at = %s")
+        values.append(updated_at)
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="Нет полей для обновления")
+        
+        query = f"UPDATE cars SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
+        values.append(car_id)
+        
+        cur.execute(query, values)
+        updated_car = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        if not updated_car:
+            raise HTTPException(status_code=404, detail="Автомобиль не найден")
+        return updated_car
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        # Проверяем тип ошибки и возвращаем соответствующее сообщение
+        if 'duplicate key value violates unique constraint "cars_vin_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким VIN уже существует")
+        elif 'duplicate key value violates unique constraint "cars_plate_number_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким номерным знаком уже существует")
+        else:
+            raise HTTPException(status_code=400, detail=f"Ошибка при обновлении автомобиля: {str(e)}")
 
 def delete_car(car_id: int):
     conn = get_db_connection()
