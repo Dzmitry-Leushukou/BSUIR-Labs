@@ -595,16 +595,26 @@ function getUserIdFromToken() {
     return parseInt(userId);
 }
 
+// Глобальные переменные для пагинации моих заказов
+let currentMyOrdersPage = 0;
+const myOrdersPerPage = 10;
+
 // Функция для отображения заказов пользователя
-async function showMyOrders() {
+async function showMyOrders(page = 0) {
     const userId = getUserIdFromToken();
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentMyOrdersPage = validPageNum;
+    const offset = validPageNum * myOrdersPerPage;
+    
     try {
-        const response = await fetch(`/rentals/user/${userId}/with-car-info`, {
+        const response = await fetch(`/rentals/user/${userId}/with-car-info?offset=${offset}&limit=${myOrdersPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -617,6 +627,7 @@ async function showMyOrders() {
             // Sort rentals by ID in descending order (newest first)
             rentals.sort((a, b) => b.id - a.id);
             displayRentalsInfo(rentals);
+            setupMyOrdersPagination(page);
         } else {
             const errorData = await response.json();
             alert(`Ошибка при получении заказов: ${errorData.detail || 'Неизвестная ошибка'}`);
@@ -624,6 +635,99 @@ async function showMyOrders() {
     } catch (error) {
         console.error('Ошибка при получении заказов:', error);
         alert('Ошибка при получении заказов');
+    }
+}
+
+// Функция для настройки пагинации моих заказов
+function setupMyOrdersPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество заказов для определения количества страниц
+    getMyOrdersCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / myOrdersPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('my-orders-pagination');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'my-orders-pagination';
+            paginationContainer.className = 'pagination';
+            
+            // Находим контейнер с заказами и добавляем пагинацию после таблицы
+            const ordersList = document.getElementById('orders-list');
+            if (ordersList) {
+                // Удаляем старую пагинацию, если она есть
+                const oldPagination = ordersList.querySelector('.pagination');
+                if (oldPagination) {
+                    oldPagination.remove();
+                }
+                
+                // Добавляем пагинацию после таблицы заказов
+                ordersList.appendChild(paginationContainer);
+            }
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="showMyOrders(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="showMyOrders(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="showMyOrders(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества заказов пользователя
+async function getMyOrdersCount() {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+        return 0;
+    }
+    
+    try {
+        const response = await fetch(`/rentals/user/${userId}/count`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества заказов:', error);
+        return 0;
     }
 }
 

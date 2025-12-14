@@ -49,3 +49,12 @@ def delete_log(log_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Лог не найден")
     return {"message": "Лог успешно удален"}
+
+def get_logs_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM logs")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

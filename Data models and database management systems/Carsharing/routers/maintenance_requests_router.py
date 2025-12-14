@@ -24,3 +24,9 @@ def update_maintenance_request_endpoint(request_id: int, request: MaintenanceReq
 @router.delete("/{request_id}")
 def delete_maintenance_request_endpoint(request_id: int):
     return delete_maintenance_request(request_id)
+
+@router.get("/count", response_model=dict)
+def get_maintenance_requests_count_endpoint():
+    from crud.maintenance_requests_crud import get_maintenance_requests_count
+    count = get_maintenance_requests_count()
+    return {"count": count}

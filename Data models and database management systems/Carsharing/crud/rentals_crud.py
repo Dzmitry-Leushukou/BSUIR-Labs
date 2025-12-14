@@ -167,3 +167,21 @@ def delete_rental(rental_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Rental not found")
     return {"message": "Rental deleted successfully"}
+
+def get_rentals_count_by_user_id(user_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM rentals WHERE user_id = %s", (user_id,))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0
+
+def get_rentals_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM rentals")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

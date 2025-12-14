@@ -1,14 +1,24 @@
-// Функция для загрузки и отображения данных таблицы Driver licenses
-async function loadDriverLicenses() {
+// Глобальные переменные для пагинации
+let currentDriverLicensePage = 0;
+const driverLicensesPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Driver licenses с пагинацией
+async function loadDriverLicenses(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentDriverLicensePage = validPageNum;
+    const offset = validPageNum * driverLicensesPerPage;
+    
     try {
-        // Загружаем все водительские лицензии (с большим лимитом)
-        const response = await fetch('/driver_licenses/?offset=0&limit=10000', {
+        // Загружаем водительские лицензии с пагинацией
+        const response = await fetch(`/driver_licenses/?offset=${offset}&limit=${driverLicensesPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -18,8 +28,8 @@ async function loadDriverLicenses() {
         
         if (response.ok) {
             const driverLicenses = await response.json();
-            // Driver licenses are already sorted by backend (unresolved first, then resolved), so just display them
             displayDriverLicenses(driverLicenses);
+            setupDriverLicensePagination(page);
         } else {
             let errorDetail = 'Неизвестная ошибка';
             try {
@@ -75,6 +85,97 @@ async function loadDriverLicenses() {
     } catch (error) {
         console.error('Ошибка при загрузке Driver licenses:', error);
         alert('Ошибка при загрузке Driver licenses');
+    }
+}
+
+// Функция для настройки пагинации водительских лицензий
+function setupDriverLicensePagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество водительских лицензий для определения количества страниц
+    getDriverLicensesCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / driverLicensesPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('driver-licenses-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'driver-licenses-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#driver-licenses-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'driver-licenses-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#driver-licenses-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#driver-licenses-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#driver-licenses-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadDriverLicenses(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadDriverLicenses(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadDriverLicenses(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества водительских лицензий
+async function getDriverLicensesCount() {
+    try {
+        const response = await fetch('/driver_licenses/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества водительских лицензий:', error);
+        return 0;
     }
 }
 
@@ -235,7 +336,7 @@ function filterDriverLicenses() {
 
 // Добавляем обработчики событий для фильтров
 document.addEventListener('DOMContentLoaded', () => {
-    loadDriverLicenses();
+    loadDriverLicenses(0);  // Загружаем первую страницу
     
     // Устанавливаем обработчики для фильтров
     const filterInputs = document.querySelectorAll('.filter-input');

@@ -79,3 +79,15 @@ def delete_rental_endpoint(request: Request, rental_id: int, current_user: dict 
             raise HTTPException(status_code=403, detail="Not authorized to delete this rental")
     
     return delete_rental(rental_id)
+
+@router.get("/user/{user_id}/count", response_model=dict)
+def get_rentals_count_by_user_endpoint(user_id: int):
+    from crud.rentals_crud import get_rentals_count_by_user_id
+    count = get_rentals_count_by_user_id(user_id)
+    return {"count": count}
+
+@router.get("/count", response_model=dict)
+def get_rentals_count_endpoint():
+    from crud.rentals_crud import get_rentals_count
+    count = get_rentals_count()
+    return {"count": count}

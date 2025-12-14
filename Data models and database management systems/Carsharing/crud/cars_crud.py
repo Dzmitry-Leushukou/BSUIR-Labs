@@ -139,3 +139,12 @@ def get_cars_positions_with_user_rental_status(user_id: int):
     cur.close()
     conn.close()
     return cars
+    
+def get_cars_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT COUNT(*) as count FROM cars")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

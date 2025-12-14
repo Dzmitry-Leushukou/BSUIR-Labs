@@ -20,3 +20,9 @@ def create_log_endpoint(log: LogCreate):
 @router.delete("/{log_id}")
 def delete_log_endpoint(log_id: int):
     return delete_log(log_id)
+
+@router.get("/count", response_model=dict)
+def get_logs_count_endpoint():
+    from crud.logs_crud import get_logs_count
+    count = get_logs_count()
+    return {"count": count}

@@ -104,3 +104,12 @@ def delete_driver_license(driver_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Driver license not found")
     return {"message": "Driver license deleted successfully"}
+
+def get_driver_licenses_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM driver_licenses")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

@@ -1,14 +1,23 @@
-// Функция для загрузки и отображения данных таблицы Cars
-async function loadCars() {
+// Глобальные переменные для пагинации
+let currentCarPage = 0;
+const carsPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Cars с пагинацией
+async function loadCars(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    currentCarPage = pageNum;
+    const offset = pageNum * carsPerPage;
+    
     try {
-        // Загружаем все автомобили (с большим лимитом)
-        const response = await fetch('/cars/?offset=0&limit=10000', {
+        // Загружаем автомобили с пагинацией
+        const response = await fetch(`/cars/?offset=${offset}&limit=${carsPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -19,6 +28,7 @@ async function loadCars() {
         if (response.ok) {
             const cars = await response.json();
             displayCars(cars);
+            setupCarPagination(page);
         } else {
             const errorData = await response.json();
             let errorMessage = 'Неизвестная ошибка';
@@ -38,6 +48,128 @@ async function loadCars() {
     } catch (error) {
         console.error('Ошибка при загрузке Cars:', error);
         alert('Ошибка при загрузке Cars');
+    }
+}
+
+// Функция для настройки пагинации автомобилей
+function setupCarPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество автомобилей для определения количества страниц
+    getCarCount().then(totalCount => {
+        // Проверяем, что totalCount - валидное число
+        const count = totalCount || 0;
+        const totalPages = Math.ceil(count / carsPerPage);
+        
+        // Use the validated page number throughout the function
+        const safePageNum = validPageNum;
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('cars-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'cars-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#cars-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'cars-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#cars-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#cars-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#cars-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadCars(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadCars(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadCars(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    }).catch(error => {
+        console.error('Ошибка при настройке пагинации:', error);
+        // Создаем контейнер для пагинации даже если возникла ошибка при получении количества
+        let paginationContainer = document.getElementById('cars-pagination');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'cars-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#cars-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'cars-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#cars-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#cars-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#cars-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        // Выводим кнопку обновления, если возникла ошибка
+        paginationContainer.innerHTML = '<button class="pagination-btn" onclick="loadCars(0)">Обновить</button>';
+    });
+}
+
+// Функция для получения общего количества автомобилей
+async function getCarCount() {
+    try {
+        const response = await fetch('/cars/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества автомобилей:', error);
+        return 0;
     }
 }
 

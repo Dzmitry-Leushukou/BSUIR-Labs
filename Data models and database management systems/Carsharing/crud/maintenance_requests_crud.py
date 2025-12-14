@@ -108,3 +108,12 @@ def delete_maintenance_request(request_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Maintenance request not found")
     return {"message": "Maintenance request deleted successfully"}
+
+def get_maintenance_requests_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM maintenance_requests")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

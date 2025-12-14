@@ -114,3 +114,12 @@ def delete_trip_completion(completion_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Trip completion not found")
     return {"message": "Trip completion deleted successfully"}
+
+def get_trip_completions_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM trip_completions")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

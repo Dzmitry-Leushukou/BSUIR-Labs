@@ -135,6 +135,12 @@ def delete_user_endpoint(user_id: int):
         raise HTTPException(status_code=400, detail="User ID must be a positive integer")
     return delete_user(user_id)
 
+@router.get("/count", response_model=dict)
+def get_users_count_endpoint():
+    from crud.users_crud import get_users_count
+    count = get_users_count()
+    return {"count": count}
+
 @router.post("/login")
 def login_user_endpoint(request: Request, user_login: UserLogin):
     user = get_user_by_email(user_login.email)

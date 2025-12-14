@@ -1,14 +1,24 @@
-// Функция для загрузки и отображения данных таблицы Maintenance requests
-async function loadMaintenanceRequests() {
+// Глобальные переменные для пагинации
+let currentMaintenanceRequestPage = 0;
+const maintenanceRequestsPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Maintenance requests с пагинацией
+async function loadMaintenanceRequests(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentMaintenanceRequestPage = validPageNum;
+    const offset = validPageNum * maintenanceRequestsPerPage;
+    
     try {
-        // Загружаем все запросы на обслуживание (с большим лимитом)
-        const response = await fetch('/maintenance_requests/?offset=0&limit=10000', {
+        // Загружаем запросы на обслуживание с пагинацией
+        const response = await fetch(`/maintenance_requests/?offset=${offset}&limit=${maintenanceRequestsPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -18,8 +28,8 @@ async function loadMaintenanceRequests() {
         
         if (response.ok) {
             const maintenanceRequests = await response.json();
-            // Maintenance requests are already sorted by backend (unresolved first, then resolved), so just display them
             displayMaintenanceRequests(maintenanceRequests);
+            setupMaintenanceRequestPagination(page);
         } else {
             const errorData = await response.json();
             let errorMessage = 'Неизвестная ошибка';
@@ -39,6 +49,97 @@ async function loadMaintenanceRequests() {
     } catch (error) {
         console.error('Ошибка при загрузке Maintenance requests:', error);
         alert('Ошибка при загрузке Maintenance requests');
+    }
+}
+
+// Функция для настройки пагинации запросов на обслуживание
+function setupMaintenanceRequestPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество запросов на обслуживание для определения количества страниц
+    getMaintenanceRequestsCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / maintenanceRequestsPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('maintenance-requests-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'maintenance-requests-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#maintenance-requests-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'maintenance-requests-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#maintenance-requests-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#maintenance-requests-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#maintenance-requests-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadMaintenanceRequests(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadMaintenanceRequests(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadMaintenanceRequests(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества запросов на обслуживание
+async function getMaintenanceRequestsCount() {
+    try {
+        const response = await fetch('/maintenance_requests/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества запросов на обслуживание:', error);
+        return 0;
     }
 }
 
@@ -170,7 +271,7 @@ function filterMaintenanceRequests() {
 
 // Добавляем обработчики событий для фильтров
 document.addEventListener('DOMContentLoaded', () => {
-    loadMaintenanceRequests();
+    loadMaintenanceRequests(0);  // Загружаем первую страницу
     
     // Устанавливаем обработчики для фильтров
     const filterInputs = document.querySelectorAll('.filter-input');

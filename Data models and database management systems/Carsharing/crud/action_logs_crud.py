@@ -50,3 +50,12 @@ def delete_action_log(log_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Лог действий не найден")
     return {"message": "Лог действий успешно удален"}
+
+def get_action_logs_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM action_logs")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

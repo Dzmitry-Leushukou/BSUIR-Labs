@@ -121,3 +121,12 @@ def get_user_by_email(email: str):
     cur.close()
     conn.close()
     return user
+    
+def get_users_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT COUNT(*) as count FROM users")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

@@ -6,6 +6,12 @@ from .users_router import get_current_user_from_header
 
 router = APIRouter(prefix="/cars", tags=["Автомобили"])
 
+@router.get("/count", response_model=dict)
+def get_cars_count_endpoint():
+    from crud.cars_crud import get_cars_count
+    count = get_cars_count()
+    return {"count": count}
+
 @router.get("/", response_model=List[Car])
 def get_cars_endpoint(offset: int = 0, limit: int = 1000):
     return get_cars(offset, limit)

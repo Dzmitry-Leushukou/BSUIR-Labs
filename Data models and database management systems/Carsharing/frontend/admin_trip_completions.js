@@ -1,13 +1,23 @@
-// Функция для загрузки и отображения данных таблицы Trip completions
-async function loadTripCompletions() {
+// Глобальные переменные для пагинации
+let currentTripCompletionPage = 0;
+const tripCompletionsPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Trip completions с пагинацией
+async function loadTripCompletions(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentTripCompletionPage = validPageNum;
+    const offset = validPageNum * tripCompletionsPerPage;
+    
     try {
-        const response = await fetch('/trip-completions/', {
+        const response = await fetch(`/trip-completions/?offset=${offset}&limit=${tripCompletionsPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -17,8 +27,8 @@ async function loadTripCompletions() {
         
         if (response.ok) {
             const tripCompletions = await response.json();
-            // Trip completions are already sorted by backend (oldest to newest, confirmed at end), so just display them
             displayTripCompletionsData(tripCompletions);
+            setupTripCompletionPagination(page);
         } else {
             let errorDetail = 'Неизвестная ошибка';
             try {
@@ -71,6 +81,97 @@ async function loadTripCompletions() {
     } catch (error) {
         console.error('Ошибка при загрузке поездок:', error);
         alert('Ошибка при загрузке поездок');
+    }
+}
+
+// Функция для настройки пагинации завершений поездок
+function setupTripCompletionPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество завершений поездок для определения количества страниц
+    getTripCompletionsCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / tripCompletionsPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('trip-completions-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'trip-completions-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#trip-completions-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'trip-completions-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#trip-completions-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#trip-completions-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#trip-completions-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadTripCompletions(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadTripCompletions(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadTripCompletions(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества завершений поездок
+async function getTripCompletionsCount() {
+    try {
+        const response = await fetch('/trip-completions/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества завершений поездок:', error);
+        return 0;
     }
 }
 
@@ -425,7 +526,7 @@ function filterTripCompletions() {
 
 // Добавляем обработчики событий для фильтров
 document.addEventListener('DOMContentLoaded', () => {
-    loadTripCompletions();
+    loadTripCompletions(0);  // Загружаем первую страницу
     
     // Устанавливаем обработчики для фильтров
     const filterInputs = document.querySelectorAll('.filter-input');

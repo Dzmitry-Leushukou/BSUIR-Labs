@@ -1,14 +1,24 @@
-// Функция для загрузки и отображения данных таблицы Rentals
-async function loadRentals() {
+// Глобальные переменные для пагинации
+let currentRentalPage = 0;
+const rentalsPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Rentals с пагинацией
+async function loadRentals(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentRentalPage = validPageNum;
+    const offset = validPageNum * rentalsPerPage;
+    
     try {
-        // Загружаем все аренды (с большим лимитом)
-        const response = await fetch('/rentals/?offset=0&limit=10000', {
+        // Загружаем аренды с пагинацией
+        const response = await fetch(`/rentals/?offset=${offset}&limit=${rentalsPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -18,8 +28,8 @@ async function loadRentals() {
         
         if (response.ok) {
             const rentals = await response.json();
-            // Rentals are already sorted by backend (newest first), so just display them
             displayRentals(rentals);
+            setupRentalPagination(page);
         } else {
             const errorData = await response.json();
             let errorMessage = 'Неизвестная ошибка';
@@ -39,6 +49,97 @@ async function loadRentals() {
     } catch (error) {
         console.error('Ошибка при загрузке Rentals:', error);
         alert('Ошибка при загрузке Rentals');
+    }
+}
+
+// Функция для настройки пагинации аренд
+function setupRentalPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество аренд для определения количества страниц
+    getRentalsCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / rentalsPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('rentals-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'rentals-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#rentals-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'rentals-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#rentals-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#rentals-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#rentals-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadRentals(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadRentals(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadRentals(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества аренд
+async function getRentalsCount() {
+    try {
+        const response = await fetch('/rentals/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества аренд:', error);
+        return 0;
     }
 }
 
@@ -91,7 +192,7 @@ function filterRentals() {
 
 // Добавляем обработчики событий для фильтров
 document.addEventListener('DOMContentLoaded', () => {
-    loadRentals();
+    loadRentals(0);  // Загружаем первую страницу
     
     // Устанавливаем обработчики для фильтров
     const filterInputs = document.querySelectorAll('.filter-input');

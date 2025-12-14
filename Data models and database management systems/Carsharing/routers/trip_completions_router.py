@@ -116,3 +116,9 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
                 create_maintenance_request(maintenance_request)
     
     return update_trip_completion(completion_id, completion)
+
+@router.get("/count", response_model=dict)
+def get_trip_completions_count_endpoint():
+    from crud.trip_completions_crud import get_trip_completions_count
+    count = get_trip_completions_count()
+    return {"count": count}

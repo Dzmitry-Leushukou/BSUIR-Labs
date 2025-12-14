@@ -1,14 +1,24 @@
-// Функция для загрузки и отображения данных таблицы Users
-async function loadUsers() {
+// Глобальные переменные для пагинации
+let currentUsersPage = 0;
+const usersPerPage = 10;
+
+// Функция для загрузки и отображения данных таблицы Users с пагинацией
+async function loadUsers(page = 0) {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         alert('Пользователь не авторизован');
         return;
     }
     
+    // Ensure page is a valid number
+    const pageNum = parseInt(page) || 0;
+    const validPageNum = isFinite(pageNum) ? pageNum : 0;
+    currentUsersPage = validPageNum;
+    const offset = validPageNum * usersPerPage;
+    
     try {
-        // Загружаем всех пользователей (с большим лимитом)
-        const response = await fetch('/users/?offset=0&limit=10000', {
+        // Загружаем пользователей с пагинацией
+        const response = await fetch(`/users/?offset=${offset}&limit=${usersPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -19,6 +29,7 @@ async function loadUsers() {
         if (response.ok) {
             const users = await response.json();
             displayUsers(users);
+            setupUsersPagination(page);
         } else {
             const errorData = await response.json();
             let errorMessage = 'Неизвестная ошибка';
@@ -38,6 +49,97 @@ async function loadUsers() {
     } catch (error) {
         console.error('Ошибка при загрузке Users:', error);
         alert('Ошибка при загрузке Users');
+    }
+}
+
+// Функция для настройки пагинации пользователей
+function setupUsersPagination(currentPage) {
+    // Проверяем, что currentPage - это число
+    const pageNum = parseInt(currentPage) || 0;
+    // Ensure pageNum is a valid finite number
+    const safePageNum = isFinite(pageNum) ? pageNum : 0;
+    
+    // Подсчитываем общее количество пользователей для определения количества страниц
+    getUsersCount().then(totalCount => {
+        const totalPages = Math.ceil(totalCount / usersPerPage);
+        
+        // Создаем или обновляем элемент пагинации
+        let paginationContainer = document.getElementById('users-pagination');
+        if (!paginationContainer) {
+            // Создаем контейнер для пагинации под таблицей
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'users-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#users-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'users-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#users-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#users-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#users-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        
+        // Генерируем HTML для пагинации
+        let paginationHTML = '';
+        
+        // Кнопка "Предыдущая"
+        if (safePageNum > 0) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadUsers(${safePageNum - 1})">Предыдущая</button>`;
+        }
+        
+        // Кнопки страниц
+        const maxVisiblePages = 5;
+        let startPage = Math.max(0, safePageNum - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === safePageNum) {
+                paginationHTML += `<button class="pagination-btn active">${i + 1}</button>`;
+            } else {
+                paginationHTML += `<button class="pagination-btn" onclick="loadUsers(${i})">${i + 1}</button>`;
+            }
+        }
+        
+        // Кнопка "Следующая"
+        if (safePageNum < totalPages - 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadUsers(${safePageNum + 1})">Следующая</button>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML;
+    });
+}
+
+// Функция для получения общего количества пользователей
+async function getUsersCount() {
+    try {
+        const response = await fetch('/users/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const countData = await response.json();
+            return countData.count || 0;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Ошибка при получении количества пользователей:', error);
+        return 0;
     }
 }
 
