@@ -212,20 +212,27 @@ async function displayTripCompletionsData(tripCompletions) {
         let photosHtml = 'Нет фото';
         try {
             const userId = localStorage.getItem('user_id');
-            const photosResponse = await fetch(`/photos/${completion.completion_photo_id}`, {
-                method: 'GET',
-                headers: {
-                    'X-User-ID': userId,
-                    'Content-Type': 'application/json'
-                }
-            });
             
-            if (photosResponse.ok) {
-                const photo = await photosResponse.json();
-                if (photo) {
-                    // Using the correct endpoint to download the photo
-                    const photoUrl = `/photos/file/${photo.id}`; // Correct endpoint based on the backend implementation
-                    photosHtml = `<img src="${photoUrl}" alt="Completion Photo" style="max-width: 50px; max-height: 50px; margin: 2px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoUrl}', 'Фото завершения поездки')" title="Кликните для просмотра в полном размере">`;
+            // Check if completion has multiple photo IDs
+            if (completion.completion_photo_ids && Array.isArray(completion.completion_photo_ids) && completion.completion_photo_ids.length > 0) {
+                photosHtml = '';
+                for (const photoId of completion.completion_photo_ids) {
+                    const photosResponse = await fetch(`/photos/${photoId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-User-ID': userId,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (photosResponse.ok) {
+                        const photo = await photosResponse.json();
+                        if (photo) {
+                            // Using the correct endpoint to download the photo
+                            const photoUrl = `/photos/file/${photo.id}`; // Correct endpoint based on the backend implementation
+                            photosHtml += `<img src="${photoUrl}" alt="Completion Photo" style="max-width: 50px; max-height: 50px; margin: 2px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoUrl}', 'Фото завершения поездки')" title="Кликните для просмотра в полном размере">`;
+                        }
+                    }
                 }
             }
         } catch (error) {

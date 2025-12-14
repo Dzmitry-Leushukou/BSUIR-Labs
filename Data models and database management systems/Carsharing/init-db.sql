@@ -136,12 +136,21 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
 CREATE TABLE IF NOT EXISTS trip_completions (
     id SERIAL PRIMARY KEY,
     rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
-    completion_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
     admin_approved BOOLEAN,
     admin_comment TEXT,
     admin_reviewed_by INT REFERENCES users(id) ON DELETE SET NULL,
     admin_reviewed_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create trip_completion_photos table to support multiple photos per trip completion
+CREATE TABLE IF NOT EXISTS trip_completion_photos (
+    id SERIAL PRIMARY KEY,
+    trip_completion_id INT NOT NULL REFERENCES trip_completions(id) ON DELETE CASCADE,
+    photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(trip_completion_id, photo_id)
 );
 
 -- Create payment_logs table
@@ -703,8 +712,12 @@ CREATE INDEX IF NOT EXISTS idx_rentals_status ON rentals(status);
 CREATE INDEX IF NOT EXISTS idx_rentals_started_at ON rentals(started_at);
 CREATE INDEX IF NOT EXISTS idx_rentals_ended_at ON rentals(ended_at);
 CREATE INDEX IF NOT EXISTS idx_trip_completions_rental_id ON trip_completions(rental_id);
-CREATE INDEX IF NOT EXISTS idx_trip_completions_completion_photo_id ON trip_completions(completion_photo_id);
 CREATE INDEX IF NOT EXISTS idx_trip_completions_admin_reviewed_by ON trip_completions(admin_reviewed_by);
+
+-- Create indexes for trip_completion_photos table
+CREATE INDEX IF NOT EXISTS idx_trip_completion_photos_trip_completion_id ON trip_completion_photos(trip_completion_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completion_photos_photo_id ON trip_completion_photos(photo_id);
+CREATE INDEX IF NOT EXISTS idx_trip_completion_photos_is_primary ON trip_completion_photos(is_primary);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_car_id ON maintenance_requests(car_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_requests_status ON maintenance_requests(status);
 CREATE INDEX IF NOT EXISTS idx_payment_logs_rental_id ON payment_logs(rental_id);

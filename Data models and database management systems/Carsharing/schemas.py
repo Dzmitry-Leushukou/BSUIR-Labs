@@ -281,7 +281,6 @@ class Log(LogBase):
 
 class TripCompletionBase(BaseModel):
     rental_id: int
-    completion_photo_id: Optional[int] = None
     admin_approved: Optional[bool] = None
     admin_comment: Optional[str] = None
     admin_reviewed_by: Optional[int] = None
@@ -289,7 +288,7 @@ class TripCompletionBase(BaseModel):
 
 class TripCompletionCreate(TripCompletionBase):
     rental_id: int
-    completion_photo_id: int  # Required for creation
+    completion_photo_ids: Optional[List[int]] = None  # Changed to accept multiple photo IDs
 
 class TripCompletionUpdate(BaseModel):
     admin_approved: Optional[bool] = None
@@ -299,6 +298,7 @@ class TripCompletionUpdate(BaseModel):
 
 class TripCompletion(TripCompletionBase):
     id: int
+    completion_photo_ids: Optional[List[int]] = None  # Changed to return multiple photo IDs
     created_at: datetime
     
     class Config:

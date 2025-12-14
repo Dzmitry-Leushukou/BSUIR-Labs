@@ -1643,20 +1643,19 @@ async function processPaymentAndComplete(rentalId) {
             return;
         }
         
-        // Загружаем первую фотографию и создаем запрос на подтверждение завершения поездки
-        let completionPhotoId = null;
+        // Загружаем все фотографии и создаем массив ID фотографий
+        const completionPhotoIds = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.type.startsWith('image/')) {
                 const photoId = await uploadPhoto(file, rental.car_id, parseInt(userId));
                 if (photoId) {
-                    completionPhotoId = photoId; // Используем первую загруженную фотографию
-                    break;
+                    completionPhotoIds.push(photoId);
                 }
             }
         }
         
-        if (!completionPhotoId) {
+        if (completionPhotoIds.length === 0) {
             alert('Не удалось загрузить фотографии. Пожалуйста, попробуйте снова.');
             return;
         }
@@ -1671,7 +1670,7 @@ async function processPaymentAndComplete(rentalId) {
             },
             body: JSON.stringify({
                 rental_id: rentalId,
-                completion_photo_id: completionPhotoId,
+                completion_photo_ids: completionPhotoIds, // Send array of photo IDs instead of single ID
                 admin_approved: null // Set to null initially, to be reviewed by admin
             })
         });

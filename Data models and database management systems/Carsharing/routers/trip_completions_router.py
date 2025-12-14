@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from schemas import *
 from crud.trip_completions_crud import *
+from crud.photos_crud import get_photos_by_trip_completion_id
 from typing import List
 from .users_router import get_current_user_from_header
 from datetime import datetime, timezone

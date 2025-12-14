@@ -129,3 +129,14 @@ def update_photo_endpoint(photo_id: int, photo: PhotoUpdate):
 @router.delete("/{photo_id}")
 def delete_photo_endpoint(photo_id: int):
     return delete_photo(photo_id)
+
+@router.get("/trip-completion/{trip_completion_id}", response_model=List[Photo])
+def get_photos_by_trip_completion_endpoint(trip_completion_id: int):
+    """
+    Get all photos associated with a trip completion
+    """
+    photos = get_photos_by_trip_completion_id(trip_completion_id)
+    # Convert dict-like objects to Photo models if needed
+    if photos and isinstance(photos[0], dict):
+        return [Photo.model_validate(photo) for photo in photos]
+    return photos

@@ -76,3 +76,18 @@ def delete_photo(photo_id: int):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Photo not found")
     return {"message": "Photo deleted successfully"}
+
+def get_photos_by_trip_completion_id(trip_completion_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT p.*
+        FROM photos p
+        JOIN trip_completion_photos tcp ON p.id = tcp.photo_id
+        WHERE tcp.trip_completion_id = %s
+        ORDER BY tcp.is_primary DESC, tcp.created_at
+    """, (trip_completion_id,))
+    photos = cur.fetchall()
+    cur.close()
+    conn.close()
+    return photos
