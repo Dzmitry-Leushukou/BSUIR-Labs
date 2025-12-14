@@ -79,6 +79,8 @@ def update_user_profile(request: Request, user_update: UserUpdate, current_user:
 
 @router.get("/{user_id}", response_model=User)
 def get_user_endpoint(user_id: int):
+    if user_id <= 0:
+        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
     return get_user(user_id)
 
 @router.post("/", response_model=User)
@@ -123,10 +125,14 @@ def change_password_endpoint(request: Request, password_change: UserPasswordChan
 
 @router.put("/{user_id}", response_model=User)
 def update_user_endpoint(user_id: int, user: UserUpdate):
+    if user_id <= 0:
+        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
     return update_user(user_id, user)
 
 @router.delete("/{user_id}")
 def delete_user_endpoint(user_id: int):
+    if user_id <= 0:
+        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
     return delete_user(user_id)
 
 @router.post("/login")

@@ -21,7 +21,19 @@ async function loadRentals() {
             displayRentals(rentals);
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при загрузке Rentals: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при загрузке Rentals: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке Rentals:', error);
@@ -86,3 +98,22 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', filterRentals);
     });
 });
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}

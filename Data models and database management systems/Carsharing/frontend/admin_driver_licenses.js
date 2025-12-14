@@ -26,7 +26,41 @@ async function loadDriverLicenses() {
                 const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) {
                     const errorData = await response.json();
-                    errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                    if (typeof errorData.detail === 'string') {
+                        errorDetail = errorData.detail;
+                    } else if (typeof errorData.message === 'string') {
+                        errorDetail = errorData.message;
+                    } else if (typeof errorData === 'object' && errorData !== null) {
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            // Если объект сложный, пытаемся получить читаемое сообщение
+                            // Проверяем наличие других полей с сообщениями об ошибке
+                            if (errorData.error) {
+                                errorDetail = errorData.error;
+                            } else if (errorData.msg) {
+                                errorDetail = errorData.msg;
+                            } else {
+                                errorDetail = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                            }
+                        }
+                    } else {
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData && typeof errorData === 'object') {
+                            if (errorData.error) {
+                                errorDetail = errorData.error;
+                            } else if (errorData.msg) {
+                                errorDetail = errorData.msg;
+                            } else {
+                                errorDetail = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                            }
+                        } else {
+                            errorDetail = String(errorData);
+                        }
+                    }
                 } else {
                     // Если ответ не JSON, получаем текст
                     errorDetail = await response.text();
@@ -116,7 +150,41 @@ async function updateLicenseStatus(licenseId, status) {
                 const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) {
                     const errorData = await response.json();
-                    errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                    if (typeof errorData.detail === 'string') {
+                        errorDetail = errorData.detail;
+                    } else if (typeof errorData.message === 'string') {
+                        errorDetail = errorData.message;
+                    } else if (typeof errorData === 'object' && errorData !== null) {
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            // Если объект сложный, пытаемся получить читаемое сообщение
+                            // Проверяем наличие других полей с сообщениями об ошибке
+                            if (errorData.error) {
+                                errorDetail = errorData.error;
+                            } else if (errorData.msg) {
+                                errorDetail = errorData.msg;
+                            } else {
+                                errorDetail = JSON.stringify(errorData);
+                            }
+                        }
+                    } else {
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData && typeof errorData === 'object') {
+                            if (errorData.error) {
+                                errorDetail = errorData.error;
+                            } else if (errorData.msg) {
+                                errorDetail = errorData.msg;
+                            } else {
+                                errorDetail = JSON.stringify(errorData);
+                            }
+                        } else {
+                            errorDetail = String(errorData);
+                        }
+                    }
                 } else {
                     // Если ответ не JSON, получаем текст
                     errorDetail = await response.text();
@@ -174,3 +242,22 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', filterDriverLicenses);
     });
 });
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}

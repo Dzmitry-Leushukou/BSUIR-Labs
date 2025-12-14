@@ -21,7 +21,19 @@ async function loadUsers() {
             displayUsers(users);
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при загрузке Users: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при загрузке Users: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке Users:', error);
@@ -70,6 +82,13 @@ async function changeRole(userId) {
     const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user):');
     if (!newRoleId) return;
     
+    // Проверяем, что введенный ID - это число
+    const roleId = parseInt(newRoleId);
+    if (isNaN(roleId) || (roleId !== 1 && roleId !== 2)) {
+        alert('Неверный ID роли. Допустимые значения: 1 (admin) или 2 (user)');
+        return;
+    }
+    
     if (!confirm(`Вы уверены, что хотите изменить роль пользователя на ${newRoleId}?`)) {
         return;
     }
@@ -90,7 +109,19 @@ async function changeRole(userId) {
             loadUsers();
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при обновлении роли: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при обновлении роли: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при обновлении роли:', error);
@@ -127,7 +158,19 @@ async function toggleUserStatus(userId, newStatus) {
             loadUsers();
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при обновлении статуса: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при обновлении статуса: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при обновлении статуса:', error);
@@ -162,7 +205,19 @@ async function deleteUser(userId) {
             loadUsers();
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при удалении пользователя: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при удалении пользователя: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при удалении пользователя:', error);

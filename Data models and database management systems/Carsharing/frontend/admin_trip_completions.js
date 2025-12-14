@@ -22,10 +22,48 @@ async function loadTripCompletions() {
             let errorDetail = 'Неизвестная ошибка';
             try {
                 const errorData = await response.json();
-                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                if (typeof errorData.detail === 'string') {
+                    errorDetail = errorData.detail;
+                } else if (typeof errorData.message === 'string') {
+                    errorDetail = errorData.message;
+                } else if (typeof errorData === 'object' && errorData !== null) {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData.error) {
+                        errorDetail = errorData.error;
+                    } else if (errorData.msg) {
+                        errorDetail = errorData.msg;
+                    } else {
+                        // Если объект сложный, пытаемся получить читаемое сообщение
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                        }
+                    }
+                } else {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData && typeof errorData === 'object') {
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                        }
+                    } else {
+                        errorDetail = String(errorData);
+                    }
+                }
             } catch (e) {
                 // Если не удалось распарсить JSON, используем текст ошибки
-                errorDetail = await response.text() || 'Неизвестная ошибка';
+                try {
+                    errorDetail = await response.text() || 'Неизвестная ошибка';
+                } catch (textError) {
+                    errorDetail = 'Неизвестная ошибка';
+                }
             }
             alert(`Ошибка при загрузке поездок: ${errorDetail}`);
         }
@@ -153,10 +191,48 @@ async function confirmTrip(completionId) {
             let errorDetail = 'Неизвестная ошибка';
             try {
                 const errorData = await response.json();
-                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                if (typeof errorData.detail === 'string') {
+                    errorDetail = errorData.detail;
+                } else if (typeof errorData.message === 'string') {
+                    errorDetail = errorData.message;
+                } else if (typeof errorData === 'object' && errorData !== null) {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData.error) {
+                        errorDetail = errorData.error;
+                    } else if (errorData.msg) {
+                        errorDetail = errorData.msg;
+                    } else {
+                        // Если объект сложный, пытаемся получить читаемое сообщение
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = JSON.stringify(errorData);
+                        }
+                    }
+                } else {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData && typeof errorData === 'object') {
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = JSON.stringify(errorData);
+                        }
+                    } else {
+                        errorDetail = String(errorData);
+                    }
+                }
             } catch (e) {
                 // Если не удалось распарсить JSON, используем текст ошибки
-                errorDetail = await response.text() || 'Неизвестная ошибка';
+                try {
+                    errorDetail = await response.text() || 'Неизвестная ошибка';
+                } catch (textError) {
+                    errorDetail = 'Неизвестная ошибка';
+                }
             }
             alert(`Ошибка при подтверждении поездки: ${errorDetail}`);
         }
@@ -206,10 +282,48 @@ async function reportDamage(completionId) {
             let errorDetail = 'Неизвестная ошибка';
             try {
                 const errorData = await response.json();
-                errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+                if (typeof errorData.detail === 'string') {
+                    errorDetail = errorData.detail;
+                } else if (typeof errorData.message === 'string') {
+                    errorDetail = errorData.message;
+                } else if (typeof errorData === 'object' && errorData !== null) {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData.error) {
+                        errorDetail = errorData.error;
+                    } else if (errorData.msg) {
+                        errorDetail = errorData.msg;
+                    } else {
+                        // Если объект сложный, пытаемся получить читаемое сообщение
+                        // Проверяем наличие других полей с сообщениями об ошибке
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = JSON.stringify(errorData);
+                        }
+                    }
+                } else {
+                    // Проверяем наличие других полей с сообщениями об ошибке
+                    if (errorData && typeof errorData === 'object') {
+                        if (errorData.error) {
+                            errorDetail = errorData.error;
+                        } else if (errorData.msg) {
+                            errorDetail = errorData.msg;
+                        } else {
+                            errorDetail = JSON.stringify(errorData);
+                        }
+                    } else {
+                        errorDetail = String(errorData);
+                    }
+                }
             } catch (e) {
                 // Если не удалось распарсить JSON, используем текст ошибки
-                errorDetail = await response.text() || 'Неизвестная ошибка';
+                try {
+                    errorDetail = await response.text() || 'Неизвестная ошибка';
+                } catch (textError) {
+                    errorDetail = 'Неизвестная ошибка';
+                }
             }
             alert(`Ошибка при регистрации повреждений: ${errorDetail}`);
         }
@@ -326,3 +440,22 @@ document.addEventListener('click', function(event) {
         closePhotoModal();
     }
 });
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+   // Проверяем, является ли объект простым объектом с сообщением
+   if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+       // Ищем возможные поля с сообщениями об ошибках
+       if (obj.message) return obj.message;
+       if (obj.msg) return obj.msg;
+       if (obj.detail) return obj.detail;
+       if (obj.error) return obj.error;
+       
+       // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+       const keys = Object.keys(obj);
+       if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+           return obj[keys[0]];
+       }
+   }
+   return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}

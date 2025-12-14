@@ -21,7 +21,19 @@ async function loadMaintenanceRequests() {
             displayMaintenanceRequests(maintenanceRequests);
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при загрузке Maintenance requests: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при загрузке Maintenance requests: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке Maintenance requests:', error);
@@ -108,7 +120,19 @@ async function resolveMaintenanceRequest(requestId, buttonElement) {
             alert('Заявка успешно отмечена как решённая');
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при обновлении статуса заявки: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при обновлении статуса заявки: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Ошибка при обновлении статуса заявки:', error);
@@ -153,3 +177,22 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', filterMaintenanceRequests);
     });
 });
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}

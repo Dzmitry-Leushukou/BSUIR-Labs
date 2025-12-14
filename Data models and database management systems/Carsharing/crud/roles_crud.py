@@ -21,7 +21,7 @@ def get_role(role_id: int):
     cur.close()
     conn.close()
     if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
+        raise HTTPException(status_code=404, detail=f"Role with ID {role_id} not found")
     return role
 
 def create_role(role: RoleCreate):

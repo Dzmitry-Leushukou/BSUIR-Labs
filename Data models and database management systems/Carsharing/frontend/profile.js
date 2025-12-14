@@ -1,4 +1,4 @@
-// Функция для возврата на предыдущую страницу
+ е// Функция для возврата на предыдущую страницу
 function goBack() {
     window.history.back();
 }
@@ -168,8 +168,17 @@ async function loadProfileInfo() {
                 document.getElementById('profile-role').textContent = roleData.name;
             } else {
                 // В случае ошибки используем резервный вариант
-                const roleName = userData.role_id === 1 ? 'Администратор' :
-                               userData.role_id === 2 ? 'Пользователь' : 'Неизвестная роль';
+                let roleName;
+                if (userData.role_id === 1) {
+                    roleName = 'Администратор';
+                } else if (userData.role_id === 2) {
+                    roleName = 'Пользователь';
+                } else {
+                    // Обработка случая, когда role_id неизвестен (например, 0 или другое значение)
+                    const errorData = await roleResponse.json();
+                    console.error(`Ошибка получения информации о роли: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    roleName = `Неизвестная роль (ID: ${userData.role_id})`;
+                }
                 document.getElementById('profile-role').textContent = roleName;
             }
             
@@ -416,14 +425,49 @@ document.getElementById('change-password-form').addEventListener('submit', async
                         errorMessage = errorData.message;
                     } else {
                         // Если detail и message нет, преобразуем объект в строку
-                        errorMessage = JSON.stringify(errorData);
+                        // Проверяем, является ли errorData объектом с читаемыми свойствами
+                        if (typeof errorData === 'object' && errorData !== null) {
+                            // Проверяем наличие свойства message или msg
+                            if (errorData.message) {
+                                errorMessage = errorData.message;
+                            } else if (errorData.msg) {
+                                errorMessage = errorData.msg;
+                            } else {
+                                // Пытаемся получить строковое представление объекта ошибки
+                                // Проверяем наличие других полей с сообщениями об ошибке
+                                if (errorData.error) {
+                                    errorMessage = errorData.error;
+                                } else if (errorData.msg) {
+                                    errorMessage = errorData.msg;
+                                } else {
+                                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                                }
+                            }
+                        } else {
+                            // Проверяем наличие других полей с сообщениями об ошибке
+                            if (errorData && typeof errorData === 'object') {
+                                if (errorData.error) {
+                                    errorMessage = errorData.error;
+                                } else if (errorData.msg) {
+                                    errorMessage = errorData.msg;
+                                } else {
+                                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                                }
+                            } else {
+                                errorMessage = String(errorData);
+                            }
+                        }
                     }
                 } else {
                     errorMessage = errorData || 'Неизвестная ошибка';
                 }
             } catch (e) {
                 // Если не удалось распарсить JSON, используем текст ошибки
-                errorMessage = await response.text() || 'Ошибка при смене пароля';
+                try {
+                    errorMessage = await response.text() || 'Ошибка при смене пароля';
+                } catch (textError) {
+                    errorMessage = 'Ошибка при смене пароля';
+                }
             }
             alert(`Ошибка при смене пароля: ${errorMessage}`);
         }
@@ -810,6 +854,25 @@ async function uploadDriverLicense() {
         document.getElementById('upload-license-form').reset();
         modal.style.display = 'block';
     }
+}
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
 }
 
 // Убираем проверку активной аренды при загрузке страницы профиля

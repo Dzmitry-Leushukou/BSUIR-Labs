@@ -24,14 +24,35 @@ async function checkAdminAccess() {
         if (response.ok) {
             const userData = await response.json();
             if (userData.role_id !== 1) { // admin role ID is 1
-                alert('Доступ запрещен. Только администраторы могут просматривать эту страницу.');
+                // Проверяем, является ли роль неизвестной (например, ID=0)
+                let roleName;
+                if (userData.role_id === 1) {
+                    roleName = 'Администратор';
+                } else if (userData.role_id === 2) {
+                    roleName = 'Пользователь';
+                } else {
+                    roleName = `Неизвестная роль (ID: ${userData.role_id})`;
+                }
+                alert(`Доступ запрещен. Только администраторы могут просматривать эту страницу. Ваша роль: ${roleName}`);
                 window.location.href = '/';
                 return false;
             }
             return true;
         } else {
             const errorData = await response.json();
-            alert(`Ошибка при проверке прав доступа: ${errorData.detail || 'Неизвестная ошибка'}`);
+            let errorMessage = 'Неизвестная ошибка';
+            if (errorData && typeof errorData === 'object') {
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                }
+            } else {
+                errorMessage = errorData || 'Неизвестная ошибка';
+            }
+            alert(`Ошибка при проверке прав доступа: ${errorMessage}`);
             window.location.href = '/';
             return false;
         }
@@ -108,6 +129,25 @@ document.addEventListener('click', function(event) {
         closePhotoModal();
     }
 });
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}
 
 // Выполняем проверку прав доступа при загрузке страницы
 document.addEventListener('DOMContentLoaded', async function() {

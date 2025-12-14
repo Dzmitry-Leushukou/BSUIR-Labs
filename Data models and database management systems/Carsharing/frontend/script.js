@@ -167,7 +167,8 @@ async function showCarsOnMap() {
                 }
             });
         } else {
-            console.error('Ошибка при получении позиций машин:', response.status);
+            const errorData = await response.json();
+            console.error('Ошибка при получении позиций машин:', errorData.detail || 'Неизвестная ошибка');
         }
     } catch (error) {
         console.error('Ошибка при запросе позиций машин:', error);
@@ -244,6 +245,10 @@ async function showUserInfo(userData) {
             if (response.ok) {
                 const fullUserData = await response.json();
                 isAdmin = fullUserData.role_id === 1;
+            } else {
+                // Обработка ошибки получения информации о пользователе
+                const errorData = await response.json();
+                console.error('Ошибка при проверке роли пользователя:', errorData.detail || 'Неизвестная ошибка');
             }
         } catch (error) {
             console.error('Ошибка при проверке роли пользователя:', error);
@@ -291,6 +296,8 @@ async function loadUserInfo() {
             showUserInfo(userData);
         } else {
             // Если user_id недействителен, удаляем его
+            const errorData = await response.json();
+            console.error('Ошибка при загрузке информации о пользователе:', errorData.detail || 'Неизвестная ошибка');
             localStorage.removeItem('user_id');
             showAuthButtons();
         }
@@ -541,14 +548,54 @@ document.querySelector('.register-btn').addEventListener('click', () => {
                         const validationErrors = errorData.detail.map(error => {
                             if (typeof error.msg === 'string') {
                                 return error.msg;
+                            } else if (typeof error.msg === 'object' && error.msg !== null) {
+                                // Проверяем, есть ли у объекта msg свойство message
+                                if (error.msg.message) {
+                                    return error.msg.message;
+                                } else {
+                                    // Если объект сложный, возвращаем его строковое представление
+                                    // Проверяем наличие других полей с сообщениями об ошибке
+                                    if (error.msg && typeof error.msg === 'object') {
+                                        if (error.msg.message) {
+                                            return error.msg.message;
+                                        } else if (error.msg.msg) {
+                                            return error.msg.msg;
+                                        } else if (error.msg.detail) {
+                                            return error.msg.detail;
+                                        } else {
+                                            // Проверяем, является ли объект простым объектом сообщением
+                                            const simpleMsg = getSimpleMessage(error.msg);
+                                            return simpleMsg !== null ? simpleMsg : JSON.stringify(error.msg);
+                                        }
+                                    } else {
+                                        // Проверяем, является ли объект простым объектом сообщением
+                                        const simpleMsg = getSimpleMessage(error.msg);
+                                        return simpleMsg !== null ? simpleMsg : JSON.stringify(error.msg);
+                                    }
+                                }
                             } else {
-                                return JSON.stringify(error.msg);
+                                return String(error.msg);
                             }
                         }).join(', ');
                         alert(`Ошибка регистрации: ${validationErrors}`);
                     } else if (typeof errorData.detail === 'object' && errorData.detail !== null) {
                         // Обработка ошибки, когда detail является объектом
-                        alert(`Ошибка регистрации: ${JSON.stringify(errorData.detail)}`);
+                        if (errorData.detail.message) {
+                            alert(`Ошибка регистрации: ${errorData.detail.message}`);
+                        } else {
+                            if (errorData.detail && typeof errorData.detail === 'object') {
+                                // Проверяем, есть ли у объекта detail свойство message
+                                if (errorData.detail.message) {
+                                    alert(`Ошибка регистрации: ${errorData.detail.message}`);
+                                } else {
+                                    // Проверяем, является ли объект простым объектом с сообщением
+                                    const simpleMsg = getSimpleMessage(errorData.detail);
+                                    alert(`Ошибка регистрации: ${simpleMsg !== null ? simpleMsg : JSON.stringify(errorData.detail)}`);
+                                }
+                            } else {
+                                alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
+                            }
+                        }
                     } else {
                         alert(`Ошибка регистрации: ${errorData.detail || 'Неизвестная ошибка'}`);
                     }
@@ -762,7 +809,8 @@ async function getActiveRental() {
             const activeRental = rentals.find(rental => rental.status === 'active');
             return activeRental || null;
         } else {
-            console.error('Ошибка при получении аренды:', response.status);
+            const errorData = await response.json();
+            console.error('Ошибка при получении аренды:', errorData.detail || 'Неизвестная ошибка');
             return null;
         }
     } catch (error) {
@@ -914,7 +962,8 @@ async function endRental(rentalId) {
         });
         
         if (!rentalResponse.ok) {
-            throw new Error('Не удалось получить информацию об аренде');
+            const errorData = await rentalResponse.json();
+            throw new Error(`Не удалось получить информацию об аренде: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
         
         const rental = await rentalResponse.json();
@@ -971,7 +1020,8 @@ async function endRental(rentalId) {
         });
         
         if (!paymentLogResponse.ok) {
-            throw new Error('Ошибка при создании записи об оплате');
+            const errorData = await paymentLogResponse.json();
+            throw new Error(`Ошибка при создании записи об оплате: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
         
         const response = await fetch(`/rentals/${rentalId}`, {
@@ -1720,7 +1770,8 @@ async function updateCashbackBalance(amount) {
         });
         
         if (!response.ok) {
-            console.error('Ошибка при обновлении кэшбэка:', response.status);
+            const errorData = await response.json();
+            console.error('Ошибка при обновлении кэшбэка:', errorData.detail || 'Неизвестная ошибка');
         }
     } catch (error) {
         console.error('Ошибка при обновлении кэшбэка:', error);
@@ -1729,6 +1780,25 @@ async function updateCashbackBalance(amount) {
 
 // Function to get user IP has been removed as per requirements
  
+
+// Функция для получения простого сообщения из объекта ошибки
+function getSimpleMessage(obj) {
+    // Проверяем, является ли объект простым объектом с сообщением
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        // Ищем возможные поля с сообщениями об ошибках
+        if (obj.message) return obj.message;
+        if (obj.msg) return obj.msg;
+        if (obj.detail) return obj.detail;
+        if (obj.error) return obj.error;
+        
+        // Если объект имеет только одно свойство, которое является строкой, возвращаем его
+        const keys = Object.keys(obj);
+        if (keys.length === 1 && typeof obj[keys[0]] === 'string') {
+            return obj[keys[0]];
+        }
+    }
+    return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}
 
 // Функция для перехода на админ панель
 function goToAdminPanel() {

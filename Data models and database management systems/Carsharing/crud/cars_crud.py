@@ -23,7 +23,7 @@ def get_car(car_id: int):
     cur.close()
     conn.close()
     if not car:
-        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+        raise HTTPException(status_code=404, detail=f"Автомобиль с ID {car_id} не найден")
     return car
 
 def create_car(car: CarCreate):
