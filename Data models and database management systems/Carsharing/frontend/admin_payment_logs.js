@@ -44,11 +44,11 @@ async function loadPaymentLogs(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Payment logs: ${errorMessage}`);
+            alert(`Ошибка при загрузке логов платежей: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Payment logs:', error);
-        alert('Ошибка при загрузке Payment logs');
+        console.error('Ошибка при загрузке логов платежей:', error);
+        alert('Ошибка при загрузке логов платежей');
     }
 }
 

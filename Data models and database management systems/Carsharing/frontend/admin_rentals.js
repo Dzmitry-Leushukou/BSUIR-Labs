@@ -44,11 +44,11 @@ async function loadRentals(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Rentals: ${errorMessage}`);
+            alert(`Ошибка при загрузке аренд: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Rentals:', error);
-        alert('Ошибка при загрузке Rentals');
+        console.error('Ошибка при загрузке аренд:', error);
+        alert('Ошибка при загрузке аренд');
     }
 }
 

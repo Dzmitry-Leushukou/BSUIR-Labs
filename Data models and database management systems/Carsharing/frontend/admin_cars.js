@@ -43,11 +43,11 @@ async function loadCars(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Cars: ${errorMessage}`);
+            alert(`Ошибка при загрузке автомобилей: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Cars:', error);
-        alert('Ошибка при загрузке Cars');
+        console.error('Ошибка при загрузке автомобилей:', error);
+        alert('Ошибка при загрузке автомобилей');
     }
 }
 

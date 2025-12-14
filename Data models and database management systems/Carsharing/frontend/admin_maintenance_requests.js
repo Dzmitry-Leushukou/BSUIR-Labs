@@ -44,11 +44,11 @@ async function loadMaintenanceRequests(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Maintenance requests: ${errorMessage}`);
+            alert(`Ошибка при загрузке запросов на обслуживание: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Maintenance requests:', error);
-        alert('Ошибка при загрузке Maintenance requests');
+        console.error('Ошибка при загрузке запросов на обслуживание:', error);
+        alert('Ошибка при загрузке запросов на обслуживание');
     }
 }
 

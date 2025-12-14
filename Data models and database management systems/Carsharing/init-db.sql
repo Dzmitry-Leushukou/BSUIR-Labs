@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS driver_licenses (
     expiration_date DATE NOT NULL CHECK (expiration_date > CURRENT_DATE),
     document_photo_id INT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
     document_photo_back_id INT REFERENCES photos(id) ON DELETE CASCADE,
-    status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected'))
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')) -- 'pending' (Ожидает проверки), 'approved' (Подтверждено), 'rejected' (Отклонено)
 );
 
 -- Add driver_id column to users table if it doesn't exist

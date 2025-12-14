@@ -45,7 +45,7 @@ def test_rentals_sorting():
         print(f"Error testing rentals: {e}")
 
 def test_trip_completions_sorting():
-    """Test that trip completions are sorted with pending first, oldest to newest, then approved/rejected"""
+    """Test that trip completions are sorted with pending first, oldest to newest, then approved/rejected (Тест проверяет, что завершения поездок сортируются сначала с ожидающими, от старых к новым, затем подтвержденные/отклоненные)"""
     print("Testing trip completions sorting...")
     try:
         completions = get_trip_completions(offset=0, limit=100)
@@ -71,7 +71,7 @@ def test_trip_completions_sorting():
                 # If both are not NULL, they can be in any order relative to each other
                 # but should come after all NULL entries
                 
-            print(f"Trip completions sorted correctly (pending first, oldest to newest, then approved): {pending_first}")
+            print(f"Trip completions sorted correctly (pending first, oldest to newest, then approved/rejected): {pending_first}")
         else:
             print("Not enough trip completions to test sorting")
     except Exception as e:

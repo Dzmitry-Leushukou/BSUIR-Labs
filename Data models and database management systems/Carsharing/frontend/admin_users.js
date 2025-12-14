@@ -44,11 +44,11 @@ async function loadUsers(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Users: ${errorMessage}`);
+            alert(`Ошибка при загрузке пользователей: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Users:', error);
-        alert('Ошибка при загрузке Users');
+        console.error('Ошибка при загрузке пользователей:', error);
+        alert('Ошибка при загрузке пользователей');
     }
 }
 

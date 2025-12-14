@@ -83,8 +83,8 @@ async function loadDriverLicenses(page = 0) {
             alert(`Ошибка при загрузке Driver licenses: ${errorDetail}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Driver licenses:', error);
-        alert('Ошибка при загрузке Driver licenses');
+        console.error('Ошибка при загрузке водительских лицензий:', error);
+        alert('Ошибка при загрузке водительских лицензий');
     }
 }
 
@@ -235,7 +235,8 @@ async function updateLicenseStatus(licenseId, status) {
         return;
     }
     
-    if (!confirm(`Вы уверены, что хотите изменить статус лицензии на "${status}"?`)) {
+    const statusText = status === 'pending' ? 'Ожидает проверки' : status === 'approved' ? 'Подтверждено' : status === 'rejected' ? 'Отклонено' : status;
+    if (!confirm(`Вы уверены, что хотите изменить статус лицензии на "${statusText}"?`)) {
         return;
     }
     
@@ -250,7 +251,7 @@ async function updateLicenseStatus(licenseId, status) {
         });
         
         if (response.ok) {
-            alert(`Статус лицензии успешно обновлен на "${status}"`);
+            alert(`Статус лицензии успешно обновлен на "${statusText}"`);
             // Перезагружаем таблицу
             loadDriverLicenses();
         } else {

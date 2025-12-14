@@ -44,11 +44,11 @@ async function loadActionLogs(page = 0) {
             } else {
                 errorMessage = errorData || 'Неизвестная ошибка';
             }
-            alert(`Ошибка при загрузке Action logs: ${errorMessage}`);
+            alert(`Ошибка при загрузке логов действий: ${errorMessage}`);
         }
     } catch (error) {
-        console.error('Ошибка при загрузке Action logs:', error);
-        alert('Ошибка при загрузке Action logs');
+        console.error('Ошибка при загрузке логов действий:', error);
+        alert('Ошибка при загрузке логов действий');
     }
 }
 
