@@ -1512,28 +1512,8 @@ async function processPaymentAndComplete(rentalId) {
             return;
         }
         
-        // Update the rental to set end date and status to completed
-        // Use the properly calculated time in UTC+3
-        const updateRentalResponse = await fetch(`/rentals/${rentalId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
-            body: JSON.stringify({
-                ended_at: endedAt.toISOString(),
-                status: "completed",
-                price: totalPrice  // Update the price with the calculated total
-            })
-        });
-        
-        if (!updateRentalResponse.ok) {
-            throw new Error('Ошибка при обновлении статуса аренды');
-        }
-        
-        const updatedRental = await updateRentalResponse.json();
-        
-        // Создаем запрос на подтверждение завершения поездки (для сохранения документа, но без ожидания подтверждения)
+        // Сначала создаем запрос на подтверждение завершения поездки (для сохранения документа)
+        // Аренда еще в статусе active, чтобы пройти проверку в бэкенде
         const tripCompletionResponse = await fetch('/trip-completions/', {
             method: 'POST',
             headers: {
@@ -1543,9 +1523,33 @@ async function processPaymentAndComplete(rentalId) {
             body: JSON.stringify({
                 rental_id: rentalId,
                 completion_photo_id: completionPhotoId,
-                admin_approved: true // Automatically approve since payment is made
+                admin_approved: null // Set to null initially, to be reviewed by admin
             })
         });
+        
+        if (tripCompletionResponse.ok) {
+            // После успешного создания запроса на завершение, обновляем статус аренды
+            // Update the rental to set end date and status to pending_completion
+            // Use the properly calculated time in UTC+3
+            const updateRentalResponse = await fetch(`/rentals/${rentalId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': userId
+                },
+                body: JSON.stringify({
+                    ended_at: endedAt.toISOString(),
+                    status: "pending_completion", // Changed from "completed" to "pending_completion"
+                    price: totalPrice  // Update the price with the calculated total
+                })
+            });
+            
+            if (!updateRentalResponse.ok) {
+                throw new Error('Ошибка при обновлении статуса аренды');
+            }
+            
+            const updatedRental = await updateRentalResponse.json();
+        }
         
         if (tripCompletionResponse.ok) {
             // Если использовался кэшбэк, обновляем баланс пользователя

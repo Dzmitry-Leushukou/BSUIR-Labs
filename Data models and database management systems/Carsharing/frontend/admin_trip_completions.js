@@ -85,7 +85,7 @@ async function displayTripCompletionsData(tripCompletions) {
         }
         
         // Determine status text based on admin approval
-        let statusText = 'Ожидает проверки';
+        let statusText = 'На рассмотрении';
         if (completion.admin_approved === true) {
             statusText = 'Подтверждено';
         } else if (completion.admin_approved === false) {
@@ -102,7 +102,7 @@ async function displayTripCompletionsData(tripCompletions) {
             <td>${rental ? rental.price + ' BYN' : 'N/A'}</td>
             <td>${photosHtml}</td>
             <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">
-                ${completion.admin_approved === null ? 'Ожидает проверки' : completion.admin_approved ? 'Подтверждено' : 'Отклонено'}
+                ${completion.admin_approved === null ? 'На рассмотрении' : completion.admin_approved ? 'Подтверждено' : 'Отклонено'}
                 ${completion.admin_comment ? '<br><small><strong>Комментарий администратора:</strong> ' + completion.admin_comment + '</small>' : ''}
             </td>
             <td>
