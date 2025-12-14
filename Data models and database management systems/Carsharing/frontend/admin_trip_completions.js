@@ -17,6 +17,7 @@ async function loadTripCompletions() {
         
         if (response.ok) {
             const tripCompletions = await response.json();
+            // Trip completions are already sorted by backend (oldest to newest, confirmed at end), so just display them
             displayTripCompletionsData(tripCompletions);
         } else {
             let errorDetail = 'Неизвестная ошибка';

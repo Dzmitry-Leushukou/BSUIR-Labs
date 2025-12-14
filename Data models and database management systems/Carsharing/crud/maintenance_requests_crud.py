@@ -9,7 +9,17 @@ from datetime import datetime
 def get_maintenance_requests(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM maintenance_requests ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT *
+        FROM maintenance_requests
+        ORDER BY
+            CASE
+                WHEN status = 'resolved' THEN 1
+                ELSE 0
+            END,
+            id ASC
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
     requests = cur.fetchall()
     cur.close()
     conn.close()

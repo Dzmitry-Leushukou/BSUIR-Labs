@@ -18,6 +18,7 @@ async function loadRentals() {
         
         if (response.ok) {
             const rentals = await response.json();
+            // Rentals are already sorted by backend (newest first), so just display them
             displayRentals(rentals);
         } else {
             const errorData = await response.json();

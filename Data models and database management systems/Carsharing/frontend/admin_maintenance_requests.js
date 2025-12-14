@@ -18,6 +18,7 @@ async function loadMaintenanceRequests() {
         
         if (response.ok) {
             const maintenanceRequests = await response.json();
+            // Maintenance requests are already sorted by backend (unresolved first, then resolved), so just display them
             displayMaintenanceRequests(maintenanceRequests);
         } else {
             const errorData = await response.json();

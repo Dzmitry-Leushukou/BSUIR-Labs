@@ -9,7 +9,17 @@ import pytz
 def get_trip_completions(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT *, created_at FROM trip_completions ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT *, created_at
+        FROM trip_completions
+        ORDER BY
+            CASE
+                WHEN admin_approved IS NOT NULL THEN 1  -- Move approved/rejected to end
+                ELSE 0
+            END,
+            id ASC  -- Order by oldest to newest for pending items
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
     completions = cur.fetchall()
     cur.close()
     conn.close()

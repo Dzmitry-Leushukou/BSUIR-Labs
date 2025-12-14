@@ -18,6 +18,7 @@ async function loadActionLogs() {
         
         if (response.ok) {
             const actionLogs = await response.json();
+            // Action logs are already sorted by backend (newest first), so just display them
             displayActionLogs(actionLogs);
         } else {
             const errorData = await response.json();

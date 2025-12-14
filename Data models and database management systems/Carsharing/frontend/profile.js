@@ -614,6 +614,8 @@ async function showMyOrders() {
         
         if (response.ok) {
             const rentals = await response.json();
+            // Sort rentals by ID in descending order (newest first)
+            rentals.sort((a, b) => b.id - a.id);
             displayRentalsInfo(rentals);
         } else {
             const errorData = await response.json();

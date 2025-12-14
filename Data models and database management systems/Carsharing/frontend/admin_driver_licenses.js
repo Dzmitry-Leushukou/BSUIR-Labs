@@ -18,6 +18,7 @@ async function loadDriverLicenses() {
         
         if (response.ok) {
             const driverLicenses = await response.json();
+            // Driver licenses are already sorted by backend (unresolved first, then resolved), so just display them
             displayDriverLicenses(driverLicenses);
         } else {
             let errorDetail = 'Неизвестная ошибка';

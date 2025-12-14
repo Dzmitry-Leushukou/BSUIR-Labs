@@ -7,7 +7,7 @@ from fastapi import HTTPException
 def get_logs(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM logs ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("SELECT * FROM logs ORDER BY id DESC LIMIT %s OFFSET %s", (limit, offset))
     logs = cur.fetchall()
     cur.close()
     conn.close()

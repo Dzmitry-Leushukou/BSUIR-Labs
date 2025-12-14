@@ -10,9 +10,19 @@ def get_driver_licenses(offset: int = 0, limit: int = 100, driver_id: Optional[i
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     if driver_id is not None:
-        cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s ORDER BY driver_id LIMIT %s OFFSET %s", (driver_id, limit, offset))
+        cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s ORDER BY driver_id ASC LIMIT %s OFFSET %s", (driver_id, limit, offset))
     else:
-        cur.execute("SELECT * FROM driver_licenses ORDER BY driver_id LIMIT %s OFFSET %s", (limit, offset))
+        cur.execute("""
+            SELECT *
+            FROM driver_licenses
+            ORDER BY
+                CASE
+                    WHEN status = 'approved' OR status = 'rejected' THEN 1
+                    ELSE 0
+                END,
+                driver_id ASC
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
     
     licenses = cur.fetchall()
     cur.close()

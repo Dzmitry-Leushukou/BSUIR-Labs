@@ -18,6 +18,7 @@ async function loadPaymentLogs() {
         
         if (response.ok) {
             const paymentLogs = await response.json();
+            // Payment logs are already sorted by backend (newest first), so just display them
             displayPaymentLogs(paymentLogs);
         } else {
             const errorData = await response.json();
