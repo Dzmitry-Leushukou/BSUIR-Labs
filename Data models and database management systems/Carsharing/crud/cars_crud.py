@@ -9,7 +9,7 @@ from datetime import datetime
 def get_cars(offset: int = 0, limit: int = 100):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM cars ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
     cars = cur.fetchall()
     cur.close()
     conn.close()
@@ -18,7 +18,7 @@ def get_cars(offset: int = 0, limit: int = 100):
 def get_car(car_id: int):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM cars WHERE id = %s", (car_id,))
+    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars WHERE id = %s", (car_id,))
     car = cur.fetchone()
     cur.close()
     conn.close()

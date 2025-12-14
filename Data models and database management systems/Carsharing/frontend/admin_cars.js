@@ -187,15 +187,15 @@ function displayCars(cars) {
     tableBody.innerHTML = '';
     
     cars.forEach(car => {
-        // Форматируем координаты из геометрии
+        // Форматируем координаты из геометрии в формат "longitude, latitude"
         let position = '';
         if (car.position) {
             // Проверяем, является ли position строкой в формате POINT
             if (typeof car.position === 'string' && car.position.startsWith('POINT')) {
-                // Пример: "POINT(27.5615 53.9041)" -> "53.9041, 27.5615"
+                // Извлекаем координаты из формата POINT(27.5615 53.9041) -> "27.5615, 53.9041"
                 const match = car.position.match(/POINT\(([-+]?\d*\.\d+|\d+) ([-+]?\d*\.\d+|\d+)\)/);
                 if (match) {
-                    position = `${match[2]}, ${match[1]}`; // широта, долгота
+                    position = `${match[1]}, ${match[2]}`; // долгота, широта
                 } else {
                     // Если формат не соответствует ожидаемому, выводим как есть
                     position = car.position;
@@ -209,7 +209,7 @@ function displayCars(cars) {
             // Если позиция отсутствует, проверим, возможно есть поля latitude и longitude
             // как в функции get_cars_positions_with_user_rental_status
             if (car.latitude !== undefined && car.longitude !== undefined) {
-                position = `${car.latitude}, ${car.longitude}`;
+                position = `${car.longitude}, ${car.latitude}`;
             } else {
                 position = 'Не задана';
             }
@@ -299,9 +299,12 @@ async function openEditCarModal(carId) {
             // Форматируем координаты из геометрии для редактирования
             let position = '';
             if (car.position) {
+                // Извлекаем координаты из формата POINT(27.5615 53.9041) -> "53.9041, 27.5615" для редактирования
                 const match = car.position.match(/POINT\(([-+]?\d*\.\d+|\d+) ([-+]?\d*\.\d+|\d+)\)/);
                 if (match) {
-                    position = `${match[2]}, ${match[1]}`; // широта, долгота
+                    position = `${match[2]}, ${match[1]}`; // широта, долгота для редактирования
+                } else {
+                    position = car.position;
                 }
             }
             
