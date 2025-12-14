@@ -123,7 +123,7 @@ def populate_maintenance_requests():
     for i in range(8):
         car_id = random.choice(car_ids)
         reported_by = random.choice(user_ids)
-        status = random.choice(["open", "in_progress", "resolved"])
+        status = random.choice(["open", "resolved"])
         description = f"{random.choice(['замена масла', 'замена шин', 'проверка тормозов', 'осмотр двигателя', 'ремонт стекла'])}"
         
         # Determine dates based on status
@@ -131,10 +131,6 @@ def populate_maintenance_requests():
             # For resolved requests, create them in the past and resolve them after some time
             created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(5, 15))
             resolved_at = created_at + timedelta(days=random.randint(1, 4))
-        elif status == "in_progress":
-            # For in-progress requests, they were created in the past but not yet resolved
-            created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 7))
-            resolved_at = None
         else:  # open
             # For open requests, they were just created
             created_at = datetime.now(timezone.utc)

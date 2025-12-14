@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     reported_by INT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     resolved_at TIMESTAMP CHECK (resolved_at >= created_at OR resolved_at IS NULL),
-    status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open','in_progress','resolved')),
+    status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open','resolved')),
     description TEXT NOT NULL
 );
 

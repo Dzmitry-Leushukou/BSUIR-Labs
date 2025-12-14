@@ -222,12 +222,12 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
         target_user_id=created_user['id'],
         description='User registration successful',
         old_values=None,
-        new_values=json.dumps({
+        new_values={
             'email': created_user['email'],
             'name': created_user['name'],
             'surname': created_user['surname'],
             'role_id': created_user['role_id']
-        }),
+        },
         user_agent=user_agent
     )
     

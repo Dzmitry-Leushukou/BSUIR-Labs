@@ -63,6 +63,9 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
         update_fields.append("resolved_at = %s")
         values.append(resolved_at)
     if request.status is not None:
+        # Validate status value
+        if request.status not in ['open', 'resolved']:
+            raise HTTPException(status_code=400, detail="Invalid status value. Allowed values: 'open', 'resolved'")
         update_fields.append("status = %s")
         values.append(request.status)
     if request.description is not None:

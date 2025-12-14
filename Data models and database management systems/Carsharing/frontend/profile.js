@@ -192,8 +192,11 @@ async function loadProfileInfo() {
             }
             
             // Загружаем статус водительских прав
-            await loadDriverLicenseStatus(userId);
-        } else {
+                        await loadDriverLicenseStatus(userId);
+                        
+                        // Начинаем отслеживание изменений статуса водительских прав
+                        startLicenseStatusPolling();
+                    } else {
             // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
                         localStorage.removeItem('user_id');
                         window.location.href = '/';
@@ -240,21 +243,82 @@ async function loadDriverLicenseStatus(userId) {
                 const licenseStatusElement = document.getElementById('profile-license-status');
                 licenseStatusElement.textContent = userLicense.status === 'pending' ? 'Ожидает проверки' : userLicense.status === 'approved' ? 'Подтверждено' : userLicense.status === 'rejected' ? 'Отклонено' : userLicense.status;
                 licenseStatusElement.className = `status-${userLicense.status}`;
+                
+                // Возвращаем статус для возможного использования в других функциях
+                return userLicense.status;
             } else {
                 // Если права не найдены, отображаем "Не отправлены на проверку"
                 document.getElementById('profile-license-status').textContent = 'Не отправлены на проверку';
                 document.getElementById('profile-license-status').className = 'status-not-loaded';
+                return 'not_submitted';
             }
         } else {
             // Если произошла ошибка, отображаем "Не загружены"
             document.getElementById('profile-license-status').textContent = 'Не загружены';
             document.getElementById('profile-license-status').className = 'status-not-loaded';
+            return 'error';
         }
     } catch (error) {
         console.error('Ошибка при загрузке статуса водительских прав:', error);
         document.getElementById('profile-license-status').textContent = 'Не загружены';
         document.getElementById('profile-license-status').className = 'status-not-loaded';
+        return 'error';
     }
+}
+
+// Функция для периодического обновления статуса водительских прав без перезагрузки страницы
+function startLicenseStatusPolling() {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        console.error('Пользователь не авторизован');
+        return;
+    }
+    
+    let pollingInterval;
+    
+    // Функция для проверки статуса
+    const checkStatus = async () => {
+        const currentStatusElement = document.getElementById('profile-license-status');
+        if (!currentStatusElement) return;
+        
+        // Получаем текущий статус из элемента (для сравнения)
+        const currentDisplayStatus = currentStatusElement.textContent;
+        
+        // Загружаем актуальный статус
+        const newStatus = await loadDriverLicenseStatus(userId);
+        
+        // Если статус изменился, можно выполнить дополнительные действия
+        if (newStatus && newStatus !== 'error' && newStatus !== 'not_submitted') {
+            // Получаем текстовое представление статуса для сравнения
+            const statusText = newStatus === 'pending' ? 'Ожидает проверки' :
+                              newStatus === 'approved' ? 'Подтверждено' :
+                              newStatus === 'rejected' ? 'Отклонено' : newStatus;
+            
+            if (currentDisplayStatus !== statusText) {
+                console.log('Статус водительских прав обновлён:', statusText);
+                // Можно добавить визуальное уведомление об изменении статуса
+                // Например, кратковременно выделить элемент
+                currentStatusElement.style.fontWeight = 'bold';
+                setTimeout(() => {
+                    currentStatusElement.style.fontWeight = '';
+                }, 2000);
+            }
+        }
+    };
+    
+    // Проверяем статус каждые 5 секунд когда вкладка активна
+    pollingInterval = setInterval(checkStatus, 5000);
+    
+    // Оптимизация: останавливаем опрос когда вкладка неактивна и возобновляем когда активна
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            // Вкладка неактивна - останавливаем опрос
+            clearInterval(pollingInterval);
+        } else {
+            // Вкладка снова активна - возобновляем опрос
+            pollingInterval = setInterval(checkStatus, 5000);
+        }
+    });
 }
 
 // Обработчик для кнопки "Редактировать профиль"
