@@ -1,13 +1,20 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from schemas import *
 from crud.maintenance_requests_crud import *
 from typing import List
+from .users_router import get_current_user_from_header
 
 router = APIRouter(prefix="/maintenance_requests", tags=["Запросы на обслуживание"])
 
 @router.get("/", response_model=List[MaintenanceRequest])
 def get_maintenance_requests_endpoint(offset: int = 0, limit: int = 10):
     return get_maintenance_requests(offset, limit)
+
+@router.get("/count", response_model=dict)
+def get_maintenance_requests_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+    from crud.maintenance_requests_crud import get_maintenance_requests_count
+    count = get_maintenance_requests_count()
+    return {"count": count}
 
 @router.get("/{request_id}", response_model=MaintenanceRequest)
 def get_maintenance_request_endpoint(request_id: int):
@@ -24,9 +31,3 @@ def update_maintenance_request_endpoint(request_id: int, request: MaintenanceReq
 @router.delete("/{request_id}")
 def delete_maintenance_request_endpoint(request_id: int):
     return delete_maintenance_request(request_id)
-
-@router.get("/count", response_model=dict)
-def get_maintenance_requests_count_endpoint():
-    from crud.maintenance_requests_crud import get_maintenance_requests_count
-    count = get_maintenance_requests_count()
-    return {"count": count}

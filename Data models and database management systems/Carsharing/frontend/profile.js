@@ -1,138 +1,13 @@
- е// Функция для возврата на предыдущую страницу
+// Функция для возврата на предыдущую страницу
 function goBack() {
     window.history.back();
 }
 
-// Инициализация карты
-let profileMap;
-let profileMarker;
 
 // Загрузка информации о пользователе при загрузке страницы профиля
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProfileInfo();
-    
-    // Не инициализируем карту на странице профиля, так как она там не нужна
-    // initProfileMap();
 });
-
-// Функция для инициализации карты на странице профиля
-function initProfileMap() {
-    // Получаем текущее местоположение пользователя
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                
-                // Инициализация карты с текущим местоположением
-                initializeMap(latitude, longitude);
-                
-                // Добавление маркера на карту
-                addProfileMarker(latitude, longitude);
-                
-                // Показать машины на карте
-                showProfileCarsOnMap();
-            },
-            (error) => {
-                console.error('Ошибка получения местоположения:', error);
-                // Используем Минск как fallback
-                initializeMap(53.904133, 27.557541);
-                
-                // Показать машины на карте
-                showProfileCarsOnMap();
-            }
-        );
-    } else {
-        console.error('Геолокация не поддерживается браузером');
-        // Используем Минск как fallback
-        initializeMap(53.904133, 27.557541);
-        
-        // Показать машины на карте
-        showProfileCarsOnMap();
-    }
-}
-
-// Инициализация карты с Leaflet
-function initializeMap(lat, lng) {
-    if (profileMap) {
-        profileMap.remove();
-    }
-    
-    profileMap = L.map('map').setView([lat, lng], 13);
-    
-    // Добавление слоя карты OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(profileMap);
-}
-
-// Добавление маркера на карту
-function addProfileMarker(lat, lng) {
-    if (profileMarker) {
-        profileMap.removeLayer(profileMarker);
-    }
-    
-    // Создаем маркер с пользовательской иконкой для местоположения пользователя
-    const userIcon = L.divIcon({
-        className: 'user-location-marker',
-        html: '<div style="background-color: #007bff; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">👤</div>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-    });
-    
-    profileMarker = L.marker([lat, lng], {icon: userIcon}).addTo(profileMap);
-    profileMarker.bindPopup('Ваше текущее местоположение').openPopup();
-}
-
-// Показать все машины на карте
-async function showProfileCarsOnMap() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        console.error('Пользователь не авторизован');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/cars/all/positions', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const cars = await response.json();
-            
-            // Добавить маркеры для каждой машины
-            cars.forEach(car => {
-                if (car.latitude && car.longitude) {
-                    // Создаем иконку для маркера машины
-                    const carIcon = L.divIcon({
-                        className: 'car-marker',
-                        html: '<div style="background-color: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">🚗</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    });
-                    
-                    const carMarker = L.marker([car.latitude, car.longitude], {icon: carIcon}).addTo(profileMap);
-                    carMarker.bindPopup(`
-                        <b>Машина: ${car.model}</b><br>
-                        Номер: ${car.plate_number}<br>
-                        Статус: ${car.status}
-                    `);
-                }
-            });
-        } else {
-            console.error('Ошибка при получении позиций машин:', response.status);
-        }
-    } catch (error) {
-        console.error('Ошибка при запросе позиций машин:', error);
-    }
-}
-
-// Убираем функции, связанные с отображением активной поездки на странице профиля
-// Функция checkActiveTrip и связанные с ней функции не должны выполняться на странице профиля,
-// так как активная поездка отображается на главной странице
 
 // Функция для загрузки информации о пользователе
 async function loadProfileInfo() {
@@ -360,14 +235,20 @@ function startLicenseStatusPolling() {
 }
 
 // Обработчик для кнопки "Редактировать профиль"
-document.querySelector('.edit-profile-btn').addEventListener('click', () => {
-    openEditProfileModal();
-});
+const editProfileBtn = document.querySelector('.edit-profile-btn');
+if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', () => {
+        openEditProfileModal();
+    });
+}
 
 // Обработчик для кнопки "Сменить пароль"
-document.querySelector('.change-password-btn').addEventListener('click', () => {
-    openChangePasswordModal();
-});
+const changePasswordBtn = document.querySelector('.change-password-btn');
+if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', () => {
+        openChangePasswordModal();
+    });
+}
 
 // Функция открытия модального окна смены пароля
 function openChangePasswordModal() {
@@ -379,132 +260,147 @@ function openChangePasswordModal() {
 }
 
 // Закрытие модального окна смены пароля при клике на крестик
-document.querySelector('.close-change-password').addEventListener('click', () => {
-    document.getElementById('change-password-modal').style.display = 'none';
-});
+const closeChangePassword = document.querySelector('.close-change-password');
+if (closeChangePassword) {
+    closeChangePassword.addEventListener('click', () => {
+        const modal = document.getElementById('change-password-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
 
 // Закрытие модального окна смены пароля при клике на кнопку "Отмена"
-document.querySelector('.cancel-change-password').addEventListener('click', () => {
-    document.getElementById('change-password-modal').style.display = 'none';
-});
+const cancelChangePassword = document.querySelector('.cancel-change-password');
+if (cancelChangePassword) {
+    cancelChangePassword.addEventListener('click', () => {
+        const modal = document.getElementById('change-password-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
 
 // Закрытие модального окна смены пароля при клике вне его области
 window.addEventListener('click', (event) => {
     const modal = document.getElementById('change-password-modal');
-    if (event.target === modal) {
+    if (modal && event.target === modal) {
         modal.style.display = 'none';
     }
 });
 
 // Обработчик отправки формы смены пароля
-document.getElementById('change-password-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    const currentPassword = document.getElementById('current-password').value;
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-new-password').value;
-    
-    // Проверяем, совпадают ли новые пароли
-    if (newPassword !== confirmPassword) {
-        alert('Новые пароли не совпадают');
-        return;
-    }
-    
-    // Проверяем длину нового пароля
-    if (newPassword.length < 1) {
-        alert('Новый пароль должен содержать хотя бы 1 символ');
-        return;
-    }
-    
-    const formData = {
-        current_password: currentPassword,
-        new_password: newPassword
-    };
-    
-    try {
-        const response = await fetch('/users/change-password', {
-            method: 'PUT',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
+const changePasswordForm = document.getElementById('change-password-form');
+if (changePasswordForm) {
+    changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        if (response.ok) {
-            // Закрываем модальное окно
-            document.getElementById('change-password-modal').style.display = 'none';
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            alert('Пользователь не авторизован');
+            return;
+        }
+        
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-new-password').value;
+        
+        // Проверяем, совпадают ли новые пароли
+        if (newPassword !== confirmPassword) {
+            alert('Новые пароли не совпадают');
+            return;
+        }
+        
+        // Проверяем длину нового пароля
+        if (newPassword.length < 1) {
+            alert('Новый пароль должен содержать хотя бы 1 символ');
+            return;
+        }
+        
+        const formData = {
+            current_password: currentPassword,
+            new_password: newPassword
+        };
+        
+        try {
+            const response = await fetch('/users/change-password', {
+                method: 'PUT',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
             
-            alert('Пароль успешно изменен');
-        } else {
-            let errorMessage = 'Неизвестная ошибка';
-            try {
-                const errorData = await response.json();
-                // Исправляем получение сообщения об ошибке
-                if (errorData && typeof errorData === 'object') {
-                    if (errorData.detail) {
-                        errorMessage = errorData.detail;
-                    } else if (errorData.message) {
-                        errorMessage = errorData.message;
-                    } else {
-                        // Если detail и message нет, преобразуем объект в строку
-                        // Проверяем, является ли errorData объектом с читаемыми свойствами
-                        if (typeof errorData === 'object' && errorData !== null) {
-                            // Проверяем наличие свойства message или msg
-                            if (errorData.message) {
-                                errorMessage = errorData.message;
-                            } else if (errorData.msg) {
-                                errorMessage = errorData.msg;
-                            } else {
-                                // Пытаемся получить строковое представление объекта ошибки
-                                // Проверяем наличие других полей с сообщениями об ошибке
-                                if (errorData.error) {
-                                    errorMessage = errorData.error;
-                                } else if (errorData.msg) {
-                                    errorMessage = errorData.msg;
-                                } else {
-                                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
-                                }
-                            }
+            if (response.ok) {
+                // Закрываем модальное окно
+                document.getElementById('change-password-modal').style.display = 'none';
+                
+                alert('Пароль успешно изменен');
+            } else {
+                let errorMessage = 'Неизвестная ошибка';
+                try {
+                    const errorData = await response.json();
+                    // Исправляем получение сообщения об ошибке
+                    if (errorData && typeof errorData === 'object') {
+                        if (errorData.detail) {
+                            errorMessage = errorData.detail;
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message;
                         } else {
-                            // Проверяем наличие других полей с сообщениями об ошибке
-                            if (errorData && typeof errorData === 'object') {
-                                if (errorData.error) {
-                                    errorMessage = errorData.error;
+                            // Если detail и message нет, преобразуем объект в строку
+                            // Проверяем, является ли errorData объектом с читаемыми свойствами
+                            if (typeof errorData === 'object' && errorData !== null) {
+                                // Проверяем наличие свойства message или msg
+                                if (errorData.message) {
+                                    errorMessage = errorData.message;
                                 } else if (errorData.msg) {
                                     errorMessage = errorData.msg;
                                 } else {
-                                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                                    // Пытаемся получить строковое представление объекта ошибки
+                                    // Проверяем наличие других полей с сообщениями об ошибке
+                                    if (errorData.error) {
+                                        errorMessage = errorData.error;
+                                    } else if (errorData.msg) {
+                                        errorMessage = errorData.msg;
+                                    } else {
+                                        errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                                    }
                                 }
                             } else {
-                                errorMessage = String(errorData);
+                                // Проверяем наличие других полей с сообщениями об ошибке
+                                if (errorData && typeof errorData === 'object') {
+                                    if (errorData.error) {
+                                        errorMessage = errorData.error;
+                                    } else if (errorData.msg) {
+                                        errorMessage = errorData.msg;
+                                    } else {
+                                        errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
+                                    }
+                                } else {
+                                    errorMessage = String(errorData);
+                                }
                             }
                         }
+                    } else {
+                        errorMessage = errorData || 'Неизвестная ошибка';
                     }
-                } else {
-                    errorMessage = errorData || 'Неизвестная ошибка';
+                } catch (e) {
+                    // Если не удалось распарсить JSON, используем текст ошибки
+                    try {
+                        errorMessage = await response.text() || 'Ошибка при смене пароля';
+                    } catch (textError) {
+                        errorMessage = 'Ошибка при смене пароля';
+                    }
                 }
-            } catch (e) {
-                // Если не удалось распарсить JSON, используем текст ошибки
-                try {
-                    errorMessage = await response.text() || 'Ошибка при смене пароля';
-                } catch (textError) {
-                    errorMessage = 'Ошибка при смене пароля';
-                }
+                alert(`Ошибка при смене пароля: ${errorMessage}`);
             }
-            alert(`Ошибка при смене пароля: ${errorMessage}`);
+        } catch (error) {
+            console.error('Ошибка при смене пароля:', error);
+            alert('Ошибка при смене пароля');
         }
-    } catch (error) {
-        console.error('Ошибка при смене пароля:', error);
-        alert('Ошибка при смене пароля');
-    }
-});
+    });
+}
 
 // Функция открытия модального окна редактирования профиля
 function openEditProfileModal() {
@@ -523,70 +419,90 @@ function openEditProfileModal() {
 }
 
 // Закрытие модального окна при клике на крестик
-document.querySelector('.close').addEventListener('click', () => {
-    document.getElementById('edit-profile-modal').style.display = 'none';
-});
+const closeBtn = document.querySelector('.close');
+if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+        const modal = document.getElementById('edit-profile-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
 
 // Закрытие модального окна при клике на кнопку "Отмена"
-document.querySelector('.cancel-edit').addEventListener('click', () => {
-    document.getElementById('edit-profile-modal').style.display = 'none';
-});
+const cancelEditBtn = document.querySelector('.cancel-edit');
+if (cancelEditBtn) {
+    cancelEditBtn.addEventListener('click', () => {
+        const modal = document.getElementById('edit-profile-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
 
 // Закрытие модального окна при клике вне его области
 window.addEventListener('click', (event) => {
     const modal = document.getElementById('edit-profile-modal');
-    if (event.target === modal) {
+    if (modal && event.target === modal) {
         modal.style.display = 'none';
     }
 });
 
 // Обработчик отправки формы редактирования профиля
-document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    const formData = {
-        name: document.getElementById('edit-name').value,
-        surname: document.getElementById('edit-surname').value,
-        email: document.getElementById('edit-email').value
-    };
-    
-    try {
-        const response = await fetch('/users/profile', {
-            method: 'PUT',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
+const editProfileForm = document.getElementById('edit-profile-form');
+if (editProfileForm) {
+    editProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        if (response.ok) {
-            const userData = await response.json();
-            
-            // Обновляем информацию на странице
-            document.getElementById('profile-name').textContent = userData.name;
-            document.getElementById('profile-surname').textContent = userData.surname;
-            document.getElementById('profile-email').textContent = userData.email;
-            
-            // Закрываем модальное окно
-            document.getElementById('edit-profile-modal').style.display = 'none';
-            
-            alert('Профиль успешно обновлен');
-        } else {
-            const errorData = await response.json();
-            alert(`Ошибка при обновлении профиля: ${errorData.detail || 'Неизвестная ошибка'}`);
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            alert('Пользователь не авторизован');
+            return;
         }
-    } catch (error) {
-        console.error('Ошибка при обновлении профиля:', error);
-        alert('Ошибка при обновлении профиля');
-    }
-});
+        
+        const formData = {
+            name: document.getElementById('edit-name').value,
+            surname: document.getElementById('edit-surname').value,
+            email: document.getElementById('edit-email').value
+        };
+        
+        try {
+            const response = await fetch('/users/profile', {
+                method: 'PUT',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            if (response.ok) {
+                const userData = await response.json();
+                
+                // Обновляем информацию на странице
+                const profileName = document.getElementById('profile-name');
+                const profileSurname = document.getElementById('profile-surname');
+                const profileEmail = document.getElementById('profile-email');
+                
+                if (profileName) profileName.textContent = userData.name;
+                if (profileSurname) profileSurname.textContent = userData.surname;
+                if (profileEmail) profileEmail.textContent = userData.email;
+                
+                // Закрываем модальное окно
+                const modal = document.getElementById('edit-profile-modal');
+                if (modal) modal.style.display = 'none';
+                
+                alert('Профиль успешно обновлен');
+            } else {
+                const errorData = await response.json();
+                alert(`Ошибка при обновлении профиля: ${errorData.detail || 'Неизвестная ошибка'}`);
+            }
+        } catch (error) {
+            console.error('Ошибка при обновлении профиля:', error);
+            alert('Ошибка при обновлении профиля');
+        }
+    });
+}
 // Функция для получения ID пользователя из localStorage
 function getUserIdFromToken() {
     const userId = localStorage.getItem('user_id');
@@ -701,6 +617,30 @@ function setupMyOrdersPagination(currentPage) {
         }
         
         paginationContainer.innerHTML = paginationHTML;
+    }).catch(error => {
+        console.error('Ошибка при настройке пагинации моих заказов:', error);
+        // Создаем контейнер для пагинации даже если возникла ошибка при получении количества
+        let paginationContainer = document.getElementById('my-orders-pagination');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'my-orders-pagination';
+            paginationContainer.className = 'pagination';
+            
+            // Находим контейнер с заказами и добавляем пагинацию после таблицы
+            const ordersList = document.getElementById('orders-list');
+            if (ordersList) {
+                // Удаляем старую пагинацию, если она есть
+                const oldPagination = ordersList.querySelector('.pagination');
+                if (oldPagination) {
+                    oldPagination.remove();
+                }
+                
+                // Добавляем пагинацию после таблицы заказов
+                ordersList.appendChild(paginationContainer);
+            }
+            // Выводим кнопку обновления, если возникла ошибка
+            paginationContainer.innerHTML = '<button class="pagination-btn" onclick="showMyOrders(0)">Обновить</button>';
+        }
     });
 }
 
@@ -715,6 +655,7 @@ async function getMyOrdersCount() {
         const response = await fetch(`/rentals/user/${userId}/count`, {
             method: 'GET',
             headers: {
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -723,6 +664,8 @@ async function getMyOrdersCount() {
             const countData = await response.json();
             return countData.count || 0;
         } else {
+            const errorData = await response.json();
+            console.error('Ошибка сервера при получении количества заказов:', errorData);
             return 0;
         }
     } catch (error) {

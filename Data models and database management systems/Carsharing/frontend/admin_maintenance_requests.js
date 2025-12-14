@@ -124,9 +124,15 @@ function setupMaintenanceRequestPagination(currentPage) {
 // Функция для получения общего количества запросов на обслуживание
 async function getMaintenanceRequestsCount() {
     try {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            throw new Error('Пользователь не авторизован');
+        }
+        
         const response = await fetch('/maintenance_requests/count', {
             method: 'GET',
             headers: {
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -135,6 +141,8 @@ async function getMaintenanceRequestsCount() {
             const countData = await response.json();
             return countData.count || 0;
         } else {
+            const errorData = await response.json();
+            console.error('Ошибка сервера при получении количества запросов на обслуживание:', errorData);
             return 0;
         }
     } catch (error) {

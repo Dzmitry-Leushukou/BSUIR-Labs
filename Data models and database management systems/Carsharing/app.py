@@ -1132,57 +1132,6 @@ def delete_log(log_id: int):
         raise HTTPException(status_code=404, detail="Log not found")
     return {"message": "Log deleted successfully"}
 
-# Action Logs CRUD
-@app.get("/action_logs/", response_model=List[ActionLog])
-def get_action_logs(skip: int = 0, limit: int = 100):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM action_logs ORDER BY id LIMIT %s OFFSET %s", (limit, skip))
-    logs = cur.fetchall()
-    cur.close()
-    conn.close()
-    return logs
-
-@app.get("/action_logs/{log_id}", response_model=ActionLog)
-def get_action_log(log_id: int):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM action_logs WHERE id = %s", (log_id,))
-    log = cur.fetchone()
-    cur.close()
-    conn.close()
-    if not log:
-        raise HTTPException(status_code=404, detail="Action log not found")
-    return log
-
-@app.post("/action_logs/", response_model=ActionLog)
-def create_action_log(log: ActionLogCreate):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute(
-        """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id, description, old_values, new_values, user_agent)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-        (log.actor_user_id, log.action_type, log.target_user_id, log.target_car_id, log.target_rental_id,
-         log.description, log.old_values, log.new_values, log.user_agent)
-    )
-    new_log = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_log
-
-@app.delete("/action_logs/{log_id}")
-def delete_action_log(log_id: int):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM action_logs WHERE id = %s", (log_id,))
-    conn.commit()
-    deleted_count = cur.rowcount
-    cur.close()
-    conn.close()
-    if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Action log not found")
-    return {"message": "Action log deleted successfully"}
 
 # Utility function for password hashing
 def hash_password(password: str) -> str:

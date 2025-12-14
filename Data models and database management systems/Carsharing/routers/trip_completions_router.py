@@ -11,6 +11,12 @@ router = APIRouter(prefix="/trip-completions", tags=["Завершения по�
 def get_trip_completions_endpoint(offset: int = 0, limit: int = 10):
     return get_trip_completions(offset, limit)
 
+@router.get("/count", response_model=dict)
+def get_trip_completions_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+    from crud.trip_completions_crud import get_trip_completions_count
+    count = get_trip_completions_count()
+    return {"count": count}
+
 @router.get("/{completion_id}", response_model=TripCompletion)
 def get_trip_completion_endpoint(completion_id: int):
     return get_trip_completion(completion_id)
@@ -116,9 +122,3 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
                 create_maintenance_request(maintenance_request)
     
     return update_trip_completion(completion_id, completion)
-
-@router.get("/count", response_model=dict)
-def get_trip_completions_count_endpoint():
-    from crud.trip_completions_crud import get_trip_completions_count
-    count = get_trip_completions_count()
-    return {"count": count}

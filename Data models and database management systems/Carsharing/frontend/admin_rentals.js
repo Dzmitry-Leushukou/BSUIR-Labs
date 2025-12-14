@@ -124,9 +124,15 @@ function setupRentalPagination(currentPage) {
 // Функция для получения общего количества аренд
 async function getRentalsCount() {
     try {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            throw new Error('Пользователь не авторизован');
+        }
+        
         const response = await fetch('/rentals/count', {
             method: 'GET',
             headers: {
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -135,6 +141,8 @@ async function getRentalsCount() {
             const countData = await response.json();
             return countData.count || 0;
         } else {
+            const errorData = await response.json();
+            console.error('Ошибка сервера при получении количества аренд:', errorData);
             return 0;
         }
     } catch (error) {

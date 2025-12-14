@@ -154,9 +154,15 @@ function setupCarPagination(currentPage) {
 // Функция для получения общего количества автомобилей
 async function getCarCount() {
     try {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            throw new Error('Пользователь не авторизован');
+        }
+        
         const response = await fetch('/cars/count', {
             method: 'GET',
             headers: {
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -165,6 +171,8 @@ async function getCarCount() {
             const countData = await response.json();
             return countData.count || 0;
         } else {
+            const errorData = await response.json();
+            console.error('Ошибка сервера при получении количества автомобилей:', errorData);
             return 0;
         }
     } catch (error) {

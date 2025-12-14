@@ -18,6 +18,18 @@ def get_rentals_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10)
 def get_rentals_with_car_info_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10):
     return get_rentals_with_car_info_by_user_id(user_id, offset, limit)
 
+@router.get("/count", response_model=dict)
+def get_rentals_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+    from crud.rentals_crud import get_rentals_count
+    count = get_rentals_count()
+    return {"count": count}
+
+@router.get("/user/{user_id}/count", response_model=dict)
+def get_rentals_count_by_user_endpoint(user_id: int, current_user: dict = Depends(get_current_user_from_header)):
+    from crud.rentals_crud import get_rentals_count_by_user_id
+    count = get_rentals_count_by_user_id(user_id)
+    return {"count": count}
+
 @router.get("/{rental_id}", response_model=Rental)
 def get_rental_endpoint(rental_id: int):
     return get_rental(rental_id)
@@ -79,15 +91,3 @@ def delete_rental_endpoint(request: Request, rental_id: int, current_user: dict 
             raise HTTPException(status_code=403, detail="Not authorized to delete this rental")
     
     return delete_rental(rental_id)
-
-@router.get("/user/{user_id}/count", response_model=dict)
-def get_rentals_count_by_user_endpoint(user_id: int):
-    from crud.rentals_crud import get_rentals_count_by_user_id
-    count = get_rentals_count_by_user_id(user_id)
-    return {"count": count}
-
-@router.get("/count", response_model=dict)
-def get_rentals_count_endpoint():
-    from crud.rentals_crud import get_rentals_count
-    count = get_rentals_count()
-    return {"count": count}

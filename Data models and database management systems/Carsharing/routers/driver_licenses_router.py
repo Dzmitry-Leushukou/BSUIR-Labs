@@ -19,6 +19,12 @@ def get_driver_licenses_endpoint(request: Request, offset: int = 0, limit: int =
     else:
         return get_driver_licenses(offset, limit, driver_id=current_user['id'])
 
+@router.get("/count", response_model=dict)
+def get_driver_licenses_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+    from crud.driver_licenses_crud import get_driver_licenses_count
+    count = get_driver_licenses_count()
+    return {"count": count}
+
 @router.get("/{driver_id}", response_model=DriverLicense)
 def get_driver_license_endpoint(request: Request, driver_id: int, current_user: dict = Depends(get_current_user_from_header)):
     # Проверяем, является ли пользователь администратором или запрашивает свои собственные права
@@ -83,9 +89,3 @@ def delete_driver_license_endpoint(request: Request, driver_id: int, current_use
     # Additional business logic can be implemented here if needed
     
     return delete_driver_license(driver_id)
-
-@router.get("/count", response_model=dict)
-def get_driver_licenses_count_endpoint():
-    from crud.driver_licenses_crud import get_driver_licenses_count
-    count = get_driver_licenses_count()
-    return {"count": count}

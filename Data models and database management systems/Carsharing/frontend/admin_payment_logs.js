@@ -61,7 +61,12 @@ function setupPaymentLogPagination(currentPage) {
     
     // Подсчитываем общее количество логов платежей для определения количества страниц
     getPaymentLogsCount().then(totalCount => {
-        const totalPages = Math.ceil(totalCount / paymentLogsPerPage);
+        // Проверяем, что totalCount - валидное число
+        const count = totalCount || 0;
+        const totalPages = Math.ceil(count / paymentLogsPerPage);
+        
+        // Use the validated page number throughout the function
+        const safePageNum = isFinite(pageNum) ? pageNum : 0;
         
         // Создаем или обновляем элемент пагинации
         let paginationContainer = document.getElementById('payment-logs-pagination');
@@ -118,15 +123,47 @@ function setupPaymentLogPagination(currentPage) {
         }
         
         paginationContainer.innerHTML = paginationHTML;
+    }).catch(error => {
+        console.error('Ошибка при настройке пагинации:', error);
+        // Создаем контейнер для пагинации даже если возникла ошибка при получении количества
+        let paginationContainer = document.getElementById('payment-logs-pagination');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'payment-logs-pagination';
+            paginationContainer.className = 'pagination';
+            // Проверяем, есть ли уже контейнер для таблицы, иначе создаем
+            let tableContainer = document.querySelector('#payment-logs-table-container');
+            if (!tableContainer) {
+                tableContainer = document.createElement('div');
+                tableContainer.id = 'payment-logs-table-container';
+                // Перемещаем таблицу в контейнер
+                const tableElement = document.querySelector('#payment-logs-table');
+                if (tableElement) {
+                    tableContainer.appendChild(tableElement);
+                }
+                // Находим родительский элемент и добавляем туда контейнер
+                const tableBody = document.querySelector('#payment-logs-table-body').closest('table').parentElement;
+                tableBody.parentElement.insertBefore(tableContainer, document.querySelector('#payment-logs-table-body').closest('table').parentElement.nextSibling);
+            }
+            tableContainer.appendChild(paginationContainer);
+        }
+        // Выводим кнопку обновления, если возникла ошибка
+        paginationContainer.innerHTML = '<button class="pagination-btn" onclick="loadPaymentLogs(0)">Обновить</button>';
     });
 }
 
 // Функция для получения общего количества логов платежей
 async function getPaymentLogsCount() {
     try {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            throw new Error('Пользователь не авторизован');
+        }
+        
         const response = await fetch('/payment_logs/count', {
             method: 'GET',
             headers: {
+                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -135,6 +172,8 @@ async function getPaymentLogsCount() {
             const countData = await response.json();
             return countData.count || 0;
         } else {
+            const errorData = await response.json();
+            console.error('Ошибка сервера при получении количества логов платежей:', errorData);
             return 0;
         }
     } catch (error) {

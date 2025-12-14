@@ -77,6 +77,12 @@ def update_user_profile(request: Request, user_update: UserUpdate, current_user:
     # Возвращаем обновленные данные без токена
     return user_data
 
+@router.get("/count", response_model=dict)
+def get_users_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+    from crud.users_crud import get_users_count
+    count = get_users_count()
+    return {"count": count}
+
 @router.get("/{user_id}", response_model=User)
 def get_user_endpoint(user_id: int):
     if user_id <= 0:
@@ -134,12 +140,6 @@ def delete_user_endpoint(user_id: int):
     if user_id <= 0:
         raise HTTPException(status_code=400, detail="User ID must be a positive integer")
     return delete_user(user_id)
-
-@router.get("/count", response_model=dict)
-def get_users_count_endpoint():
-    from crud.users_crud import get_users_count
-    count = get_users_count()
-    return {"count": count}
 
 @router.post("/login")
 def login_user_endpoint(request: Request, user_login: UserLogin):

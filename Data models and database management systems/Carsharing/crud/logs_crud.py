@@ -57,4 +57,4 @@ def get_logs_count():
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    return result[0] if result else 0

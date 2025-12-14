@@ -54,8 +54,8 @@ def delete_action_log(log_id: int):
 def get_action_logs_count():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) as count FROM action_logs")
+    cur.execute("SELECT COUNT(*) FROM action_logs")
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    return result[0] if result else 0

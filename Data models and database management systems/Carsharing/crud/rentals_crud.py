@@ -175,7 +175,7 @@ def get_rentals_count_by_user_id(user_id: int):
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    return result[0] if result else 0
 
 def get_rentals_count():
     conn = get_db_connection()
@@ -184,4 +184,4 @@ def get_rentals_count():
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    return result[0] if result else 0
