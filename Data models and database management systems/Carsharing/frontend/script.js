@@ -1,3 +1,30 @@
+// Функция для проверки статуса пользователя
+async function checkUserStatus() {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        return null;
+    }
+    
+    try {
+        const response = await fetch('/users/profile', {
+            method: 'GET',
+            headers: {
+                'X-User-ID': userId,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            return userData.status;
+        }
+        return null;
+    } catch (error) {
+        console.error('Ошибка при проверке статуса пользователя:', error);
+        return null;
+    }
+}
+
 // Инициализация карты
 let map;
 let marker;
@@ -78,6 +105,14 @@ async function showCarsOnMap() {
     const userId = localStorage.getItem('user_id');
     if (!userId) {
         console.error('Пользователь не авторизован');
+        return;
+    }
+    
+    // Проверяем статус пользователя
+    const userStatus = await checkUserStatus();
+    if (userStatus === 'banned') {
+        // Если пользователь забанен, не показываем машины
+        console.log('Пользователь заблокирован, машины не отображаются');
         return;
     }
     
@@ -213,65 +248,112 @@ async function showUserInfo(userData) {
     const logoutButton = document.getElementById('logout-button');
     const adminPanelButton = document.getElementById('admin-panel-button');
     
-    userInfo.style.display = 'flex';
-    authButtons.style.display = 'none';
-    logoutButton.style.display = 'block';
-    
-    document.getElementById('user-name').textContent = `${userData.name} ${userData.surname}`;
-    document.getElementById('user-cashback').textContent = `Кэшбэк: ${userData.cashback} BYN`;
-    
-    // Сохраняем user_id, если он был возвращен с сервера
-    if (userData.id) {
-        localStorage.setItem('user_id', userData.id);
-    }
-    
-    // Проверяем, является ли пользователь администратором
-    let isAdmin = false;
-    if (userData.role_id) {
-        // Если у пользователя есть role_id, проверяем, является ли он админом
-        isAdmin = userData.role_id === 1; // admin role ID is 1
-    } else {
-        // Если role_id нет в userData, запрашиваем информацию о роли
-        try {
-            const userId = localStorage.getItem('user_id');
-            const response = await fetch(`/users/${userData.id}`, {
-                method: 'GET',
-                headers: {
-                    'X-User-ID': userId,
-                    'Content-Type': 'application/json'
-                }
-            });
+    // Проверяем статус пользователя
+        if (userData.status === 'banned') {
+            // Показываем только информацию о бане и кнопку выхода
+            userInfo.style.display = 'flex';
+            authButtons.style.display = 'none';
+            logoutButton.style.display = 'block';
+            adminPanelButton.style.display = 'none';
             
-            if (response.ok) {
-                const fullUserData = await response.json();
-                isAdmin = fullUserData.role_id === 1;
-            } else {
-                // Обработка ошибки получения информации о пользователе
-                const errorData = await response.json();
-                console.error('Ошибка при проверке роли пользователя:', errorData.detail || 'Неизвестная ошибка');
+            document.getElementById('user-name').textContent = '';
+            document.getElementById('user-cashback').textContent = '';
+            
+            // Удаляем обработчик клика, чтобы нельзя было перейти в профиль
+            userInfo.removeEventListener('click', handleProfileClick);
+            
+            // Показываем сообщение о бане
+            const banMessage = document.createElement('div');
+            banMessage.id = 'ban-message';
+            banMessage.textContent = 'Ваш аккаунт заблокирован';
+            banMessage.style.cssText = `
+                color: #dc3545;
+                font-weight: bold;
+                margin-top: 5px;
+                text-align: center;
+                width: 100%;
+            `;
+            
+            // Добавляем сообщение о бане в userInfo
+            userInfo.appendChild(banMessage);
+            
+            // Удаляем панель активной аренды, если она есть
+            const rentalPanel = document.getElementById('active-rental-panel');
+            if (rentalPanel) {
+                rentalPanel.remove();
             }
-        } catch (error) {
-            console.error('Ошибка при проверке роли пользователя:', error);
+        } else {
+            // Показываем обычную информацию о пользователе
+            userInfo.style.display = 'flex';
+            authButtons.style.display = 'none';
+            logoutButton.style.display = 'block';
+            
+            document.getElementById('user-name').textContent = `${userData.name} ${userData.surname}`;
+            document.getElementById('user-cashback').textContent = `Кэшбэк: ${userData.cashback} BYN`;
+            
+            // Удаляем сообщение о бане, если оно было
+            const banMessage = document.getElementById('ban-message');
+            if (banMessage) {
+                banMessage.remove();
+            }
+            
+            // Сохраняем user_id, если он был возвращен с сервера
+            if (userData.id) {
+                localStorage.setItem('user_id', userData.id);
+            }
+            
+            // Проверяем, является ли пользователь администратором
+            let isAdmin = false;
+            if (userData.role_id) {
+                // Если у пользователя есть role_id, проверяем, является ли он админом
+                isAdmin = userData.role_id === 1; // admin role ID is 1
+            } else {
+                // Если role_id нет в userData, запрашиваем информацию о роли
+                try {
+                    const userId = localStorage.getItem('user_id');
+                    const response = await fetch(`/users/${userData.id}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-User-ID': userId,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const fullUserData = await response.json();
+                        isAdmin = fullUserData.role_id === 1;
+                    } else {
+                        // Обработка ошибки получения информации о пользователе
+                        const errorData = await response.json();
+                        console.error('Ошибка при проверке роли пользователя:', errorData.detail || 'Неизвестная ошибка');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при проверке роли пользователя:', error);
+                }
+            }
+            
+            // Показываем кнопку админ панели только для администраторов
+            if (isAdmin) {
+                adminPanelButton.style.display = 'block';
+            } else {
+                adminPanelButton.style.display = 'none';
+            }
+            
+            // Добавляем обработчик клика на весь прямоугольник профиля
+            userInfo.removeEventListener('click', handleProfileClick); // Удаляем старый обработчик, если он есть
+            userInfo.addEventListener('click', handleProfileClick);
+            
+            // Проверяем и показываем активную аренду при входе
+            setTimeout(checkAndShowActiveRental, 300); // Используем небольшой таймаут для правильного отображения
         }
+}
+
+// Функция-обработчик для перехода в профиль
+function handleProfileClick(e) {
+    // Проверяем, что клик не был по кнопке "Выйти"
+    if (!e.target.classList.contains('logout-btn')) {
+        window.location.href = '/profile';
     }
-    
-    // Показываем кнопку админ панели только для администраторов
-    if (isAdmin) {
-        adminPanelButton.style.display = 'block';
-    } else {
-        adminPanelButton.style.display = 'none';
-    }
-    
-    // Добавляем обработчик клика на весь прямоугольник профиля
-    userInfo.addEventListener('click', (e) => {
-        // Проверяем, что клик не был по кнопке "Выйти"
-        if (!e.target.classList.contains('logout-btn')) {
-            window.location.href = '/profile';
-        }
-    });
-    
-    // Проверяем и показываем активную аренду при входе
-    setTimeout(checkAndShowActiveRental, 300); // Используем небольшой таймаут для правильного отображения
 }
 
 // Функция для загрузки информации о пользователе
@@ -293,7 +375,21 @@ async function loadUserInfo() {
         
         if (response.ok) {
             const userData = await response.json();
-            showUserInfo(userData);
+            
+            // Проверяем статус пользователя
+            if (userData.status === 'banned') {
+                // Если пользователь заблокирован, показываем соответствующее меню
+                showUserInfo(userData);
+                
+                // Также удаляем активную аренду, если она есть
+                const rentalPanel = document.getElementById('active-rental-panel');
+                if (rentalPanel) {
+                    rentalPanel.remove();
+                }
+            } else {
+                // Если пользователь не заблокирован, показываем обычное меню
+                showUserInfo(userData);
+            }
         } else {
             // Если user_id недействителен, удаляем его
             const errorData = await response.json();

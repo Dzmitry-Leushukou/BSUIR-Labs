@@ -153,69 +153,79 @@ async function loadProfileInfo() {
         });
         
         if (response.ok) {
-            const userData = await response.json();
-            
-            // Заполняем информацию о пользователе
-            document.getElementById('profile-name').textContent = userData.name;
-            document.getElementById('profile-surname').textContent = userData.surname;
-            document.getElementById('profile-email').textContent = userData.email;
-            document.getElementById('profile-cashback').textContent = `${userData.cashback} BYN`;
-            
-            // Получаем информацию о роли пользователя из базы данных
-            const roleResponse = await fetch(`/roles/${userData.role_id}`);
-            if (roleResponse.ok) {
-                const roleData = await roleResponse.json();
-                document.getElementById('profile-role').textContent = roleData.name;
-            } else {
-                // В случае ошибки используем резервный вариант
-                let roleName;
-                if (userData.role_id === 1) {
-                    roleName = 'Администратор';
-                } else if (userData.role_id === 2) {
-                    roleName = 'Пользователь';
-                } else {
-                    // Обработка случая, когда role_id неизвестен (например, 0 или другое значение)
-                    const errorData = await roleResponse.json();
-                    console.error(`Ошибка получения информации о роли: ${errorData.detail || 'Неизвестная ошибка'}`);
-                    roleName = `Неизвестная роль (ID: ${userData.role_id})`;
-                }
-                document.getElementById('profile-role').textContent = roleName;
-            }
-            
-            // Сохраняем user_id, если он был возвращен с сервера
-                        if (userData.id) {
-                            localStorage.setItem('user_id', userData.id);
-                        }
-                        
-            // Убираем проверку активной аренды на странице профиля, так как завершение аренды происходит на главной странице
-            // await checkActiveRental();
-            
-            // Обновляем видимость кнопки админ панели в зависимости от роли пользователя
-            const adminPanelButton = document.getElementById('admin-panel-button');
-            if (adminPanelButton) {
-                if (userData.role_id === 1) {  // admin role ID is 1
-                    adminPanelButton.style.display = 'block';
-                } else {
-                    adminPanelButton.style.display = 'none';
-                }
-            }
-            
-            // Загружаем статус водительских прав
-                        await loadDriverLicenseStatus(userId);
-                        
-                        // Начинаем отслеживание изменений статуса водительских прав
-                        startLicenseStatusPolling();
+                    const userData = await response.json();
+                    
+                    // Проверяем статус пользователя
+                    if (userData.status === 'banned') {
+                        // Показываем сообщение о бане
+                        const profileContainer = document.querySelector('.profile-container');
+                        const banMessage = document.createElement('div');
+                        banMessage.className = 'ban-message';
+                        banMessage.innerHTML = '<h3 style="color: red; text-align: center;">Ваш аккаунт заблокирован</h3>';
+                        profileContainer.insertBefore(banMessage, profileContainer.firstChild);
+                    }
+                    
+                    // Заполняем информацию о пользователе
+                    document.getElementById('profile-name').textContent = userData.status === 'banned' ? '' : userData.name;
+                    document.getElementById('profile-surname').textContent = userData.status === 'banned' ? '' : userData.surname;
+                    document.getElementById('profile-email').textContent = userData.status === 'banned' ? '' : userData.email;
+                    document.getElementById('profile-cashback').textContent = userData.status === 'banned' ? '' : `${userData.cashback} BYN`;
+                    
+                    // Получаем информацию о роли пользователя из базы данных
+                    const roleResponse = await fetch(`/roles/${userData.role_id}`);
+                    if (roleResponse.ok) {
+                        const roleData = await roleResponse.json();
+                        document.getElementById('profile-role').textContent = userData.status === 'banned' ? '' : roleData.name;
                     } else {
-            // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
-                        localStorage.removeItem('user_id');
-                        window.location.href = '/';
-                        
-            // Также скрываем кнопку админ панели если пользователь не авторизован
-            const adminPanelButton = document.getElementById('admin-panel-button');
-            if (adminPanelButton) {
-                adminPanelButton.style.display = 'none';
-            }
-        }
+                        // В случае ошибки используем резервный вариант
+                        let roleName;
+                        if (userData.role_id === 1) {
+                            roleName = 'Администратор';
+                        } else if (userData.role_id === 2) {
+                            roleName = 'Пользователь';
+                        } else {
+                            // Обработка случая, когда role_id неизвестен (например, 0 или другое значение)
+                            const errorData = await roleResponse.json();
+                            console.error(`Ошибка получения информации о роли: ${errorData.detail || 'Неизвестная ошибка'}`);
+                            roleName = `Неизвестная роль (ID: ${userData.role_id})`;
+                        }
+                        document.getElementById('profile-role').textContent = userData.status === 'banned' ? '' : roleName;
+                    }
+                    
+                    // Сохраняем user_id, если он был возвращен с сервера
+                                if (userData.id) {
+                                    localStorage.setItem('user_id', userData.id);
+                                }
+                                
+                    // Убираем проверку активной аренды на странице профиля, так как завершение аренды происходит на главной странице
+                    // await checkActiveRental();
+                    
+                    // Обновляем видимость кнопки админ панели в зависимости от роли пользователя
+                    const adminPanelButton = document.getElementById('admin-panel-button');
+                    if (adminPanelButton) {
+                        if (userData.status === 'banned' || userData.role_id !== 1) { // admin role ID is 1
+                            adminPanelButton.style.display = 'none';
+                        } else {
+                            adminPanelButton.style.display = 'block';
+                        }
+                    }
+                    
+                    // Загружаем статус водительских прав
+                                await loadDriverLicenseStatus(userId);
+                                
+                                // Начинаем отслеживание изменений статуса водительских прав
+                                startLicenseStatusPolling();
+                            } else {
+                    // Если user_id недействителен, удаляем его и перенаправляем на главную страницу
+                                localStorage.removeItem('user_id');
+                                window.location.href = '/';
+                                
+                    // Также скрываем кнопку админ панели если пользователь не авторизован
+                    const adminPanelButton = document.getElementById('admin-panel-button');
+                    if (adminPanelButton) {
+                        adminPanelButton.style.display = 'none';
+                    }
+                }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
         // При ошибке перенаправляем на главную страницу
@@ -232,6 +242,25 @@ async function loadProfileInfo() {
 
 // Функция для загрузки статуса водительских прав
 async function loadDriverLicenseStatus(userId) {
+    // Проверяем статус пользователя
+    const response = await fetch('/users/profile', {
+        method: 'GET',
+        headers: {
+            'X-User-ID': userId,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (response.ok) {
+        const userData = await response.json();
+        if (userData.status === 'banned') {
+            // Если пользователь забанен, не загружаем статус водительских прав
+            document.getElementById('profile-license-status').textContent = '';
+            document.getElementById('profile-license-status').className = 'status-not-loaded';
+            return 'banned';
+        }
+    }
+    
     try {
         // Сначала получаем все водительские права пользователя
         const response = await fetch('/driver_licenses/', {
