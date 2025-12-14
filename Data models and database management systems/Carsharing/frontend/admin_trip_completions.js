@@ -110,9 +110,9 @@ async function displayTripCompletionsData(tripCompletions) {
                     <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
                     <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
                 ` : completion.admin_approved === true ? `
-                    <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
+                    <!-- Кнопки скрыты, так как подтверждено, что повреждений нет -->
                 ` : completion.admin_approved === false ? `
-                    <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
+                    <!-- Кнопки скрыты, так как уже отмечены повреждения -->
                 ` : ''}
             </td>
         `;
