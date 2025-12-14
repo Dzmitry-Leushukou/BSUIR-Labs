@@ -541,7 +541,7 @@ function displayRentalsInfo(rentals) {
     table.innerHTML = `
         <thead>
             <tr>
-                <th>ID заказа</th>
+                <th>Номер заказа</th>
                 <th>Машина</th>
                 <th>Номер</th>
                 <th>Модель</th>
@@ -560,9 +560,9 @@ function displayRentalsInfo(rentals) {
                         <td>${rental.plate_number}</td>
                         <td>${rental.model}</td>
                         <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
-                        <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : (rental.status === 'completed' ? 'Не указана' : 'Активный')}</td>
+                        <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : (rental.status === 'completed' ? 'Не указана' : rental.status === 'active' ? 'Активный' : rental.status)}</td>
                         <td>${rental.price} BYN</td>
-                        <td>${rental.status}</td>
+                        <td>${rental.status === 'active' ? 'Активный' : rental.status === 'completed' ? 'Завершен' : rental.status === 'cancelled' ? 'Отменен' : rental.status === 'pending_completion' ? 'Ожидает завершения' : rental.status}</td>
                     </tr>
                 `;
             }).join('')}
