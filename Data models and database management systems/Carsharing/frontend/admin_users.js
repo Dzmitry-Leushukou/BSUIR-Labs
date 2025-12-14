@@ -174,7 +174,6 @@ function displayUsers(users) {
                     onclick="toggleUserStatus(${user.id}, '${user.status === 'active' ? 'banned' : 'active'}')">
                     ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
                 </button>
-                <button class="btn action-btn delete-btn" onclick="deleteUser(${user.id})">Удалить</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -288,52 +287,6 @@ async function toggleUserStatus(userId, newStatus) {
     }
 }
 
-// Функция для удаления пользователя
-async function deleteUser(userId) {
-    const userIdFromStorage = localStorage.getItem('user_id');
-    if (!userIdFromStorage) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие необратимо.')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-User-ID': userIdFromStorage,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            alert('Пользователь успешно удален');
-            // Перезагружаем таблицу
-            loadUsers();
-        } else {
-            const errorData = await response.json();
-            let errorMessage = 'Неизвестная ошибка';
-            if (errorData && typeof errorData === 'object') {
-                if (errorData.detail) {
-                    errorMessage = errorData.detail;
-                } else if (errorData.message) {
-                    errorMessage = errorData.message;
-                } else {
-                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
-                }
-            } else {
-                errorMessage = errorData || 'Неизвестная ошибка';
-            }
-            alert(`Ошибка при удалении пользователя: ${errorMessage}`);
-        }
-    } catch (error) {
-        console.error('Ошибка при удалении пользователя:', error);
-        alert('Ошибка при удалении пользователя');
-    }
-}
 
 // Функция для фильтрации данных таблицы Users
 function filterUsers() {
