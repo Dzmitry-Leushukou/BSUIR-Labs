@@ -208,7 +208,13 @@ CREATE TABLE IF NOT EXISTS action_logs (
         'payment_success', 'payment_failed',
         'maintenance_request', 'maintenance_resolve',
         'profile_update', 'driver_license_upload',
-        'car_status_change', 'user_status_change'
+        'car_status_change', 'user_status_change',
+        'car_create', 'car_update', 'car_delete',
+        'driver_license_create', 'driver_license_update', 'driver_license_delete',
+        'maintenance_request_create', 'maintenance_request_update', 'maintenance_request_delete',
+        'car_photo_upload', 'car_photo_delete',
+        'trip_completion_create', 'trip_completion_update',
+        'user_ban', 'user_unban'
     )),
     target_user_id INT REFERENCES users(id) ON DELETE SET NULL,
     target_car_id INT REFERENCES cars(id) ON DELETE SET NULL,
@@ -362,6 +368,327 @@ CREATE TRIGGER trigger_payment_actions
     AFTER INSERT ON payment_logs
     FOR EACH ROW
     EXECUTE FUNCTION log_payment_actions();
+
+-- Create function for logging car changes
+CREATE OR REPLACE FUNCTION log_car_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id INTEGER := 1; -- Default user ID for system actions
+BEGIN
+    -- Try to get a valid user ID from the system, default to 1 if not available
+    SELECT id INTO current_user_id FROM users ORDER BY id LIMIT 1;
+    IF current_user_id IS NULL THEN
+        current_user_id := 1; -- Default to user ID 1 if no users exist
+    END IF;
+
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            new_values, description
+        )
+        VALUES (
+            current_user_id, 'car_create', NEW.id,
+            jsonb_build_object(
+                'vin', NEW.vin,
+                'plate_number', NEW.plate_number,
+                'model', NEW.model,
+                'status', NEW.status
+            ),
+            'Создание автомобиля'
+        );
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            old_values, new_values, description
+        )
+        VALUES (
+            current_user_id, 'car_update', NEW.id,
+            jsonb_build_object(
+                'vin', OLD.vin,
+                'plate_number', OLD.plate_number,
+                'model', OLD.model,
+                'status', OLD.status,
+                'updated_at', OLD.updated_at
+            ),
+            jsonb_build_object(
+                'vin', NEW.vin,
+                'plate_number', NEW.plate_number,
+                'model', NEW.model,
+                'status', NEW.status,
+                'updated_at', NEW.updated_at
+            ),
+            'Обновление автомобиля'
+        );
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            old_values, description
+        )
+        VALUES (
+            current_user_id, 'car_delete', OLD.id,
+            jsonb_build_object(
+                'vin', OLD.vin,
+                'plate_number', OLD.plate_number,
+                'model', OLD.model,
+                'status', OLD.status
+            ),
+            'Удаление автомобиля'
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for cars
+DROP TRIGGER IF EXISTS trigger_car_changes ON cars;
+CREATE TRIGGER trigger_car_changes
+    AFTER INSERT OR UPDATE OR DELETE ON cars
+    FOR EACH ROW
+    EXECUTE FUNCTION log_car_changes();
+
+-- Create function for logging driver license changes
+CREATE OR REPLACE FUNCTION log_driver_license_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id INTEGER := 1; -- Default user ID for system actions
+BEGIN
+    -- Try to get a valid user ID from the system, default to 1 if not available
+    SELECT id INTO current_user_id FROM users ORDER BY id LIMIT 1;
+    IF current_user_id IS NULL THEN
+        current_user_id := 1; -- Default to user ID 1 if no users exist
+    END IF;
+
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id,
+            new_values, description
+        )
+        VALUES (
+            current_user_id, 'driver_license_create', NEW.driver_id,
+            jsonb_build_object(
+                'license_number', NEW.license_number,
+                'issued_by', NEW.issued_by,
+                'expiration_date', NEW.expiration_date,
+                'status', NEW.status
+            ),
+            'Создание водительских прав'
+        );
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id,
+            old_values, new_values, description
+        )
+        VALUES (
+            current_user_id, 'driver_license_update', NEW.driver_id,
+            jsonb_build_object(
+                'license_number', OLD.license_number,
+                'issued_by', OLD.issued_by,
+                'expiration_date', OLD.expiration_date,
+                'status', OLD.status
+            ),
+            jsonb_build_object(
+                'license_number', NEW.license_number,
+                'issued_by', NEW.issued_by,
+                'expiration_date', NEW.expiration_date,
+                'status', NEW.status
+            ),
+            'Обновление водительских прав'
+        );
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id,
+            old_values, description
+        )
+        VALUES (
+            current_user_id, 'driver_license_delete', OLD.driver_id,
+            jsonb_build_object(
+                'license_number', OLD.license_number,
+                'issued_by', OLD.issued_by,
+                'expiration_date', OLD.expiration_date,
+                'status', OLD.status
+            ),
+            'Удаление водительских прав'
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for driver_licenses
+DROP TRIGGER IF EXISTS trigger_driver_license_changes ON driver_licenses;
+CREATE TRIGGER trigger_driver_license_changes
+    AFTER INSERT OR UPDATE OR DELETE ON driver_licenses
+    FOR EACH ROW
+    EXECUTE FUNCTION log_driver_license_changes();
+
+-- Create function for logging maintenance request changes
+CREATE OR REPLACE FUNCTION log_maintenance_request_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id INTEGER := 1; -- Default user ID for system actions
+BEGIN
+    -- Try to get a valid user ID from the system, default to 1 if not available
+    SELECT id INTO current_user_id FROM users ORDER BY id LIMIT 1;
+    IF current_user_id IS NULL THEN
+        current_user_id := 1; -- Default to user ID 1 if no users exist
+    END IF;
+
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            new_values, description
+        )
+        VALUES (
+            COALESCE(NEW.reported_by, current_user_id), 'maintenance_request_create', NEW.car_id,
+            jsonb_build_object(
+                'description', NEW.description,
+                'status', NEW.status
+            ),
+            'Создание запроса на обслуживание'
+        );
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            old_values, new_values, description
+        )
+        VALUES (
+            COALESCE(NEW.reported_by, current_user_id), 'maintenance_request_update', NEW.car_id,
+            jsonb_build_object(
+                'description', OLD.description,
+                'status', OLD.status
+            ),
+            jsonb_build_object(
+                'description', NEW.description,
+                'status', NEW.status
+            ),
+            'Обновление запроса на обслуживание'
+        );
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_car_id,
+            old_values, description
+        )
+        VALUES (
+            COALESCE(OLD.reported_by, current_user_id), 'maintenance_request_delete', OLD.car_id,
+            jsonb_build_object(
+                'description', OLD.description,
+                'status', OLD.status
+            ),
+            'Удаление запроса на обслуживание'
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for maintenance_requests
+DROP TRIGGER IF EXISTS trigger_maintenance_request_changes ON maintenance_requests;
+CREATE TRIGGER trigger_maintenance_request_changes
+    AFTER INSERT OR UPDATE OR DELETE ON maintenance_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION log_maintenance_request_changes();
+
+-- Create function for logging photo changes
+CREATE OR REPLACE FUNCTION log_photo_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id INTEGER := 1; -- Default user ID for system actions
+BEGIN
+    -- Try to get a valid user ID from the system, default to 1 if not available
+    SELECT id INTO current_user_id FROM users ORDER BY id LIMIT 1;
+    IF current_user_id IS NULL THEN
+        current_user_id := 1; -- Default to user ID 1 if no users exist
+    END IF;
+
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id, target_car_id,
+            new_values, description
+        )
+        VALUES (
+            NEW.uploaded_by, 'car_photo_upload',
+            CASE WHEN NEW.user_id IS NOT NULL THEN NEW.user_id ELSE NULL END,
+            CASE WHEN NEW.car_id IS NOT NULL THEN NEW.car_id ELSE NULL END,
+            jsonb_build_object(
+                'filename', NEW.filename,
+                'content_type', NEW.content_type,
+                'object_type', NEW.object_type
+            ),
+            'Загрузка фото автомобиля'
+        );
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id, target_car_id,
+            old_values, description
+        )
+        VALUES (
+            current_user_id, 'car_photo_delete',
+            CASE WHEN OLD.user_id IS NOT NULL THEN OLD.user_id ELSE NULL END,
+            CASE WHEN OLD.car_id IS NOT NULL THEN OLD.car_id ELSE NULL END,
+            jsonb_build_object(
+                'filename', OLD.filename,
+                'content_type', OLD.content_type,
+                'object_type', OLD.object_type
+            ),
+            'Удаление фото автомобиля'
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for photos
+DROP TRIGGER IF EXISTS trigger_photo_changes ON photos;
+CREATE TRIGGER trigger_photo_changes
+    AFTER INSERT OR DELETE ON photos
+    FOR EACH ROW
+    EXECUTE FUNCTION log_photo_changes();
+
+
+-- Create function for logging user status changes (ban/unban)
+CREATE OR REPLACE FUNCTION log_user_status_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id INTEGER := 1; -- Default user ID for system actions
+BEGIN
+    -- Try to get a valid user ID from the system, default to 1 if not available
+    SELECT id INTO current_user_id FROM users ORDER BY id LIMIT 1;
+    IF current_user_id IS NULL THEN
+        current_user_id := 1; -- Default to user ID 1 if no users exist
+    END IF;
+
+    IF TG_OP = 'UPDATE' AND OLD.status != NEW.status THEN
+        INSERT INTO action_logs (
+            actor_user_id, action_type, target_user_id,
+            old_values, new_values, description
+        )
+        VALUES (
+            COALESCE(NEW.id, current_user_id),
+            CASE
+                WHEN NEW.status = 'banned' AND OLD.status = 'active' THEN 'user_ban'
+                WHEN NEW.status = 'active' AND OLD.status = 'banned' THEN 'user_unban'
+                ELSE 'user_status_change'
+            END,
+            NEW.id,
+            jsonb_build_object('status', OLD.status),
+            jsonb_build_object('status', NEW.status),
+            CASE
+                WHEN NEW.status = 'banned' AND OLD.status = 'active' THEN 'Блокировка пользователя'
+                WHEN NEW.status = 'active' AND OLD.status = 'banned' THEN 'Разблокировка пользователя'
+                ELSE 'Изменение статуса пользователя'
+            END
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for user status changes
+DROP TRIGGER IF EXISTS trigger_user_status_changes ON users;
+CREATE TRIGGER trigger_user_status_changes
+    AFTER UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION log_user_status_changes();
 
 -- Create additional indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

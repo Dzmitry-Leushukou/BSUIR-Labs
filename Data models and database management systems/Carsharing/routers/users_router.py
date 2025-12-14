@@ -130,7 +130,7 @@ def delete_user_endpoint(user_id: int):
     return delete_user(user_id)
 
 @router.post("/login")
-def login_user_endpoint(user_login: UserLogin):
+def login_user_endpoint(request: Request, user_login: UserLogin):
     user = get_user_by_email(user_login.email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -138,6 +138,29 @@ def login_user_endpoint(user_login: UserLogin):
     # Проверка хешированного пароля
     if not verify_password(user_login.password, user['hashed_password']):
         raise HTTPException(status_code=401, detail="Incorrect password")
+    
+    # Логируем успешный вход пользователя
+    from crud.action_logs_crud import create_action_log
+    from schemas import ActionLogCreate
+    import json
+    
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+    
+    log_entry = ActionLogCreate(
+        actor_user_id=user['id'],
+        action_type='user_login',
+        target_user_id=user['id'],
+        description='User login successful',
+        old_values=None,
+        new_values=None,
+        user_agent=user_agent
+    )
+    
+    try:
+        create_action_log(log_entry)
+    except Exception as e:
+        # Если логирование не удалось, не прерываем основной процесс
+        print(f"Failed to log user login: {str(e)}")
     
     # Возвращаем информацию о пользователе без пароля
     user_data = dict(user)
@@ -147,7 +170,7 @@ def login_user_endpoint(user_login: UserLogin):
     return user_data
 
 @router.post("/register")
-async def register_user_endpoint(user: UserRegistration):
+async def register_user_endpoint(request: Request, user: UserRegistration):
     print(f"Registration attempt with email: {user.email}")
     
     # Проверяем, существует ли уже пользователь с таким email
@@ -186,6 +209,34 @@ async def register_user_endpoint(user: UserRegistration):
             print(f"Other error occurred: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
     
+    # Логируем успешную регистрацию пользователя
+    from crud.action_logs_crud import create_action_log
+    from schemas import ActionLogCreate
+    import json
+    
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+    
+    log_entry = ActionLogCreate(
+        actor_user_id=created_user['id'],
+        action_type='user_registration',
+        target_user_id=created_user['id'],
+        description='User registration successful',
+        old_values=None,
+        new_values=json.dumps({
+            'email': created_user['email'],
+            'name': created_user['name'],
+            'surname': created_user['surname'],
+            'role_id': created_user['role_id']
+        }),
+        user_agent=user_agent
+    )
+    
+    try:
+        create_action_log(log_entry)
+    except Exception as e:
+        # Если логирование не удалось, не прерываем основной процесс
+        print(f"Failed to log user registration: {str(e)}")
+    
     # Возвращаем информацию о пользователе без пароля
     user_response = dict(created_user)
     if 'hashed_password' in user_response:
@@ -194,3 +245,29 @@ async def register_user_endpoint(user: UserRegistration):
     # Возвращаем информацию о пользователе без токена
     print(f"Registration successful for user ID: {user_response['id']}")
     return user_response
+
+@router.post("/logout")
+def logout_user_endpoint(request: Request, current_user: dict = Depends(get_current_user_from_header)):
+    # Логируем выход пользователя
+    from crud.action_logs_crud import create_action_log
+    from schemas import ActionLogCreate
+    
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+    
+    log_entry = ActionLogCreate(
+        actor_user_id=current_user['id'],
+        action_type='user_logout',
+        target_user_id=current_user['id'],
+        description='User logout successful',
+        old_values=None,
+        new_values=None,
+        user_agent=user_agent
+    )
+    
+    try:
+        create_action_log(log_entry)
+    except Exception as e:
+        # Если логирование не удалось, не прерываем основной процесс
+        print(f"Failed to log user logout: {str(e)}")
+    
+    return {"message": "Logout successful"}

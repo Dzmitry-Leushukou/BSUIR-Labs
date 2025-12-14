@@ -601,11 +601,31 @@ document.querySelector('.register-btn').addEventListener('click', () => {
     });
 });
 
-document.querySelector('.logout-btn').addEventListener('click', () => {
+document.querySelector('.logout-btn').addEventListener('click', async () => {
     // Логика для выхода
     console.log('Кнопка выхода нажата');
-    // В реальном приложении здесь будет вызов API для завершения сессии
-    // и обновление статуса авторизации
+    
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+        try {
+            // Вызываем API endpoint для логирования выхода
+            const response = await fetch('/users/logout', {
+                method: 'POST',
+                headers: {
+                    'X-User-ID': userId,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.error('Ошибка при логировании выхода пользователя:', response.status);
+            }
+        } catch (error) {
+            console.error('Ошибка при попытке логирования выхода пользователя:', error);
+        }
+    }
+    
+    // Обновление статуса авторизации
     updateAuthStatus(false);
     
     // После выхода очищаем маркеры машин

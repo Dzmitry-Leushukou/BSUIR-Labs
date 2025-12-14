@@ -353,92 +353,6 @@ def populate_payment_logs():
     conn.close()
     print("Payment logs populated successfully")
 
-def populate_logs():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Get user IDs
-    cur.execute("SELECT id FROM users")
-    user_ids = [row[0] for row in cur.fetchall()]
-    
-    logs = []
-    for i in range(20):
-        actor_user_id = random.choice(user_ids)
-        action_type = random.choice([
-            "user_login", "user_logout", "user_registration",
-            "car_rental_start", "car_rental_end", "car_rental_cancel",
-            "payment_success", "payment_failed",
-            "maintenance_request", "maintenance_resolve",
-            "profile_update", "driver_license_upload",
-            "car_status_change", "user_status_change"
-        ])
-        target_id = random.choice(user_ids) if random.random() > 0.5 else None
-        
-        logs.append((actor_user_id, action_type, target_id))
-    
-    for log in logs:
-        cur.execute(
-            """INSERT INTO logs (actor_user_id, action_type, target_id)
-               VALUES (%s, %s, %s)""",
-            log
-        )
-    
-    conn.commit()
-    cur.close()
-    conn.close()
-    print("Logs populated successfully")
-
-def populate_action_logs():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Get user, car, and rental IDs
-    cur.execute("SELECT id FROM users")
-    user_ids = [row[0] for row in cur.fetchall()]
-    
-    cur.execute("SELECT id FROM cars")
-    car_ids = [row[0] for row in cur.fetchall()]
-    
-    cur.execute("SELECT id FROM rentals")
-    rental_ids = [row[0] for row in cur.fetchall()]
-    
-    logs = []
-    for i in range(25):
-        actor_user_id = random.choice(user_ids)
-        action_type = random.choice([
-            "user_login", "user_logout", "user_registration", 
-            "car_rental_start", "car_rental_end", "car_rental_cancel",
-            "payment_success", "payment_failed",
-            "maintenance_request", "maintenance_resolve",
-            "profile_update", "driver_license_upload",
-            "car_status_change", "user_status_change"
-        ])
-        
-        target_user_id = random.choice(user_ids) if random.random() > 0.7 else None
-        target_car_id = random.choice(car_ids) if random.random() > 0.7 else None
-        target_rental_id = random.choice(rental_ids) if random.random() > 0.7 else None
-        
-        description = f"Action log entry {i+1}: {action_type}"
-        old_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
-        new_values = f'{{"status": "{random.choice(["active", "banned"])}"}}' if random.random() > 0.5 else None
-        user_agent = f"Mozilla/5.0 (compatible; Bot {i+1}; Test Agent)"
-        
-        logs.append((actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
-                     description, old_values, new_values, user_agent))
-    
-    for log in logs:
-        cur.execute(
-            """INSERT INTO action_logs (actor_user_id, action_type, target_user_id, target_car_id, target_rental_id,
-                                       description, old_values, new_values, user_agent)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-            log
-        )
-    
-    conn.commit()
-    cur.close()
-    conn.close()
-    print("Action logs populated successfully")
-
 if __name__ == "__main__":
     print("Populating database with test data...")
     populate_roles()
@@ -451,5 +365,4 @@ if __name__ == "__main__":
     populate_rentals()
     populate_maintenance_requests()
     populate_payment_logs()
-    populate_action_logs()
     print("Database populated with test data successfully!")
