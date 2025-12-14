@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -50,7 +50,12 @@ class UserBase(BaseModel):
     status: Optional[str] = "active"
 
 class UserCreate(UserBase):
-    pass
+    @field_validator('role_id')
+    @classmethod
+    def validate_role_id(cls, v):
+        if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
+            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+        return v
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
@@ -59,6 +64,13 @@ class UserUpdate(BaseModel):
     cashback: Optional[float] = None
     role_id: Optional[int] = None
     status: Optional[str] = None
+    
+    @field_validator('role_id', mode='before')
+    @classmethod
+    def validate_role_id(cls, v):
+        if v is not None and v not in [1, 2]:  # Only allow admin (1) and user (2) roles
+            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+        return v
 
 class User(UserBase):
     id: int

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from datetime import datetime
 
@@ -38,6 +38,13 @@ class UserRegistration(BaseModel):
     cashback: Optional[float] = 0
     role_id: int = 2  # по умолчанию (user role)
     status: Optional[str] = "active"
+    
+    @field_validator('role_id')
+    @classmethod
+    def validate_role_id(cls, v):
+        if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
+            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+        return v
 
 class UserLogin(BaseModel):
     email: str
@@ -49,6 +56,13 @@ class UserPasswordChange(BaseModel):
 
 class UserCreate(UserBase):
     role_id: int = 2  # по умолчанию (user role)
+    
+    @field_validator('role_id')
+    @classmethod
+    def validate_role_id(cls, v):
+        if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
+            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+        return v
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
@@ -57,6 +71,13 @@ class UserUpdate(BaseModel):
     cashback: Optional[float] = None
     role_id: Optional[int] = None
     status: Optional[str] = None
+    
+    @field_validator('role_id', mode='before')
+    @classmethod
+    def validate_role_id(cls, v):
+        if v is not None and v not in [1, 2]:  # Only allow admin (1) and user (2) roles
+            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+        return v
 
 class User(UserBase):
     id: int
