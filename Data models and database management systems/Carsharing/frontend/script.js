@@ -1103,6 +1103,7 @@ async function endRental(rentalId) {
             rental_id: rentalId,
             user_id: parseInt(userId),
             pay_type: 'card',  // По умолчанию оплата картой в этой функции
+            card_number: null, // В этой функции не используется карта, но поле должно быть
             price: price
         };
         
@@ -1583,6 +1584,7 @@ async function processPaymentAndComplete(rentalId) {
                 rental_id: rentalId,
                 user_id: parseInt(userId),
                 pay_type: 'cashback',
+                card_number: null,
                 price: cashbackUsed
             };
             
@@ -1607,6 +1609,7 @@ async function processPaymentAndComplete(rentalId) {
                 rental_id: rentalId,
                 user_id: parseInt(userId),
                 pay_type: 'card',
+                card_number: cardNumber,
                 price: finalPrice
             };
             

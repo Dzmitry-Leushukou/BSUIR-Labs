@@ -28,9 +28,9 @@ def create_payment_log(log: PaymentLogCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO payment_logs (rental_id, user_id, pay_type, price)
-           VALUES (%s, %s, %s, %s) RETURNING *""",
-        (log.rental_id, log.user_id, log.pay_type, log.price)
+        """INSERT INTO payment_logs (rental_id, user_id, pay_type, card_number, price)
+           VALUES (%s, %s, %s, %s, %s) RETURNING *""",
+        (log.rental_id, log.user_id, log.pay_type, log.card_number, log.price)
     )
     new_log = cur.fetchone()
     conn.commit()

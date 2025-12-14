@@ -253,6 +253,7 @@ class PaymentLogBase(BaseModel):
     user_id: int
     pay_type: str
     price: float
+    card_number: Optional[str] = None
 
 class PaymentLogCreate(PaymentLogBase):
     pass

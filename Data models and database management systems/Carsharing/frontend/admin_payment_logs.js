@@ -189,11 +189,25 @@ function displayPaymentLogs(paymentLogs) {
     
     paymentLogs.forEach(log => {
         const row = document.createElement('tr');
+        // Convert payment type to Russian
+        const payTypeRu = log.pay_type === 'card' ? 'карта' : log.pay_type === 'cashback' ? 'кэшбэк' : log.pay_type;
+        // Format card number to show with spaces between every 4 digits if it exists
+        let displayCardNumber = '';
+        if (log.card_number) {
+            // Remove any existing spaces and then format with spaces every 4 digits
+            const cleanCardNumber = log.card_number.replace(/\s/g, '');
+            displayCardNumber = cleanCardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+        }
+        
+        // Set the actual card number in the dataset for filtering
+        row.dataset.cardNumber = log.card_number || '';
+        
         row.innerHTML = `
             <td>${log.id}</td>
             <td>${log.rental_id}</td>
             <td>${log.user_id}</td>
-            <td>${log.pay_type}</td>
+            <td>${payTypeRu}</td>
+            <td>${displayCardNumber}</td>
             <td>${log.price} BYN</td>
         `;
         tableBody.appendChild(row);
@@ -215,9 +229,19 @@ function filterPaymentLogs() {
                 // Проверяем, что ячейка существует
                 if (i < row.cells.length) {
                     const cellValue = row.cells[i].textContent.trim();
-                    if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
-                        shouldShow = false;
-                        break;
+                    // For card number column, we need to check the actual card number from the data
+                    if (filterInputs[i].dataset.column === 'card_number') {
+                        // Extract actual card number from the formatted display
+                        const actualCardNumber = row.dataset.cardNumber || '';
+                        if (!actualCardNumber.toLowerCase().includes(filterValue.toLowerCase())) {
+                            shouldShow = false;
+                            break;
+                        }
+                    } else {
+                        if (!cellValue.toLowerCase().includes(filterValue.toLowerCase())) {
+                            shouldShow = false;
+                            break;
+                        }
                     }
                 }
             }

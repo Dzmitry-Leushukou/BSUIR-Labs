@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS payment_logs (
     rental_id INT NOT NULL REFERENCES rentals(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     pay_type VARCHAR(30) NOT NULL CHECK (pay_type IN ('card','cashback')),
+    card_number VARCHAR(20) CHECK (card_number ~ '^[0-9]{16}$' OR card_number IS NULL), -- 16-digit card number
     price DECIMAL(10,2) NOT NULL CHECK (price >= 0)
 );
 
