@@ -75,7 +75,7 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
     if request.status is not None:
         # Validate status value
         if request.status not in ['open', 'resolved']:
-            raise HTTPException(status_code=400, detail="Invalid status value. Allowed values: 'open', 'resolved'")
+            raise HTTPException(status_code=400, detail="Недопустимое значение статуса. Разрешенные значения: 'open', 'resolved'")
         update_fields.append("status = %s")
         values.append(request.status)
     if request.description is not None:
@@ -83,7 +83,7 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
         values.append(request.description)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE maintenance_requests SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(request_id)
@@ -94,7 +94,7 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
     cur.close()
     conn.close()
     if not updated_request:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
     return updated_request
 
 def delete_maintenance_request(request_id: int):
@@ -106,8 +106,8 @@ def delete_maintenance_request(request_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
-    return {"message": "Maintenance request deleted successfully"}
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
+    return {"message": "Запрос на обслуживание успешно удален"}
 
 def get_maintenance_requests_count():
     conn = get_db_connection()

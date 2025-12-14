@@ -25,7 +25,7 @@ def get_trip_completion_endpoint(completion_id: int):
 def get_trip_completion_by_rental_endpoint(rental_id: int):
     completion = get_trip_completion_by_rental_id(rental_id)
     if not completion:
-        raise HTTPException(status_code=404, detail="Trip completion not found for this rental")
+        raise HTTPException(status_code=404, detail="Завершение поездки не найдено для этой аренды")
     return completion
 
 @router.post("/", response_model=TripCompletion)
@@ -50,7 +50,7 @@ def create_trip_completion_endpoint(request: Request, completion: TripCompletion
         
         # Only allow creating trip completion if rental is currently active
         if rental['status'] != 'active':
-            raise HTTPException(status_code=400, detail="Rental must be active to create completion request")
+            raise HTTPException(status_code=400, detail="Аренда должна быть активной для создания запроса на завершение")
         
         # Update rental to pending completion status
         rental_update = RentalUpdate(status="pending_completion")
@@ -66,7 +66,7 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
     is_admin = current_user_details['role_id'] == 1  # assuming admin role_id is 1
     
     if not is_admin:
-        raise HTTPException(status_code=403, detail="Only admin can update trip completion")
+        raise HTTPException(status_code=403, detail="Только администратор может обновлять завершение поездки")
     
     # Set review time if admin is approving/rejecting
     if completion.admin_approved is not None:

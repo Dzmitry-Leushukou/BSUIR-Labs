@@ -43,7 +43,7 @@ class UserRegistration(BaseModel):
     @classmethod
     def validate_role_id(cls, v):
         if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
-            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+            raise ValueError('role_id должен быть 1 (администратор) или 2 (пользователь)')
         return v
 
 class UserLogin(BaseModel):
@@ -61,7 +61,7 @@ class UserCreate(UserBase):
     @classmethod
     def validate_role_id(cls, v):
         if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
-            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+            raise ValueError('role_id должен быть 1 (администратор) или 2 (пользователь)')
         return v
 
 class UserUpdate(BaseModel):
@@ -76,7 +76,7 @@ class UserUpdate(BaseModel):
     @classmethod
     def validate_role_id(cls, v):
         if v is not None and v not in [1, 2]:  # Only allow admin (1) and user (2) roles
-            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+            raise ValueError('role_id должен быть 1 (администратор) или 2 (пользователь)')
         return v
 
 class User(UserBase):

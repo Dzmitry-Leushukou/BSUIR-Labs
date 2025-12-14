@@ -54,7 +54,7 @@ class UserCreate(UserBase):
     @classmethod
     def validate_role_id(cls, v):
         if v not in [1, 2]:  # Only allow admin (1) and user (2) roles
-            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+            raise ValueError('role_id должен быть 1 (администратор) или 2 (пользователь)')
         return v
 
 class UserUpdate(BaseModel):
@@ -69,7 +69,7 @@ class UserUpdate(BaseModel):
     @classmethod
     def validate_role_id(cls, v):
         if v is not None and v not in [1, 2]:  # Only allow admin (1) and user (2) roles
-            raise ValueError('role_id must be 1 (admin) or 2 (user)')
+            raise ValueError('role_id должен быть 1 (администратор) или 2 (пользователь)')
         return v
 
 class User(UserBase):
@@ -293,7 +293,7 @@ def get_role(role_id: int):
     cur.close()
     conn.close()
     if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
+        raise HTTPException(status_code=404, detail="Роль не найдена")
     return role
 
 @app.post("/roles/", response_model=Role)
@@ -323,7 +323,7 @@ def update_role(role_id: int, role: RoleUpdate):
     cur.close()
     conn.close()
     if not updated_role:
-        raise HTTPException(status_code=404, detail="Role not found")
+        raise HTTPException(status_code=404, detail="Роль не найдена")
     return updated_role
 
 @app.delete("/roles/{role_id}")
@@ -336,8 +336,8 @@ def delete_role(role_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Role not found")
-    return {"message": "Role deleted successfully"}
+        raise HTTPException(status_code=404, detail="Роль не найдена")
+    return {"message": "Роль успешно удалена"}
 
 # Users CRUD
 @app.get("/users/", response_model=List[User])
@@ -359,7 +359,7 @@ def get_user(user_id: int):
     cur.close()
     conn.close()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     return user
 
 @app.post("/users/", response_model=User)
@@ -408,7 +408,7 @@ def update_user(user_id: int, user: UserUpdate):
     update_fields.append("updated_at = CURRENT_TIMESTAMP")
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(user_id)
@@ -419,7 +419,7 @@ def update_user(user_id: int, user: UserUpdate):
     cur.close()
     conn.close()
     if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     return updated_user
 
 @app.delete("/users/{user_id}")
@@ -432,8 +432,8 @@ def delete_user(user_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"message": "User deleted successfully"}
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    return {"message": "Пользователь успешно удален"}
 
 # Cars CRUD
 @app.get("/cars/", response_model=List[Car])
@@ -464,7 +464,7 @@ def get_car(car_id: int):
     cur.close()
     conn.close()
     if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
     return car
 
 @app.post("/cars/", response_model=Car)
@@ -511,7 +511,7 @@ def update_car(car_id: int, car: CarUpdate):
     update_fields.append("updated_at = CURRENT_TIMESTAMP")
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE cars SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(car_id)
@@ -522,7 +522,7 @@ def update_car(car_id: int, car: CarUpdate):
     cur.close()
     conn.close()
     if not updated_car:
-        raise HTTPException(status_code=404, detail="Car not found")
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
     return updated_car
 
 @app.delete("/cars/{car_id}")
@@ -535,8 +535,8 @@ def delete_car(car_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Car not found")
-    return {"message": "Car deleted successfully"}
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    return {"message": "Автомобиль успешно удален"}
 
 # Photos CRUD
 @app.get("/photos/", response_model=List[Photo])
@@ -558,7 +558,7 @@ def get_photo(photo_id: int):
     cur.close()
     conn.close()
     if not photo:
-        raise HTTPException(status_code=404, detail="Photo not found")
+        raise HTTPException(status_code=404, detail="Фото не найдено")
     return photo
 
 @app.post("/photos/", response_model=Photo)
@@ -593,7 +593,7 @@ def update_photo(photo_id: int, photo: PhotoUpdate):
         values.append(photo.uploaded_by)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE photos SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(photo_id)
@@ -604,7 +604,7 @@ def update_photo(photo_id: int, photo: PhotoUpdate):
     cur.close()
     conn.close()
     if not updated_photo:
-        raise HTTPException(status_code=404, detail="Photo not found")
+        raise HTTPException(status_code=404, detail="Фото не найдено")
     return updated_photo
 
 @app.delete("/photos/{photo_id}")
@@ -617,8 +617,8 @@ def delete_photo(photo_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Photo not found")
-    return {"message": "Photo deleted successfully"}
+        raise HTTPException(status_code=404, detail="Фото не найдено")
+    return {"message": "Фото успешно удалено"}
 
 # Driver Licenses CRUD
 @app.get("/driver_licenses/", response_model=List[DriverLicense])
@@ -640,7 +640,7 @@ def get_driver_license(driver_id: int):
     cur.close()
     conn.close()
     if not license:
-        raise HTTPException(status_code=404, detail="Driver license not found")
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
     return license
 
 @app.post("/driver_licenses/", response_model=DriverLicense)
@@ -681,7 +681,7 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
         values.append(license.status)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE driver_licenses SET {', '.join(update_fields)} WHERE driver_id = %s RETURNING *"
     values.append(driver_id)
@@ -692,7 +692,7 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     cur.close()
     conn.close()
     if not updated_license:
-        raise HTTPException(status_code=404, detail="Driver license not found")
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
     return updated_license
 
 @app.delete("/driver_licenses/{driver_id}")
@@ -705,8 +705,8 @@ def delete_driver_license(driver_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Driver license not found")
-    return {"message": "Driver license deleted successfully"}
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    return {"message": "Водительское удостоверение успешно удалено"}
 
 # Sessions CRUD
 @app.get("/sessions/", response_model=List[Session])
@@ -728,7 +728,7 @@ def get_session(session_id: int):
     cur.close()
     conn.close()
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
     return session
 
 @app.post("/sessions/", response_model=Session)
@@ -759,7 +759,7 @@ def update_session(session_id: int, session: SessionBase):
     cur.close()
     conn.close()
     if not updated_session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
     return updated_session
 
 @app.delete("/sessions/{session_id}")
@@ -772,8 +772,8 @@ def delete_session(session_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return {"message": "Session deleted successfully"}
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
+    return {"message": "Сессия успешно удалена"}
 
 # Car States CRUD
 @app.get("/car_states/", response_model=List[CarState])
@@ -795,7 +795,7 @@ def get_car_state(state_id: int):
     cur.close()
     conn.close()
     if not state:
-        raise HTTPException(status_code=404, detail="Car state not found")
+        raise HTTPException(status_code=404, detail="Состояние автомобиля не найдено")
     return state
 
 @app.post("/car_states/", response_model=CarState)
@@ -833,7 +833,7 @@ def update_car_state(state_id: int, state: CarStateUpdate):
         values.append(state.comment)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE car_states SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(state_id)
@@ -844,7 +844,7 @@ def update_car_state(state_id: int, state: CarStateUpdate):
     cur.close()
     conn.close()
     if not updated_state:
-        raise HTTPException(status_code=404, detail="Car state not found")
+        raise HTTPException(status_code=404, detail="Состояние автомобиля не найдено")
     return updated_state
 
 @app.delete("/car_states/{state_id}")
@@ -857,8 +857,8 @@ def delete_car_state(state_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Car state not found")
-    return {"message": "Car state deleted successfully"}
+        raise HTTPException(status_code=404, detail="Состояние автомобиля не найдено")
+    return {"message": "Состояние автомобиля успешно удалено"}
 
 # Rentals CRUD
 @app.get("/rentals/", response_model=List[Rental])
@@ -880,7 +880,7 @@ def get_rental(rental_id: int):
     cur.close()
     conn.close()
     if not rental:
-        raise HTTPException(status_code=404, detail="Rental not found")
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
     return rental
 
 @app.post("/rentals/", response_model=Rental)
@@ -915,7 +915,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
         values.append(rental.status)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE rentals SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(rental_id)
@@ -926,7 +926,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     cur.close()
     conn.close()
     if not updated_rental:
-        raise HTTPException(status_code=404, detail="Rental not found")
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
     return updated_rental
 
 @app.delete("/rentals/{rental_id}")
@@ -939,8 +939,8 @@ def delete_rental(rental_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Rental not found")
-    return {"message": "Rental deleted successfully"}
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
+    return {"message": "Аренда успешно удалена"}
 
 # Maintenance Requests CRUD
 @app.get("/maintenance_requests/", response_model=List[MaintenanceRequest])
@@ -962,7 +962,7 @@ def get_maintenance_request(request_id: int):
     cur.close()
     conn.close()
     if not request:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
     return request
 
 @app.post("/maintenance_requests/", response_model=MaintenanceRequest)
@@ -1003,7 +1003,7 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
         values.append(request.description)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE maintenance_requests SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(request_id)
@@ -1014,7 +1014,7 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
     cur.close()
     conn.close()
     if not updated_request:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
     return updated_request
 
 @app.delete("/maintenance_requests/{request_id}")
@@ -1027,8 +1027,8 @@ def delete_maintenance_request(request_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Maintenance request not found")
-    return {"message": "Maintenance request deleted successfully"}
+        raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
+    return {"message": "Запрос на обслуживание успешно удален"}
 
 # Payment Logs CRUD
 @app.get("/payment_logs/", response_model=List[PaymentLog])
@@ -1050,7 +1050,7 @@ def get_payment_log(log_id: int):
     cur.close()
     conn.close()
     if not log:
-        raise HTTPException(status_code=404, detail="Payment log not found")
+        raise HTTPException(status_code=404, detail="Лог платежа не найден")
     return log
 
 @app.post("/payment_logs/", response_model=PaymentLog)
@@ -1078,8 +1078,8 @@ def delete_payment_log(log_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Payment log not found")
-    return {"message": "Payment log deleted successfully"}
+        raise HTTPException(status_code=404, detail="Лог платежа не найден")
+    return {"message": "Лог платежа успешно удален"}
 
 # Logs CRUD
 @app.get("/logs/", response_model=List[Log])
@@ -1101,7 +1101,7 @@ def get_log(log_id: int):
     cur.close()
     conn.close()
     if not log:
-        raise HTTPException(status_code=404, detail="Log not found")
+        raise HTTPException(status_code=404, detail="Лог не найден")
     return log
 
 @app.post("/logs/", response_model=Log)
@@ -1129,8 +1129,8 @@ def delete_log(log_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Log not found")
-    return {"message": "Log deleted successfully"}
+        raise HTTPException(status_code=404, detail="Лог не найден")
+    return {"message": "Лог успешно удален"}
 
 
 # Utility function for password hashing

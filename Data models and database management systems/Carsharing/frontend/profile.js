@@ -50,7 +50,17 @@ async function loadProfileInfo() {
                     const roleResponse = await fetch(`/roles/${userData.role_id}`);
                     if (roleResponse.ok) {
                         const roleData = await roleResponse.json();
-                        document.getElementById('profile-role').textContent = userData.status === 'banned' ? '' : roleData.name;
+                        // Отображаем русскоязычное название роли в зависимости от ID
+                        let roleName;
+                        if (userData.role_id === 1) {
+                            roleName = 'Администратор';
+                        } else if (userData.role_id === 2) {
+                            roleName = 'Пользователь';
+                        } else {
+                            // Если роль не стандартная, используем имя из базы данных
+                            roleName = roleData.name;
+                        }
+                        document.getElementById('profile-role').textContent = userData.status === 'banned' ? '' : roleName;
                     } else {
                         // В случае ошибки используем резервный вариант
                         let roleName;

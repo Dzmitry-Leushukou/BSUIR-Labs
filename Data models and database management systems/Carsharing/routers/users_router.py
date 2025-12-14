@@ -38,17 +38,17 @@ def get_current_user_from_header(request: Request):
     user_id = request.headers.get('X-User-ID')
     
     if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise HTTPException(status_code=401, detail="Пользователь не аутентифицирован")
     
     try:
         user_id = int(user_id)
     except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid user ID format")
+        raise HTTPException(status_code=401, detail="Неверный формат ID пользователя")
     
     # Проверим, есть ли пользователь с таким ID
     user = get_user(user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     
     # Удаляем hashed_password из ответа для безопасности
     user_data = dict(user)
@@ -86,7 +86,7 @@ def get_users_count_endpoint(current_user: dict = Depends(get_current_user_from_
 @router.get("/{user_id}", response_model=User)
 def get_user_endpoint(user_id: int):
     if user_id <= 0:
-        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
+        raise HTTPException(status_code=400, detail="ID пользователя должен быть положительным целым числом")
     return get_user(user_id)
 
 @router.post("/", response_model=User)
@@ -98,11 +98,11 @@ def change_password_endpoint(request: Request, password_change: UserPasswordChan
     # Получаем полную информацию о пользователе по ID, чтобы получить хешированный пароль
     user = get_user(current_user['id'])
     if not verify_password(password_change.current_password, user['hashed_password']):
-        raise HTTPException(status_code=400, detail="Current password is incorrect")
+        raise HTTPException(status_code=400, detail="Текущий пароль неверен")
     
     # Проверяем, совпадает ли новый пароль с текущим
     if verify_password(password_change.new_password, user['hashed_password']):
-        raise HTTPException(status_code=400, detail="New password must be different from current password")
+        raise HTTPException(status_code=400, detail="Новый пароль должен отличаться от текущего")
     
     # Хешируем новый пароль
     hashed_new_password = hash_password(password_change.new_password)
@@ -120,19 +120,19 @@ def change_password_endpoint(request: Request, password_change: UserPasswordChan
     conn.close()
     
     if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     
     # Удаляем hashed_password из ответа для безопасности
     user_data = dict(updated_user)
     if 'hashed_password' in user_data:
         del user_data['hashed_password']
     
-    return {"message": "Password changed successfully"}
+    return {"message": "Пароль успешно изменен"}
 
 @router.put("/{user_id}", response_model=User)
 def update_user_endpoint(user_id: int, user: UserUpdate):
     if user_id <= 0:
-        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
+        raise HTTPException(status_code=400, detail="ID пользователя должен быть положительным целым числом")
     return update_user(user_id, user)
 
 @router.delete("/{user_id}")
@@ -145,11 +145,11 @@ def delete_user_endpoint(user_id: int):
 def login_user_endpoint(request: Request, user_login: UserLogin):
     user = get_user_by_email(user_login.email)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     
     # Проверка хешированного пароля
     if not verify_password(user_login.password, user['hashed_password']):
-        raise HTTPException(status_code=401, detail="Incorrect password")
+        raise HTTPException(status_code=401, detail="Неверный пароль")
     
     # Логируем успешный вход пользователя
     from crud.action_logs_crud import create_action_log
@@ -162,7 +162,7 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
         actor_user_id=user['id'],
         action_type='user_login',
         target_user_id=user['id'],
-        description='User login successful',
+        description='Успешный вход пользователя',
         old_values=None,
         new_values=None,
         user_agent=user_agent
@@ -189,7 +189,7 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
     existing_user = get_user_by_email(user.email)
     if existing_user:
         print(f"User with email {user.email} already exists")
-        raise HTTPException(status_code=400, detail="User with this email already exists")
+        raise HTTPException(status_code=400, detail="Пользователь с этим email уже существует")
     
     print(f"User with email {user.email} does not exist, proceeding with registration")
     
@@ -219,7 +219,7 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
         else:
             # Если ошибка другая, пробрасываем её
             print(f"Other error occurred: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Ошибка при создании пользователя: {str(e)}")
     
     # Логируем успешную регистрацию пользователя
     from crud.action_logs_crud import create_action_log
@@ -232,7 +232,7 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
         actor_user_id=created_user['id'],
         action_type='user_registration',
         target_user_id=created_user['id'],
-        description='User registration successful',
+        description='Успешная регистрация пользователя',
         old_values=None,
         new_values={
             'email': created_user['email'],
@@ -270,7 +270,7 @@ def logout_user_endpoint(request: Request, current_user: dict = Depends(get_curr
         actor_user_id=current_user['id'],
         action_type='user_logout',
         target_user_id=current_user['id'],
-        description='User logout successful',
+        description='Успешный выход пользователя',
         old_values=None,
         new_values=None,
         user_agent=user_agent
@@ -282,4 +282,4 @@ def logout_user_endpoint(request: Request, current_user: dict = Depends(get_curr
         # Если логирование не удалось, не прерываем основной процесс
         print(f"Failed to log user logout: {str(e)}")
     
-    return {"message": "Logout successful"}
+    return {"message": "Выход из системы выполнен успешно"}

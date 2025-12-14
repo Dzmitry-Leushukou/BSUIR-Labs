@@ -33,7 +33,7 @@ def get_driver_license_endpoint(request: Request, driver_id: int, current_user: 
     
     # Если пользователь не админ и пытается получить права другого пользователя
     if not is_admin and current_user['id'] != driver_id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this resource")
+        raise HTTPException(status_code=403, detail="Нет прав для доступа к этому ресурсу")
     
     return get_driver_license(driver_id)
 

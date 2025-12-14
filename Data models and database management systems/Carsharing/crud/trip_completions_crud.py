@@ -89,7 +89,7 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
         values.append(admin_reviewed_at)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE trip_completions SET {', '.join(update_fields)} WHERE id = %s RETURNING *, created_at"
     values.append(completion_id)
@@ -100,7 +100,7 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
     cur.close()
     conn.close()
     if not updated_completion:
-        raise HTTPException(status_code=404, detail="Trip completion not found")
+        raise HTTPException(status_code=404, detail="Завершение поездки не найдено")
     return updated_completion
 
 def delete_trip_completion(completion_id: int):
@@ -112,8 +112,8 @@ def delete_trip_completion(completion_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Trip completion not found")
-    return {"message": "Trip completion deleted successfully"}
+        raise HTTPException(status_code=404, detail="Завершение поездки не найдено")
+    return {"message": "Завершение поездки успешно удалено"}
 
 def get_trip_completions_count():
     conn = get_db_connection()

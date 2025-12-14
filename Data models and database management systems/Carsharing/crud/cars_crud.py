@@ -75,7 +75,7 @@ def update_car(car_id: int, car: CarUpdate):
     values.append(updated_at)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE cars SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(car_id)
@@ -86,7 +86,7 @@ def update_car(car_id: int, car: CarUpdate):
     cur.close()
     conn.close()
     if not updated_car:
-        raise HTTPException(status_code=404, detail="Car not found")
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
     return updated_car
 
 def delete_car(car_id: int):
@@ -98,8 +98,8 @@ def delete_car(car_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Car not found")
-    return {"message": "Car deleted successfully"}
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    return {"message": "Автомобиль успешно удален"}
 
 def get_cars_positions_with_user_rental_status(user_id: int):
     """Возвращает машины для отображения на карте: если у пользователя есть активная аренда - только арендованная машина, иначе - только доступные машины"""

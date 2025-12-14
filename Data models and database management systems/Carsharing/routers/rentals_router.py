@@ -45,12 +45,12 @@ def create_rental_endpoint(request: Request, rental: RentalCreate, current_user:
     try:
         license = get_driver_license(rental.user_id)
         if license['status'] != 'approved':
-            raise HTTPException(status_code=403, detail="Driver license is not approved")
+            raise HTTPException(status_code=403, detail="Водительские права не одобрены")
         if license['expiration_date'] < datetime.now().date():
-            raise HTTPException(status_code=403, detail="Driver license has expired")
+            raise HTTPException(status_code=403, detail="Срок действия водительских прав истек")
     except HTTPException:
         # If no license found, user can't rent
-        raise HTTPException(status_code=403, detail="User does not have a valid driver license")
+        raise HTTPException(status_code=403, detail="Пользователь не имеет действующих водительских прав")
     
     return create_rental(rental)
 
@@ -58,7 +58,7 @@ def create_rental_endpoint(request: Request, rental: RentalCreate, current_user:
 def update_rental_endpoint(request: Request, rental_id: int, rental: RentalUpdate, current_user: dict = Depends(get_current_user_from_header)):
     # Проверяем, что статус не является 'paused', так как это недопустимое значение
     if rental.status == "paused":
-        raise HTTPException(status_code=400, detail="Invalid status: 'paused' is not allowed")
+        raise HTTPException(status_code=400, detail="Недопустимый статус: 'paused' не разрешен")
     
     # Check if user is admin - if so, allow updating any rental
     # Otherwise, ensure user can only update their own rentals
@@ -71,7 +71,7 @@ def update_rental_endpoint(request: Request, rental_id: int, rental: RentalUpdat
         from crud.rentals_crud import get_rental
         rental_obj = get_rental(rental_id)
         if rental_obj['user_id'] != current_user['id']:
-            raise HTTPException(status_code=403, detail="Not authorized to update this rental")
+            raise HTTPException(status_code=403, detail="Нет прав для обновления этой аренды")
     
     return update_rental(rental_id, rental)
 
@@ -88,6 +88,6 @@ def delete_rental_endpoint(request: Request, rental_id: int, current_user: dict 
         # First get the rental to check if it belongs to the user
         rental_obj = get_rental(rental_id)
         if rental_obj['user_id'] != current_user['id']:
-            raise HTTPException(status_code=403, detail="Not authorized to delete this rental")
+            raise HTTPException(status_code=403, detail="Нет прав для удаления этой аренды")
     
     return delete_rental(rental_id)

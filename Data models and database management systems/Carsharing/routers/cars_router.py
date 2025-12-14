@@ -19,7 +19,7 @@ def get_cars_endpoint(offset: int = 0, limit: int = 1000):
 @router.get("/{car_id}", response_model=Car)
 def get_car_endpoint(car_id: int):
     if car_id <= 0:
-        raise HTTPException(status_code=400, detail="Car ID must be a positive integer")
+        raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return get_car(car_id)
 
 @router.post("/", response_model=Car)
@@ -29,13 +29,13 @@ def create_car_endpoint(car: CarCreate):
 @router.put("/{car_id}", response_model=Car)
 def update_car_endpoint(car_id: int, car: CarUpdate):
     if car_id <= 0:
-        raise HTTPException(status_code=400, detail="Car ID must be a positive integer")
+        raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return update_car(car_id, car)
 
 @router.delete("/{car_id}")
 def delete_car_endpoint(car_id: int):
     if car_id <= 0:
-        raise HTTPException(status_code=400, detail="Car ID must be a positive integer")
+        raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return delete_car(car_id)
 
 class CarPosition(BaseModel):

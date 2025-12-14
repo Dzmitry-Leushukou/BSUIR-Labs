@@ -79,7 +79,7 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
         values.append(license.status)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE driver_licenses SET {', '.join(update_fields)} WHERE driver_id = %s RETURNING *"
     values.append(driver_id)
@@ -90,7 +90,7 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     cur.close()
     conn.close()
     if not updated_license:
-        raise HTTPException(status_code=404, detail="Driver license not found")
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
     return updated_license
 
 def delete_driver_license(driver_id: int):
@@ -102,8 +102,8 @@ def delete_driver_license(driver_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Driver license not found")
-    return {"message": "Driver license deleted successfully"}
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    return {"message": "Водительское удостоверение успешно удалено"}
 
 def get_driver_licenses_count():
     conn = get_db_connection()

@@ -62,7 +62,7 @@ def create_rental(rental: RentalCreate):
     
     if active_rental:
         conn.close()
-        raise HTTPException(status_code=400, detail="User already has an active rental")
+        raise HTTPException(status_code=400, detail="Пользователь уже имеет активную аренду")
     
     # Если started_at не предоставлен, используем текущее время сервера в UTC+3
     utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
@@ -96,7 +96,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     if not current_rental:
         cur.close()
         conn.close()
-        raise HTTPException(status_code=404, detail="Rental not found")
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
     
     # Build dynamic update query
     update_fields = []
@@ -121,7 +121,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
         values.append(rental.price)
     
     if not update_fields:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
     
     query = f"UPDATE rentals SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(rental_id)
@@ -152,7 +152,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     
     # Проверяем, что обновленная аренда существует
     if not updated_rental:
-        raise HTTPException(status_code=404, detail="Rental not found after update")
+        raise HTTPException(status_code=404, detail="Аренда не найдена после обновления")
     
     return updated_rental
 
@@ -165,8 +165,8 @@ def delete_rental(rental_id: int):
     cur.close()
     conn.close()
     if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Rental not found")
-    return {"message": "Rental deleted successfully"}
+        raise HTTPException(status_code=404, detail="Аренда не найдена")
+    return {"message": "Аренда успешно удалена"}
 
 def get_rentals_count_by_user_id(user_id: int):
     conn = get_db_connection()
