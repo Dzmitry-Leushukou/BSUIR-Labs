@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS photos (
 
 -- Create driver_licenses table
 CREATE TABLE IF NOT EXISTS driver_licenses (
-    driver_id SERIAL PRIMARY KEY,
+    driver_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     license_number VARCHAR(40) UNIQUE NOT NULL,
     issued_by VARCHAR(255) NOT NULL,
     expiration_date DATE NOT NULL CHECK (expiration_date > CURRENT_DATE),

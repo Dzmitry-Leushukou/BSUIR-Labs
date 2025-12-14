@@ -809,25 +809,20 @@ async function showActiveRentalPanel(rental) {
         rentalPanel.className = 'active-rental-panel';
         
         // Рассчитываем текущую цену аренды
-        // rental.started_at приходит из API в формате ISO (в UTC)
-        // Используем объекты Date напрямую для корректного вычисления разницы
-        const startedAt = new Date(rental.started_at); // Это время в UTC
-        const now = new Date(); // Это текущее время в локальной таймзоне браузера
+        // Получаем время начала аренды в миллисекундах с начала эпохи Unix
+        const startedAtMs = new Date(rental.started_at).getTime();
         
-        // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
-        const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+        // Получаем текущее время в миллисекундах с начала эпохи Unix
+        const nowMs = Date.now();
         
-        // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
-        let timeDiff = nowUTC - startedAt;
+        // Рассчитываем разницу в миллисекундах (разница во времени не зависит от часового пояса)
+        let timeDiff = nowMs - startedAtMs;
         if (timeDiff < 0) {
             // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
             timeDiff = 0;
         }
         
-        const minutesDiff = Math.floor(timeDiff / (100 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
+        const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Преобразуем миллисекунды в минуты и округляем вниз, чтобы избежать мгновенного округления вверх
         const currentPrice = 1 + minutesDiff * 0.5; // Цена = 1 BYN за начало + 0.5 BYN за минуту
         
         // Проверяем, чтобы цена не была отрицательной или нулевой
@@ -861,17 +856,15 @@ async function showActiveRentalPanel(rental) {
         // Обновляем цену каждую секунду для реального времени
         const updatePriceInterval = setInterval(() => {
             if (document.getElementById('active-rental-panel')) {
-                const updatedStartedAt = new Date(rental.started_at); // Это время в UTC
-                const updatedNow = new Date(); // Это текущее время в локальной таймзоне браузера
+                // rental.started_at приходит из API в формате ISO (в UTC)
+                // Получаем время начала аренды в миллисекундах с начала эпохи Unix
+                const updatedStartedAtMs = new Date(rental.started_at).getTime();
                 
-                // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-                // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-                // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-                // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
-                const updatedNowUTC = new Date(updatedNow.getTime() + updatedNow.getTimezoneOffset() * 60000);
+                // Получаем текущее время в миллисекундах с начала эпохи Unix
+                const updatedNowMs = Date.now();
                 
-                // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
-                let updatedTimeDiff = updatedNowUTC - updatedStartedAt;
+                // Рассчитываем разницу в миллисекундах (разница во времени не зависит от часового пояса)
+                let updatedTimeDiff = updatedNowMs - updatedStartedAtMs;
                 if (updatedTimeDiff < 0) {
                     // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
                     updatedTimeDiff = 0;
@@ -926,18 +919,25 @@ async function endRental(rentalId) {
         
         const rental = await rentalResponse.json();
         // rental.started_at приходит из API в формате ISO (в UTC)
-        // Используем объекты Date напрямую для корректного вычисления разницы
-        const startedAt = new Date(rental.started_at); // Это время в UTC
-        const endedAt = new Date(); // Это текущее время в локальной таймзоне браузера
-        
         // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
-        const endedAtUTC = new Date(endedAt.getTime() + endedAt.getTimezoneOffset() * 60000);
+        // Используем время в UTC+3 для вычислений, как указано в требованиях
         
-        // Рассчитываем разницу в миллисекундах между окончанием аренды и началом
-        let timeDiff = endedAtUTC - startedAt;
+        // Преобразуем started_at из UTC в мс с начала эпохи Unix (учитывая, что это время в UTC)
+        const startedAtUTC = new Date(rental.started_at).getTime();
+        
+        // Получаем время окончания аренды в UTC+3
+        // Сначала получаем текущее время в UTC
+        const endedAt = new Date();
+        // Затем конвертируем в UTC+3 (добавляем 3 часа в мс)
+        const endedAtUTC3 = endedAt.getTime() + (3 * 60 * 1000);
+        
+        // Рассчитываем разницу в миллисекундах между временем окончания (в UTC+3) и началом аренды (в UTC, конвертированное в ту же систему отсчета)
+        // Поскольку startedAt - это время в UTC, а нам нужно сравнить с временем окончания в UTC+3,
+        // мы должны привести оба времени к одному часовому поясу
+        // Преобразуем startedAt из UTC в UTC+3 (добавляем 3 часа в мс)
+        const startedAtUTC3 = startedAtUTC + (3 * 60 * 1000);
+        
+        let timeDiff = endedAtUTC3 - startedAtUTC3;
         if (timeDiff < 0) {
             // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
             timeDiff = 0;
@@ -1033,18 +1033,25 @@ function showCompletionModal(rentalId) {
     .then(response => response.json())
     .then(rental => {
         // rental.started_at приходит из API в формате ISO (в UTC)
-        // Используем объекты Date напрямую для корректного вычисления разницы
-        const startedAt = new Date(rental.started_at); // Это время в UTC
-        const now = new Date(); // Это текущее время в локальной таймзоне браузера
-        
         // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточее UTC
-        const nowUTC = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+        // Используем время в UTC+3 для вычислений, как указано в требованиях
         
-        // Рассчитываем разницу в миллисекундах между текущим временем (в UTC) и началом аренды (в UTC)
-        let timeDiff = nowUTC - startedAt;
+        // Преобразуем started_at из UTC в мс с начала эпохи Unix (учитывая, что это время в UTC)
+        const startedAtUTC = new Date(rental.started_at).getTime();
+        
+        // Получаем текущее время в UTC+3
+        // Сначала получаем текущее время в UTC
+        const now = new Date();
+        // Затем конвертируем в UTC+3 (добавляем 3 часа в мс)
+        const nowUTC3 = now.getTime() + (3 * 60 * 1000);
+        
+        // Рассчитываем разницу в миллисекундах между текущим временем (в UTC+3) и началом аренды (в UTC, конвертированное в ту же систему отсчета)
+        // Поскольку startedAt - это время в UTC, а нам нужно сравнить с текущим временем в UTC+3,
+        // мы должны привести оба времени к одному часовому поясу
+        // Преобразуем startedAt из UTC в UTC+3 (добавляем 3 часа в мс)
+        const startedAtUTC3 = startedAtUTC + (3 * 60 * 1000);
+        
+        let timeDiff = nowUTC3 - startedAtUTC3;
         if (timeDiff < 0) {
             // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
             timeDiff = 0;
@@ -1331,18 +1338,25 @@ async function processPaymentAndComplete(rentalId) {
         const rental = await rentalResponse.json();
         
         // rental.started_at приходит из API в формате ISO (в UTC)
-        // Используем объекты Date напрямую для корректного вычисления разницы
-        const startedAt = new Date(rental.started_at); // Это время в UTC
-        const endedAt = new Date(); // Это текущее время в локальной таймзоне браузера
-        
         // Для корректного вычисления разницы, оба времени должны быть в одинаковой таймзоне
-        // Преобразуем текущее локальное время в его эквивалент в UTC для вычисления разницы
-        // Формула: local_time_in_utc = local_time.getTime() + local_timezone_offset_in_ms
-        // getTimezoneOffset() возвращает смещение в минутах от UTC к локальному времени, но со знаком минус для таймзон восточнее UTC
-        const endedAtUTC = new Date(endedAt.getTime() + endedAt.getTimezoneOffset() * 60000);
+        // Используем время в UTC+3 для вычислений, как указано в требованиях
         
-        // Рассчитываем разницу в миллисекундах между окончанием аренды и началом
-        let timeDiff = endedAtUTC - startedAt;
+        // Преобразуем started_at из UTC в мс с начала эпохи Unix (учитывая, что это время в UTC)
+        const startedAtUTC = new Date(rental.started_at).getTime();
+        
+        // Получаем время окончания аренды в UTC+3
+        // Сначала получаем текущее время в UTC
+        const endedAt = new Date();
+        // Затем конвертируем в UTC+3 (добавляем 3 часа в мс)
+        const endedAtUTC3 = endedAt.getTime() + (3 * 60 * 1000);
+        
+        // Рассчитываем разницу в миллисекундах между временем окончания (в UTC+3) и началом аренды (в UTC, конвертированное в ту же систему отсчета)
+        // Поскольку startedAt - это время в UTC, а нам нужно сравнить с временем окончания в UTC+3,
+        // мы должны привести оба времени к одному часовому поясу
+        // Преобразуем startedAt из UTC в UTC+3 (добавляем 3 часа в мс)
+        const startedAtUTC3 = startedAtUTC + (3 * 60 * 1000);
+        
+        let timeDiff = endedAtUTC3 - startedAtUTC3;
         if (timeDiff < 0) {
             // Если время начала аренды в будущем (из-за расхождения времени), устанавливаем разницу в 0
             timeDiff = 0;
@@ -1353,7 +1367,7 @@ async function processPaymentAndComplete(rentalId) {
         // Цена = 1 BYN за начало + 0.5 BYN за минуту
         const totalPrice = 1 + minutesDiff * 0.5;
         
-        // Проверяем, чтобы цена не была отрицательной или нулевой
+        // Check that price is not negative or zero
         if (totalPrice < 1) {
             totalPrice = 1;
         }
@@ -1498,7 +1512,28 @@ async function processPaymentAndComplete(rentalId) {
             return;
         }
         
-        // Создаем запрос на подтверждение завершения поездки
+        // Update the rental to set end date and status to completed
+        // Use the properly calculated time in UTC+3
+        const updateRentalResponse = await fetch(`/rentals/${rentalId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': userId
+            },
+            body: JSON.stringify({
+                ended_at: endedAt.toISOString(),
+                status: "completed",
+                price: totalPrice  // Update the price with the calculated total
+            })
+        });
+        
+        if (!updateRentalResponse.ok) {
+            throw new Error('Ошибка при обновлении статуса аренды');
+        }
+        
+        const updatedRental = await updateRentalResponse.json();
+        
+        // Создаем запрос на подтверждение завершения поездки (для сохранения документа, но без ожидания подтверждения)
         const tripCompletionResponse = await fetch('/trip-completions/', {
             method: 'POST',
             headers: {
@@ -1507,7 +1542,8 @@ async function processPaymentAndComplete(rentalId) {
             },
             body: JSON.stringify({
                 rental_id: rentalId,
-                completion_photo_id: completionPhotoId
+                completion_photo_id: completionPhotoId,
+                admin_approved: true // Automatically approve since payment is made
             })
         });
         
@@ -1537,7 +1573,7 @@ async function processPaymentAndComplete(rentalId) {
                 modal.remove();
             }
             
-            alert(`Запрос на завершение аренды отправлен! Ожидайте подтверждения администратором. С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
+            alert(`Аренда успешно завершена! С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
             
             // Обновляем информацию о пользователе (включая кэшбэк)
             loadUserInfo();

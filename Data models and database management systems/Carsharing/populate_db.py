@@ -170,17 +170,10 @@ def populate_driver_licenses():
     for license in licenses:
         user_id, license_number, issued_by, expiration_date, document_photo_id, status = license
         cur.execute(
-            """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
-               VALUES (%s, %s, %s, %s, NULL, %s) ON CONFLICT (license_number) DO NOTHING""",
-            (license_number, issued_by, expiration_date, document_photo_id, status)
+            """INSERT INTO driver_licenses (driver_id, license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status)
+               VALUES (%s, %s, %s, %s, %s, NULL, %s) ON CONFLICT (license_number) DO NOTHING""",
+            (user_id, license_number, issued_by, expiration_date, document_photo_id, status)
         )
-        
-        # Update user with driver_id if the license was inserted
-        if cur.rowcount > 0:  # Only if a new record was inserted
-            # Get the last inserted driver_id
-            cur.execute("SELECT currval('driver_licenses_driver_id_seq')")
-            new_driver_id = cur.fetchone()[0]
-            cur.execute("UPDATE users SET driver_id = %s WHERE id = %s", (new_driver_id, user_id))
     
     conn.commit()
     cur.close()
