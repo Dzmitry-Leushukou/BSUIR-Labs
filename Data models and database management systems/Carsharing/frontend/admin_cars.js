@@ -38,10 +38,28 @@ function displayCars(cars) {
         // Форматируем координаты из геометрии
         let position = '';
         if (car.position) {
-            // Пример: "POINT(27.5615 53.9041)" -> "53.9041, 27.5615"
-            const match = car.position.match(/POINT\(([-+]?\d*\.\d+|\d+) ([-+]?\d*\.\d+|\d+)\)/);
-            if (match) {
-                position = `${match[2]}, ${match[1]}`; // широта, долгота
+            // Проверяем, является ли position строкой в формате POINT
+            if (typeof car.position === 'string' && car.position.startsWith('POINT')) {
+                // Пример: "POINT(27.5615 53.9041)" -> "53.9041, 27.5615"
+                const match = car.position.match(/POINT\(([-+]?\d*\.\d+|\d+) ([-+]?\d*\.\d+|\d+)\)/);
+                if (match) {
+                    position = `${match[2]}, ${match[1]}`; // широта, долгота
+                } else {
+                    // Если формат не соответствует ожидаемому, выводим как есть
+                    position = car.position;
+                }
+            } else {
+                // Если position не строка в формате POINT, возможно это уже объект с координатами
+                // или просто строка координат, выводим как есть
+                position = car.position;
+            }
+        } else {
+            // Если позиция отсутствует, проверим, возможно есть поля latitude и longitude
+            // как в функции get_cars_positions_with_user_rental_status
+            if (car.latitude !== undefined && car.longitude !== undefined) {
+                position = `${car.latitude}, ${car.longitude}`;
+            } else {
+                position = 'Не задана';
             }
         }
         
@@ -53,7 +71,6 @@ function displayCars(cars) {
             <td>${car.model}</td>
             <td>${car.status === 'available' ? 'Доступен' : car.status === 'rented' ? 'Арендован' : car.status === 'maintenance' ? 'На обслуживании' : car.status === 'pending_completion' ? 'Ожидает завершения' : car.status}</td>
             <td>${position}</td>
-            <td>${car.main_photo_id || ''}</td>
             <td>${new Date(car.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>
                 <button class="btn edit-btn" onclick="openEditCarModal(${car.id})">Редактировать</button>
@@ -142,7 +159,6 @@ async function openEditCarModal(carId) {
             document.getElementById('plate_number').value = car.plate_number;
             document.getElementById('model').value = car.model;
             document.getElementById('status').value = car.status;
-            document.getElementById('main_photo_id').value = car.main_photo_id || '';
             
             document.getElementById('car-modal').style.display = 'block';
         } else {
@@ -175,14 +191,12 @@ async function submitCarForm(event) {
     const plateNumber = document.getElementById('plate_number').value;
     const model = document.getElementById('model').value;
     const status = document.getElementById('status').value;
-    const mainPhotoId = document.getElementById('main_photo_id').value ? parseInt(document.getElementById('main_photo_id').value) : null;
     
     const carData = {
         vin,
         plate_number: plateNumber,
         model,
-        status,
-        main_photo_id: mainPhotoId
+        status
     };
     
     try {

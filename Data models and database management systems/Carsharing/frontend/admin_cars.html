@@ -60,12 +60,6 @@
                             </th>
                             <th>
                                 <div class="filter-header">
-                                    <span>ID главного фото</span>
-                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="main_photo_id">
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
                                     <span>Обновлен</span>
                                     <input type="text" class="filter-input" placeholder="Фильтр..." data-column="updated_at">
                                 </div>
@@ -103,14 +97,8 @@
                         <label for="status">Статус:</label>
                         <select id="status" required>
                             <option value="available">Доступен</option>
-                            <option value="rented">Арендован</option>
-                            <option value="maintenance">На обслуживании</option>
                             <option value="out_of_service">Неисправен</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="main_photo_id">ID главного фото:</label>
-                        <input type="number" id="main_photo_id">
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn primary-btn">Сохранить</button>
