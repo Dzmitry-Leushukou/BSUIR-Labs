@@ -151,10 +151,31 @@ def populate_maintenance_requests():
     conn.close()
     print("Maintenance requests populated successfully")
 
+def check_if_populated():
+    """Проверяет, заполнена ли база данных хотя бы одним значением"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Проверяем, есть ли хотя бы одна роль и один пользователь
+    cur.execute("SELECT COUNT(*) FROM roles")
+    roles_count = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT(*) FROM users")
+    users_count = cur.fetchone()[0]
+    
+    cur.close()
+    conn.close()
+    
+    # Считаем, что база данных заполнена, если есть хотя бы одна роль и один пользователь
+    return roles_count > 0 and users_count > 0
+
 if __name__ == "__main__":
-    print("Populating database with test data...")
-    populate_roles()
-    populate_users()
-    populate_cars()
-    populate_maintenance_requests()
-    print("Database populated with test data successfully!")
+    if check_if_populated():
+        print("Database already populated, skipping population")
+    else:
+        print("Populating database with test data...")
+        populate_roles()
+        populate_users()
+        populate_cars()
+        populate_maintenance_requests()
+        print("Database populated with test data successfully!")
