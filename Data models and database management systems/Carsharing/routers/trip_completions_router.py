@@ -83,8 +83,24 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
             # Trip completed successfully with no damage - car becomes available
             car_update = CarUpdate(status="available")
             update_car(updated_rental['car_id'], car_update)
+        elif completion.admin_approved and completion.admin_comment:
+            # Trip completed but admin found damage - car needs maintenance
+            car_update = CarUpdate(status="maintenance")
+            update_car(updated_rental['car_id'], car_update)
+            
+            # Create a maintenance request for the damage
+            from crud.maintenance_requests_crud import create_maintenance_request
+            from schemas import MaintenanceRequestCreate
+            maintenance_request = MaintenanceRequestCreate(
+                car_id=updated_rental['car_id'],
+                reported_by=completion.admin_reviewed_by,
+                description=completion.admin_comment
+            )
+            create_maintenance_request(maintenance_request)
         else:
-            # Either trip was rejected or damage was found - car needs maintenance
+            # Trip was rejected by admin or still pending - set neutral status ("in_process")
+            # We'll use "maintenance" status as a neutral state for cases where admin hasn't decided yet
+            # or if admin rejected the trip completion
             car_update = CarUpdate(status="maintenance")
             update_car(updated_rental['car_id'], car_update)
             

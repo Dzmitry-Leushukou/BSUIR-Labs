@@ -124,7 +124,7 @@ def populate_maintenance_requests():
         car_id = random.choice(car_ids)
         reported_by = random.choice(user_ids)
         status = random.choice(["open", "in_progress", "resolved"])
-        description = f"Maintenance required for car {car_id}. Issue: {random.choice(['oil change', 'tire rotation', 'brake check', 'engine inspection', 'windshield repair'])}"
+        description = f"Требуется обслуживание для автомобиля {car_id}. Проблема: {random.choice(['замена масла', 'замена шин', 'проверка тормозов', 'осмотр двигателя', 'ремонт стекла'])}"
         
         # Determine dates based on status
         if status == "resolved":

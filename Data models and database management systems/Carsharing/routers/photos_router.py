@@ -28,7 +28,10 @@ async def get_photo_file_endpoint(photo_id: int):
     """
     Retrieve photo file from database
     """
-    from fastapi.responses import Response
+    from fastapi.responses import StreamingResponse
+    import io
+    import urllib.parse
+    
     photo = get_photo(photo_id)
     
     # Handle both dict-like objects and Pydantic models
@@ -41,11 +44,18 @@ async def get_photo_file_endpoint(photo_id: int):
         content_type = photo.content_type
         filename = photo.filename
     
-    return Response(
-        content=file_data,
+    # Properly encode the filename for the Content-Disposition header
+    encoded_filename = urllib.parse.quote(filename, safe='')
+    
+    # Create a BytesIO stream from the file data
+    def iterfile():
+        yield file_data
+    
+    return StreamingResponse(
+        iterfile(),
         media_type=content_type,
         headers={
-            "Content-Disposition": f"inline; filename={filename}"
+            "Content-Disposition": f"inline; filename*=UTF-8''{encoded_filename}"
         }
     )
 
