@@ -103,8 +103,14 @@ async function displayTripCompletionsData(tripCompletions) {
             <td>${photosHtml}</td>
             <td class="status-${completion.admin_approved === null ? 'pending' : completion.admin_approved ? 'approved' : 'rejected'}">${completion.admin_approved === null ? 'Ожидает проверки' : completion.admin_approved ? 'Подтверждено' : 'Отклонено'}</td>
             <td>
-                <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
-                <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
+                ${completion.admin_approved === null ? `
+                    <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
+                    <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
+                ` : completion.admin_approved === true ? `
+                    <button class="btn action-btn damage-btn" onclick="reportDamage(${completion.id})">Обнаружены повреждения</button>
+                ` : completion.admin_approved === false ? `
+                    <button class="btn action-btn approve-btn" onclick="confirmTrip(${completion.id})">Повреждений нет</button>
+                ` : ''}
             </td>
         `;
         tableBody.appendChild(row);

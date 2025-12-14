@@ -69,8 +69,14 @@ async function displayDriverLicenses(driverLicenses) {
             </td>
             <td class="status-${license.status}">${license.status === 'pending' ? 'Ожидает проверки' : license.status === 'approved' ? 'Подтверждено' : license.status === 'rejected' ? 'Отклонено' : license.status}</td>
             <td>
-                <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
-                <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>
+                ${license.status === 'pending' ? `
+                    <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
+                    <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>
+                ` : license.status === 'approved' ? `
+                    <button class="btn action-btn reject-btn" onclick="updateLicenseStatus(${license.driver_id}, 'rejected')">Отклонить</button>
+                ` : license.status === 'rejected' ? `
+                    <button class="btn action-btn approve-btn" onclick="updateLicenseStatus(${license.driver_id}, 'approved')">Подтвердить</button>
+                ` : ''}
             </td>
         `;
         tableBody.appendChild(row);
