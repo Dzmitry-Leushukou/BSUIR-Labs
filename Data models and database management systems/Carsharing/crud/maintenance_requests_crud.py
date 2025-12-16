@@ -62,20 +62,80 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
         update_fields.append("reported_by = %s")
         values.append(request.reported_by)
     if request.resolved_at is not None:
-        # Ensure resolved_at is in UTC+3 timezone
-        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
-        if request.resolved_at.tzinfo is None:
-            # If no timezone info, assume it's in UTC+3
-            resolved_at = utc_plus_3.localize(request.resolved_at)
+        # Ensure resolved_at is not earlier than created_at to satisfy the check constraint
+        # First get the created_at from the database record
+        cur.execute("SELECT created_at FROM maintenance_requests WHERE id = %s", (request_id,))
+        result = cur.fetchone()
+        if result:
+            created_at = result['created_at']
+            # Compare the resolved_at with created_at, ensuring resolved_at >= created_at
+            
+            # Handle timezone-awareness for both dates to prevent comparison error
+            if request.resolved_at.tzinfo is None:
+                # If no timezone info, assume it's in UTC+3 (Europe/Moscow)
+                utc_plus_3 = pytz.timezone('Europe/Moscow')
+                resolved_at = utc_plus_3.localize(request.resolved_at)
+            else:
+                # Convert to UTC+3 timezone
+                utc_plus_3 = pytz.timezone('Europe/Moscow')
+                resolved_at = request.resolved_at.astimezone(utc_plus_3)
+            
+            # Ensure created_at is also timezone-aware for comparison
+            if created_at.tzinfo is None:
+                # If created_at from DB is naive, assume it's in UTC (as stored in DB)
+                created_at = pytz.utc.localize(created_at)
+            else:
+                # Convert created_at to UTC first, then to UTC+3 for consistent comparison
+                created_at = created_at.astimezone(utc_plus_3)
+            
+            # Ensure resolved_at is not earlier than created_at
+            if resolved_at < created_at:
+                resolved_at = created_at
         else:
-            # Convert to UTC+3
-            resolved_at = request.resolved_at.astimezone(utc_plus_3)
+            # If we can't get the created_at, use the resolved_at as provided
+            if request.resolved_at.tzinfo is None:
+                utc_plus_3 = pytz.timezone('Europe/Moscow')
+                resolved_at = utc_plus_3.localize(request.resolved_at)
+            else:
+                utc_plus_3 = pytz.timezone('Europe/Moscow')
+                resolved_at = request.resolved_at.astimezone(utc_plus_3)
+        
         update_fields.append("resolved_at = %s")
         values.append(resolved_at)
     if request.status is not None:
         # Validate status value
         if request.status not in ['open', 'resolved']:
             raise HTTPException(status_code=400, detail="Недопустимое значение статуса. Разрешенные значения: 'open', 'resolved'")
+        
+        # If status is being changed to 'resolved' and resolved_at is not provided, set it to current time
+        if request.status == 'resolved':
+            # Check if resolved_at is already in the update fields
+            resolved_at_already_set = any('resolved_at' in field for field in update_fields)
+            if not resolved_at_already_set:
+                # Get current time in UTC+3 timezone
+                utc_plus_3 = pytz.timezone('Europe/Moscow')
+                current_time = datetime.now(utc_plus_3)
+                
+                # Get the created_at from database to ensure resolved_at >= created_at
+                cur.execute("SELECT created_at FROM maintenance_requests WHERE id = %s", (request_id,))
+                result = cur.fetchone()
+                if result:
+                    created_at = result['created_at']
+                    # Ensure created_at is timezone-aware for comparison
+                    if created_at.tzinfo is None:
+                        # If created_at from DB is naive, assume it's in UTC (as stored in DB)
+                        created_at = pytz.utc.localize(created_at)
+                    else:
+                        # Convert created_at to UTC first, then to UTC+3 for consistent comparison
+                        created_at = created_at.astimezone(utc_plus_3)
+                    
+                    # Ensure resolved_at is not earlier than created_at
+                    if current_time < created_at:
+                        current_time = created_at
+                
+                update_fields.append("resolved_at = %s")
+                values.append(current_time)
+        
         update_fields.append("status = %s")
         values.append(request.status)
     if request.description is not None:
