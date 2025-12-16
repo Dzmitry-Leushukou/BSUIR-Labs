@@ -10,14 +10,16 @@ def get_maintenance_requests(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT *
-        FROM maintenance_requests
+        SELECT mr.*, c.vin, u.email as reported_by_email
+        FROM maintenance_requests mr
+        LEFT JOIN cars c ON mr.car_id = c.id
+        LEFT JOIN users u ON mr.reported_by = u.id
         ORDER BY
             CASE
-                WHEN status = 'resolved' THEN 1
+                WHEN mr.status = 'resolved' THEN 1
                 ELSE 0
             END,
-            id ASC
+            mr.id ASC
         LIMIT %s OFFSET %s
     """, (limit, offset))
     requests = cur.fetchall()

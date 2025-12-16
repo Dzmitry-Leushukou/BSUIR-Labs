@@ -159,12 +159,11 @@ function displayUsers(users) {
     users.forEach(user => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.id}</td>
             <td>${user.email}</td>
             <td>${user.name}</td>
             <td>${user.surname}</td>
             <td>${user.cashback} BYN</td>
-            <td>${user.role_id}</td>
+            <td>${user.role_name === 'admin' ? 'Администратор' : user.role_name === 'user' ? 'Пользователь' : user.role_name}</td>
             <td class="status-${user.status}">${user.status === 'active' ? 'Активен' : user.status === 'banned' ? 'Заблокирован' : user.status}</td>
             <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${new Date(user.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
@@ -188,17 +187,18 @@ async function changeRole(userId) {
         return;
     }
     
-    const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user):');
+    const newRoleId = prompt('Введите номер новой роли (1 - Администратор, 2 - Пользователь):');
     if (!newRoleId) return;
     
     // Проверяем, что введенный ID - это число
     const roleId = parseInt(newRoleId);
     if (isNaN(roleId) || (roleId !== 1 && roleId !== 2)) {
-        alert('Неверный ID роли. Допустимые значения: 1 (admin) или 2 (user)');
+        alert('Неверный ID роли. Допустимые значения: 1 (Администратор) или 2 (Пользователь)');
         return;
     }
     
-    if (!confirm(`Вы уверены, что хотите изменить роль пользователя на ${newRoleId}?`)) {
+    const roleName = roleId === 1 ? 'Администратор' : 'Пользователь';
+    if (!confirm(`Вы уверены, что хотите изменить роль пользователя на "${roleName}"?`)) {
         return;
     }
     

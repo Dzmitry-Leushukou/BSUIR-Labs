@@ -177,6 +177,21 @@ def get_rentals_count_by_user_id(user_id: int):
     conn.close()
     return result[0] if result else 0
 
+def get_rentals_with_user_and_car_info(offset: int = 0, limit: int = 10):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT r.*, u.email, c.vin
+        FROM rentals r
+        JOIN users u ON r.user_id = u.id
+        JOIN cars c ON r.car_id = c.id
+        ORDER BY r.id DESC LIMIT %s OFFSET %s
+    """, (limit, offset))
+    rentals = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rentals
+
 def get_rentals_count():
     conn = get_db_connection()
     cur = conn.cursor()

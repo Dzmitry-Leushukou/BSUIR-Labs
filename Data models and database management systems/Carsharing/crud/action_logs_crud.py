@@ -7,7 +7,19 @@ from fastapi import HTTPException
 def get_action_logs(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM action_logs ORDER BY id DESC LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT
+            al.*,
+            u1.email as actor_email,
+            u2.email as target_user_email,
+            c.vin as target_car_vin
+        FROM action_logs al
+        LEFT JOIN users u1 ON al.actor_user_id = u1.id
+        LEFT JOIN users u2 ON al.target_user_id = u2.id
+        LEFT JOIN cars c ON al.target_car_id = c.id
+        ORDER BY al.id DESC
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
     logs = cur.fetchall()
     cur.close()
     conn.close()

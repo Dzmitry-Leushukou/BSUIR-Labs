@@ -17,8 +17,8 @@ async function loadRentals(page = 0) {
     const offset = validPageNum * rentalsPerPage;
     
     try {
-        // Загружаем аренды с пагинацией
-        const response = await fetch(`/rentals/?offset=${offset}&limit=${rentalsPerPage}`, {
+        // Загружаем аренды с пагинацией и информацией о пользователе и автомобиле
+        const response = await fetch(`/rentals/with-user-and-car-info?offset=${offset}&limit=${rentalsPerPage}`, {
             method: 'GET',
             headers: {
                 'X-User-ID': userId,
@@ -160,8 +160,8 @@ function displayRentals(rentals) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${rental.id}</td>
-            <td>${rental.user_id}</td>
-            <td>${rental.car_id}</td>
+            <td>${rental.email}</td>
+            <td>${rental.vin}</td>
             <td>${new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td>${rental.price} BYN</td>

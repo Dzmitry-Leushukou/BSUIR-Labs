@@ -217,7 +217,6 @@ function displayCars(cars) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${car.id}</td>
             <td>${car.vin}</td>
             <td>${car.plate_number}</td>
             <td>${car.model}</td>

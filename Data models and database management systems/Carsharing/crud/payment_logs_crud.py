@@ -7,7 +7,12 @@ from fastapi import HTTPException
 def get_payment_logs(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM payment_logs ORDER BY id DESC LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT pl.*, u.email as user_email
+        FROM payment_logs pl
+        LEFT JOIN users u ON pl.user_id = u.id
+        ORDER BY pl.id DESC LIMIT %s OFFSET %s
+    """, (limit, offset))
     logs = cur.fetchall()
     cur.close()
     conn.close()
@@ -16,7 +21,12 @@ def get_payment_logs(offset: int = 0, limit: int = 10):
 def get_payment_log(log_id: int):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM payment_logs WHERE id = %s", (log_id,))
+    cur.execute("""
+        SELECT pl.*, u.email as user_email
+        FROM payment_logs pl
+        LEFT JOIN users u ON pl.user_id = u.id
+        WHERE pl.id = %s
+    """, (log_id,))
     log = cur.fetchone()
     cur.close()
     conn.close()

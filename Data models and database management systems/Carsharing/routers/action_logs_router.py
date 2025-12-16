@@ -6,7 +6,7 @@ from typing import List
 
 router = APIRouter(prefix="/action_logs", tags=["Логи действий"])
 
-@router.get("/", response_model=List[ActionLog])
+@router.get("/", response_model=List[ActionLogWithEmails])
 def get_action_logs_endpoint(offset: int = 0, limit: int = 10, current_user: dict = Depends(get_current_user_from_header)):
     return get_action_logs(offset, limit)
 

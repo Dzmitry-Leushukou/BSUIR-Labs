@@ -203,9 +203,8 @@ function displayPaymentLogs(paymentLogs) {
         row.dataset.cardNumber = log.card_number || '';
         
         row.innerHTML = `
-            <td>${log.id}</td>
             <td>${log.rental_id}</td>
-            <td>${log.user_id}</td>
+            <td>${log.user_email || log.user_id}</td>
             <td>${payTypeRu}</td>
             <td>${displayCardNumber}</td>
             <td>${log.price} BYN</td>

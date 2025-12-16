@@ -199,15 +199,12 @@ async function displayDriverLicenses(driverLicenses) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${license.driver_id}</td>
             <td>${license.license_number}</td>
             <td>${license.issued_by}</td>
             <td>${new Date(license.expiration_date).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
-            <td>${license.document_photo_id}</td>
             <td>
                 ${photoUrl ? `<img src="${photoUrl}" alt="Document Photo" style="max-width: 100px; max-height: 100px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoUrl}', 'Фото документа (лицевая сторона)')" title="Кликните для просмотра в полном размере">` : '-'}
             </td>
-            <td>${license.document_photo_back_id}</td>
             <td>
                 ${photoBackUrl ? `<img src="${photoBackUrl}" alt="Document Back Photo" style="max-width: 100px; max-height: 100px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;" onclick="showPhotoModal('${photoBackUrl}', 'Фото документа (обратная сторона)')" title="Кликните для просмотра в полном размере">` : '-'}
             </td>

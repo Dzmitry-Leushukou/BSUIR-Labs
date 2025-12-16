@@ -249,9 +249,8 @@ async function displayTripCompletionsData(tripCompletions) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${completion.id}</td>
-            <td>${rental ? rental.user_id : 'N/A'}</td>
-            <td>${rental ? rental.car_id : 'N/A'}</td>
+            <td>${completion.user_email || 'N/A'}</td>
+            <td>${completion.car_vin || 'N/A'}</td>
             <td>${rental ? new Date(rental.started_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'N/A'}</td>
             <td>${rental ? (rental.ended_at ? new Date(rental.ended_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : '') : ''}</td>
             <td>${rental ? rental.price + ' BYN' : 'N/A'}</td>
