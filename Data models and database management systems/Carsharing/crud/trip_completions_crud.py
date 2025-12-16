@@ -12,6 +12,7 @@ def get_trip_completions(offset: int = 0, limit: int = 10):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     # Get trip completions with their associated photo IDs, user emails and car VIN
+    # Sorting: first oldest unapproved (admin_approved is NULL), then newest approved
     cur.execute("""
         SELECT tc.*, tc.created_at,
                ARRAY_AGG(tcp.photo_id) AS completion_photo_ids,
@@ -25,13 +26,34 @@ def get_trip_completions(offset: int = 0, limit: int = 10):
         GROUP BY tc.id, u.email, c.vin
         ORDER BY
             CASE
-                WHEN tc.admin_approved IS NOT NULL THEN 1  -- Move approved/rejected to end
-                ELSE 0
+                WHEN tc.admin_approved IS NULL THEN 0  -- Unapproved items first
+                ELSE 1  -- Approved/rejected items after
             END,
-            tc.id ASC  -- Order by oldest to newest for pending items
+            tc.created_at ASC
         LIMIT %s OFFSET %s
     """, (limit, offset))
     completions = cur.fetchall()
+    
+    # After fetching, we need to reorder in Python to achieve the required sorting
+    # First: oldest unapproved (admin_approved is NULL), then newest approved/rejected
+    unapproved = [item for item in completions if item['admin_approved'] is None]
+    approved = [item for item in completions if item['admin_approved'] is not None]
+    
+    # Sort unapproved by oldest first (ascending by created_at)
+    unapproved.sort(key=lambda x: x['created_at'])
+    
+    # Sort approved by newest first (descending by created_at)
+    approved.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Combine the lists: unapproved first, then approved
+    ordered_completions = unapproved + approved
+    
+    # Apply offset and limit to the ordered list
+    start_index = offset
+    end_index = offset + limit
+    result = ordered_completions[start_index:end_index]
+    
+    return result
     
     # Process the results to handle the photo IDs array properly
     for completion in completions:
