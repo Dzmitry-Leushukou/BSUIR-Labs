@@ -172,7 +172,6 @@ function displayMaintenanceRequests(maintenanceRequests) {
             <td>${request.car_id}</td>
             <td>${request.reported_by || ''}</td>
             <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
-            <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td class="status-cell" data-status="${request.status}" data-request-id="${request.id}">${statusText}</td>
             <td>${request.description}</td>
             <td>${actionButton}</td>
