@@ -6,7 +6,7 @@ from .users_router import get_current_user_from_header
 
 router = APIRouter(prefix="/maintenance_requests", tags=["Запросы на обслуживание"])
 
-@router.get("/", response_model=List[MaintenanceRequest])
+@router.get("/", response_model=List[MaintenanceRequestWithCarInfo])
 def get_maintenance_requests_endpoint(offset: int = 0, limit: int = 10):
     return get_maintenance_requests(offset, limit)
 

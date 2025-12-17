@@ -11,22 +11,49 @@ def get_trip_completions(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # Get trip completions with their associated photo IDs
+    # Get trip completions with their associated photo IDs, user emails and car VIN
+    # Sorting: first oldest unapproved (admin_approved is NULL), then newest approved
     cur.execute("""
         SELECT tc.*, tc.created_at,
-               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids
+               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids,
+               u.email as user_email,
+               c.vin as car_vin
         FROM trip_completions tc
         LEFT JOIN trip_completion_photos tcp ON tc.id = tcp.trip_completion_id
-        GROUP BY tc.id
+        LEFT JOIN rentals r ON tc.rental_id = r.id
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN cars c ON r.car_id = c.id
+        GROUP BY tc.id, u.email, c.vin
         ORDER BY
             CASE
-                WHEN tc.admin_approved IS NOT NULL THEN 1  -- Move approved/rejected to end
-                ELSE 0
+                WHEN tc.admin_approved IS NULL THEN 0  -- Unapproved items first
+                ELSE 1  -- Approved/rejected items after
             END,
-            tc.id ASC  -- Order by oldest to newest for pending items
+            tc.created_at ASC
         LIMIT %s OFFSET %s
     """, (limit, offset))
     completions = cur.fetchall()
+    
+    # After fetching, we need to reorder in Python to achieve the required sorting
+    # First: oldest unapproved (admin_approved is NULL), then newest approved/rejected
+    unapproved = [item for item in completions if item['admin_approved'] is None]
+    approved = [item for item in completions if item['admin_approved'] is not None]
+    
+    # Sort unapproved by oldest first (ascending by created_at)
+    unapproved.sort(key=lambda x: x['created_at'])
+    
+    # Sort approved by newest first (descending by created_at)
+    approved.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Combine the lists: unapproved first, then approved
+    ordered_completions = unapproved + approved
+    
+    # Apply offset and limit to the ordered list
+    start_index = offset
+    end_index = offset + limit
+    result = ordered_completions[start_index:end_index]
+    
+    return result
     
     # Process the results to handle the photo IDs array properly
     for completion in completions:
@@ -47,11 +74,16 @@ def get_trip_completion(completion_id: int):
     
     cur.execute("""
         SELECT tc.*, tc.created_at,
-               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids
+               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids,
+               u.email as user_email,
+               c.vin as car_vin
         FROM trip_completions tc
         LEFT JOIN trip_completion_photos tcp ON tc.id = tcp.trip_completion_id
+        LEFT JOIN rentals r ON tc.rental_id = r.id
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN cars c ON r.car_id = c.id
         WHERE tc.id = %s
-        GROUP BY tc.id
+        GROUP BY tc.id, u.email, c.vin
     """, (completion_id,))
     completion = cur.fetchone()
     
@@ -75,11 +107,16 @@ def get_trip_completion_by_rental_id(rental_id: int):
     
     cur.execute("""
         SELECT tc.*, tc.created_at,
-               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids
+               ARRAY_AGG(tcp.photo_id) AS completion_photo_ids,
+               u.email as user_email,
+               c.vin as car_vin
         FROM trip_completions tc
         LEFT JOIN trip_completion_photos tcp ON tc.id = tcp.trip_completion_id
+        LEFT JOIN rentals r ON tc.rental_id = r.id
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN cars c ON r.car_id = c.id
         WHERE tc.rental_id = %s
-        GROUP BY tc.id
+        GROUP BY tc.id, u.email, c.vin
     """, (rental_id,))
     completion = cur.fetchone()
     

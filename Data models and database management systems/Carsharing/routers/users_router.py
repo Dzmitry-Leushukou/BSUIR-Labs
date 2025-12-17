@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from schemas import (
-    User, UserCreate, UserUpdate, UserLogin, UserRegistration,
+    User, UserWithRoleName, UserCreate, UserUpdate, UserLogin, UserRegistration,
     UserPasswordChange
 )
 from crud.users_crud import get_user, get_users, create_user, update_user, delete_user, get_user_by_email
@@ -56,7 +56,7 @@ def get_current_user_from_header(request: Request):
         del user_data['hashed_password']
     return user_data
 
-@router.get("/", response_model=List[User])
+@router.get("/", response_model=List[UserWithRoleName])
 def get_users_endpoint(offset: int = 0, limit: int = 100):
     return get_users(offset, limit)
 

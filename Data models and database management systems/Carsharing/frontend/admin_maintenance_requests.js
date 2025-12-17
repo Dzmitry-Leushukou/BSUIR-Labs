@@ -168,11 +168,9 @@ function displayMaintenanceRequests(maintenanceRequests) {
         }
         
         row.innerHTML = `
-            <td>${request.id}</td>
-            <td>${request.car_id}</td>
-            <td>${request.reported_by || ''}</td>
+            <td>${request.vin || request.car_id}</td>
+            <td>${request.reported_by_email || request.reported_by || ''}</td>
             <td>${new Date(request.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
-            <td>${request.resolved_at ? new Date(request.resolved_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : ''}</td>
             <td class="status-cell" data-status="${request.status}" data-request-id="${request.id}">${statusText}</td>
             <td>${request.description}</td>
             <td>${actionButton}</td>

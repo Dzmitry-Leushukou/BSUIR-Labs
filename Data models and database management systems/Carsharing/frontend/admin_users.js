@@ -159,12 +159,11 @@ function displayUsers(users) {
     users.forEach(user => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.id}</td>
             <td>${user.email}</td>
             <td>${user.name}</td>
             <td>${user.surname}</td>
             <td>${user.cashback} BYN</td>
-            <td>${user.role_id}</td>
+            <td>${user.role_name === 'admin' ? 'Администратор' : user.role_name === 'user' ? 'Пользователь' : user.role_name}</td>
             <td class="status-${user.status}">${user.status === 'active' ? 'Активен' : user.status === 'banned' ? 'Заблокирован' : user.status}</td>
             <td>${new Date(user.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${new Date(user.updated_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
@@ -174,7 +173,6 @@ function displayUsers(users) {
                     onclick="toggleUserStatus(${user.id}, '${user.status === 'active' ? 'banned' : 'active'}')">
                     ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
                 </button>
-                <button class="btn action-btn delete-btn" onclick="deleteUser(${user.id})">Удалить</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -189,17 +187,18 @@ async function changeRole(userId) {
         return;
     }
     
-    const newRoleId = prompt('Введите ID новой роли (1 - admin, 2 - user):');
+    const newRoleId = prompt('Введите номер новой роли (1 - Администратор, 2 - Пользователь):');
     if (!newRoleId) return;
     
     // Проверяем, что введенный ID - это число
     const roleId = parseInt(newRoleId);
     if (isNaN(roleId) || (roleId !== 1 && roleId !== 2)) {
-        alert('Неверный ID роли. Допустимые значения: 1 (admin) или 2 (user)');
+        alert('Неверный ID роли. Допустимые значения: 1 (Администратор) или 2 (Пользователь)');
         return;
     }
     
-    if (!confirm(`Вы уверены, что хотите изменить роль пользователя на ${newRoleId}?`)) {
+    const roleName = roleId === 1 ? 'Администратор' : 'Пользователь';
+    if (!confirm(`Вы уверены, что хотите изменить роль пользователя на "${roleName}"?`)) {
         return;
     }
     
@@ -288,52 +287,6 @@ async function toggleUserStatus(userId, newStatus) {
     }
 }
 
-// Функция для удаления пользователя
-async function deleteUser(userId) {
-    const userIdFromStorage = localStorage.getItem('user_id');
-    if (!userIdFromStorage) {
-        alert('Пользователь не авторизован');
-        return;
-    }
-    
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие необратимо.')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-User-ID': userIdFromStorage,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            alert('Пользователь успешно удален');
-            // Перезагружаем таблицу
-            loadUsers();
-        } else {
-            const errorData = await response.json();
-            let errorMessage = 'Неизвестная ошибка';
-            if (errorData && typeof errorData === 'object') {
-                if (errorData.detail) {
-                    errorMessage = errorData.detail;
-                } else if (errorData.message) {
-                    errorMessage = errorData.message;
-                } else {
-                    errorMessage = getSimpleMessage(errorData) !== null ? getSimpleMessage(errorData) : JSON.stringify(errorData);
-                }
-            } else {
-                errorMessage = errorData || 'Неизвестная ошибка';
-            }
-            alert(`Ошибка при удалении пользователя: ${errorMessage}`);
-        }
-    } catch (error) {
-        console.error('Ошибка при удалении пользователя:', error);
-        alert('Ошибка при удалении пользователя');
-    }
-}
 
 // Функция для фильтрации данных таблицы Users
 function filterUsers() {

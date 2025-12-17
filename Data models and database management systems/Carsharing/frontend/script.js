@@ -856,7 +856,7 @@ async function rentCar(carId) {
         
         if (response.ok) {
             const rentalData = await response.json();
-            alert(`Автомобиль успешно арендован! ID аренды: ${rentalData.id}`);
+            alert(`Автомобиль успешно арендован! Номер аренды: ${rentalData.id}`);
             
             // Обновляем статус машины на "rented" визуально на карте
             updateCarMarkerStatus(carId, "rented");

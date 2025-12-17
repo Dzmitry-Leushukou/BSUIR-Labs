@@ -9,7 +9,13 @@ from datetime import datetime
 def get_users(offset: int = 0, limit: int = 100):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM users ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT u.*, r.name as role_name
+        FROM users u
+        LEFT JOIN roles r ON u.role_id = r.id
+        ORDER BY u.id
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
     users = cur.fetchall()
     cur.close()
     conn.close()

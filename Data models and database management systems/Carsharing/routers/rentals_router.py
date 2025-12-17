@@ -18,6 +18,10 @@ def get_rentals_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10)
 def get_rentals_with_car_info_by_user_endpoint(user_id: int, offset: int = 0, limit: int = 10):
     return get_rentals_with_car_info_by_user_id(user_id, offset, limit)
 
+@router.get("/with-user-and-car-info", response_model=List[RentalWithUserAndCarInfo])
+def get_rentals_with_user_and_car_info_endpoint(offset: int = 0, limit: int = 10):
+    return get_rentals_with_user_and_car_info(offset, limit)
+
 @router.get("/count", response_model=dict)
 def get_rentals_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
     from crud.rentals_crud import get_rentals_count

@@ -190,16 +190,14 @@ function displayActionLogs(actionLogs) {
     actionLogs.forEach(log => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${log.id}</td>
-            <td>${log.actor_user_id}</td>
+            <td>${log.actor_email || log.actor_user_id}</td>
             <td>${translateActionType(log.action_type)}</td>
-            <td>${log.target_user_id || ''}</td>
-            <td>${log.target_car_id || ''}</td>
+            <td>${log.target_user_email || log.target_user_id || ''}</td>
+            <td>${log.target_car_vin || log.target_car_id || ''}</td>
             <td>${log.target_rental_id || ''}</td>
             <td>${translateDescription(log.description || '')}</td>
-            <td>${JSON.stringify(log.old_values) || ''}</td>
-            <td>${JSON.stringify(log.new_values) || ''}</td>
-            <td>${log.user_agent || ''}</td>
+            <td>${log.old_values && log.old_values !== null ? JSON.stringify(log.old_values) : ''}</td>
+            <td>${log.new_values && log.new_values !== null ? JSON.stringify(log.new_values) : ''}</td>
             <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
         `;
         tableBody.appendChild(row);

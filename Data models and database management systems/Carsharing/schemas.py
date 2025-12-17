@@ -87,6 +87,15 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+class UserWithRoleName(UserBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    role_name: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
 class CarBase(BaseModel):
     vin: str
     plate_number: str
@@ -226,6 +235,13 @@ class RentalWithCarInfo(Rental):
     class Config:
         from_attributes = True
 
+class RentalWithUserAndCarInfo(Rental):
+    email: str
+    vin: str
+    
+    class Config:
+        from_attributes = True
+
 class MaintenanceRequestBase(BaseModel):
     car_id: int
     reported_by: Optional[int] = None
@@ -248,15 +264,23 @@ class MaintenanceRequest(MaintenanceRequestBase):
     class Config:
         from_attributes = True
 
+class MaintenanceRequestWithCarInfo(MaintenanceRequest):
+    vin: Optional[str] = None
+    reported_by_email: Optional[str] = None
+
 class PaymentLogBase(BaseModel):
     rental_id: int
     user_id: int
+    user_email: Optional[str] = None
     pay_type: str
     price: float
     card_number: Optional[str] = None
 
 class PaymentLogCreate(PaymentLogBase):
-    pass
+    user_email: Optional[str] = None  # Make email optional for creation
+    
+    class Config:
+        from_attributes = True
 
 class PaymentLog(PaymentLogBase):
     id: int
@@ -285,6 +309,8 @@ class TripCompletionBase(BaseModel):
     admin_comment: Optional[str] = None
     admin_reviewed_by: Optional[int] = None
     admin_reviewed_at: Optional[datetime] = None
+    user_email: Optional[str] = None
+    car_vin: Optional[str] = None
 
 class TripCompletionCreate(TripCompletionBase):
     rental_id: int
@@ -324,3 +350,8 @@ class ActionLog(ActionLogBase):
     
     class Config:
         from_attributes = True
+
+class ActionLogWithEmails(ActionLog):
+    actor_email: Optional[str] = None
+    target_user_email: Optional[str] = None
+    target_car_vin: Optional[str] = None
