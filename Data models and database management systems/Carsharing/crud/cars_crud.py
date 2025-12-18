@@ -36,21 +36,21 @@ def create_car(car: CarCreate):
                 # Если это уже формат POINT, используем ST_GeomFromText без SRID
                 cur.execute(
                     """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
-                       VALUES (%s, %s, %s, %s, ST_GeomFromText(%s), %s) RETURNING *""",
-                    (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
+                       VALUES (%s, %s, %s, 'available', ST_GeomFromText(%s), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.position, car.main_photo_id)
                 )
             else:
                 # Если это строка координат, используем ST_GeomFromText с SRID 4326
                 cur.execute(
                     """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
-                       VALUES (%s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s) RETURNING *""",
-                    (car.vin, car.plate_number, car.model, car.status, car.position, car.main_photo_id)
+                       VALUES (%s, %s, %s, 'available', ST_GeomFromText(%s, 4326), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.position, car.main_photo_id)
                 )
         else:
             cur.execute(
                 """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
-                   VALUES (%s, %s, %s, %s, %s) RETURNING *""",
-                (car.vin, car.plate_number, car.model, car.status, car.main_photo_id)
+                   VALUES (%s, %s, %s, 'available', %s) RETURNING *""",
+                (car.vin, car.plate_number, car.model, car.main_photo_id)
             )
         new_car = cur.fetchone()
         conn.commit()
@@ -81,9 +81,7 @@ def update_car(car_id: int, car: CarUpdate):
         if car.model is not None:
             update_fields.append("model = %s")
             values.append(car.model)
-        if car.status is not None:
-            update_fields.append("status = %s")
-            values.append(car.status)
+        # Пропускаем обновление статуса - он остается неизменным
         if car.position is not None:
             # Проверяем, является ли позиция в формате POINT
             if car.position.startswith('POINT'):
@@ -96,6 +94,14 @@ def update_car(car_id: int, car: CarUpdate):
         if car.main_photo_id is not None:
             update_fields.append("main_photo_id = %s")
             values.append(car.main_photo_id)
+        
+        # Добавляем VIN и номерной знак в список обновляемых полей
+        if car.vin is not None:
+            update_fields.append("vin = %s")
+            values.append(car.vin)
+        if car.plate_number is not None:
+            update_fields.append("plate_number = %s")
+            values.append(car.plate_number)
         
         # Set updated_at to current time in UTC+3
         utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk

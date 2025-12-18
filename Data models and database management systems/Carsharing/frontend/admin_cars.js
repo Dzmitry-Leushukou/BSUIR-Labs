@@ -312,7 +312,6 @@ async function openEditCarModal(carId) {
             document.getElementById('vin').value = car.vin;
             document.getElementById('plate_number').value = car.plate_number;
             document.getElementById('model').value = car.model;
-            document.getElementById('status').value = car.status;
             document.getElementById('position').value = position;
             
             document.getElementById('car-modal').style.display = 'block';
@@ -357,15 +356,22 @@ async function submitCarForm(event) {
     const vin = document.getElementById('vin').value;
     const plateNumber = document.getElementById('plate_number').value;
     const model = document.getElementById('model').value;
-    const status = document.getElementById('status').value;
     const position = document.getElementById('position').value;
     
     const carData = {
         vin,
         plate_number: plateNumber,
-        model,
-        status
+        model
     };
+    
+    // Добавляем статус только при создании автомобиля
+    if (!carId) {
+        carData.status = 'available'; // Всегда 'available' при создании
+    } else {
+        // При обновлении отправляем VIN и plate_number, если они изменились
+        carData.vin = vin;
+        carData.plate_number = plateNumber;
+    }
     
     // Добавляем позицию если она указана
     if (position.trim()) {
@@ -380,6 +386,9 @@ async function submitCarForm(event) {
                 carData.position = `POINT(${lng} ${lat})`;
             }
         }
+    } else {
+        // Если позиция не указана, но мы в режиме обновления, все равно отправляем обновление
+        // для других полей
     }
     
     try {
