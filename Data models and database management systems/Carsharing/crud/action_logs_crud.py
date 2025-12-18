@@ -2,6 +2,7 @@ from schemas import ActionLogCreate, ActionLog
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+import json
 
 # Action Logs CRUD
 def get_action_logs(offset: int = 0, limit: int = 10):
@@ -23,6 +24,31 @@ def get_action_logs(offset: int = 0, limit: int = 10):
     logs = cur.fetchall()
     cur.close()
     conn.close()
+    
+    # Process the logs to only show changed values in old_values and new_values
+    for log in logs:
+        if log['old_values'] and log['new_values']:
+            old_values = log['old_values'] if isinstance(log['old_values'], dict) else json.loads(log['old_values'])
+            new_values = log['new_values'] if isinstance(log['new_values'], dict) else json.loads(log['new_values'])
+            
+            # Find the differences between old and new values
+            changed_values_old = {}
+            changed_values_new = {}
+            
+            all_keys = set(old_values.keys()) | set(new_values.keys())
+            for key in all_keys:
+                old_val = old_values.get(key)
+                new_val = new_values.get(key)
+                if old_val != new_val:
+                    if old_val is not None:
+                        changed_values_old[key] = old_val
+                    if new_val is not None:
+                        changed_values_new[key] = new_val
+            
+            # Update the log with only the changed values, ensuring empty dicts are set to None
+            log['old_values'] = changed_values_old if changed_values_old else None
+            log['new_values'] = changed_values_new if changed_values_new else None
+    
     return logs
 
 def get_action_log(log_id: int):
@@ -34,6 +60,30 @@ def get_action_log(log_id: int):
     conn.close()
     if not log:
         raise HTTPException(status_code=404, detail="Лог действий не найден")
+    
+    # Process the log to only show changed values in old_values and new_values
+    if log['old_values'] and log['new_values']:
+        old_values = log['old_values'] if isinstance(log['old_values'], dict) else json.loads(log['old_values'])
+        new_values = log['new_values'] if isinstance(log['new_values'], dict) else json.loads(log['new_values'])
+        
+        # Find the differences between old and new values
+        changed_values_old = {}
+        changed_values_new = {}
+        
+        all_keys = set(old_values.keys()) | set(new_values.keys())
+        for key in all_keys:
+            old_val = old_values.get(key)
+            new_val = new_values.get(key)
+            if old_val != new_val:
+                if old_val is not None:
+                    changed_values_old[key] = old_val
+                if new_val is not None:
+                    changed_values_new[key] = new_val
+        
+        # Update the log with only the changed values, ensuring empty dicts are set to None
+        log['old_values'] = changed_values_old if changed_values_old else None
+        log['new_values'] = changed_values_new if changed_values_new else None
+    
     return log
 
 def create_action_log(log: ActionLogCreate):

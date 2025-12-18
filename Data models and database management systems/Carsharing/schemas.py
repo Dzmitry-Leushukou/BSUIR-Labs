@@ -105,9 +105,11 @@ class CarBase(BaseModel):
     main_photo_id: Optional[int] = None
 
 class CarCreate(CarBase):
-    pass
+    status: str = "available"  # Always set to 'available' during creation
 
 class CarUpdate(BaseModel):
+    vin: Optional[str] = None
+    plate_number: Optional[str] = None
     model: Optional[str] = None
     status: Optional[str] = None
     position: Optional[str] = None

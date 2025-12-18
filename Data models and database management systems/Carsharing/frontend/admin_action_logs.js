@@ -196,8 +196,8 @@ function displayActionLogs(actionLogs) {
             <td>${log.target_car_vin || log.target_car_id || ''}</td>
             <td>${log.target_rental_id || ''}</td>
             <td>${translateDescription(log.description || '')}</td>
-            <!-- <td>${log.old_values && log.old_values !== null ? JSON.stringify(log.old_values) : ''}</td>
-            <td>${log.new_values && log.new_values !== null ? JSON.stringify(log.new_values) : ''}</td> -->
+            <td>${log.old_values && log.old_values !== null && Object.keys(log.old_values).length > 0 ? translateFieldNames(JSON.stringify(log.old_values)).slice(1, -1) : ''}</td>
+            <td>${log.new_values && log.new_values !== null && Object.keys(log.new_values).length > 0 ? translateFieldNames(JSON.stringify(log.new_values)).slice(1, -1) : ''}</td>
             <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
         `;
         tableBody.appendChild(row);
@@ -259,4 +259,148 @@ function getSimpleMessage(obj) {
         }
     }
     return null; // Возвращаем null, если не удалось извлечь простое сообщение
+}
+
+// Функция для перевода названий полей
+function translateFieldNames(jsonString) {
+    // Определяем переводы для ключевых полей
+    const fieldTranslations = {
+        'vin': 'VIN',
+        'plate_number': 'Номерной знак',
+        'model': 'Модель',
+        'status': 'Статус',
+        'position': 'Позиция',
+        'updated_at': 'Обновлено',
+        'created_at': 'Создано',
+        'email': 'Email',
+        'name': 'Имя',
+        'surname': 'Фамилия',
+        'cashback': 'Кэшбэк',
+        'role_id': 'Роль',
+        'user_id': 'ID пользователя',
+        'car_id': 'ID автомобиля',
+        'rental_id': 'ID аренды',
+        'description': 'Описание',
+        'target_user_id': 'ID целевого пользователя',
+        'target_car_id': 'ID целевого автомобиля',
+        'target_rental_id': 'ID целевой аренды',
+        'action_type': 'Тип действия',
+        'actor_user_id': 'ID пользователя-актера',
+        'old_values': 'Старые значения',
+        'new_values': 'Новые значения',
+        'user_agent': 'User Agent'
+    };
+    
+    // Определяем переводы для enum значений
+    const enumTranslations = {
+        // Статусы автомобилей
+        'available': 'Доступен',
+        'rented': 'Арендован',
+        'maintenance': 'На обслуживании',
+        'out_of_service': 'Вне эксплуатации',
+        
+        // Статусы пользователей
+        'active': 'Активный',
+        'banned': 'Заблокирован',
+        'pending': 'Ожидает',
+        
+        // Статусы аренды
+        'active': 'Активна',
+        'completed': 'Завершена',
+        'cancelled': 'Отменена',
+        
+        // Статусы запросов на обслуживание
+        'open': 'Открыт',
+        'in_progress': 'В процессе',
+        'resolved': 'Решен',
+        
+        // Статусы водительских прав
+        'pending': 'Ожидает проверки',
+        'approved': 'Одобрен',
+        'rejected': 'Отклонен',
+        
+        // Типы платежей
+        'rental_fee': 'Оплата аренды',
+        'fine': 'Штраф',
+        'insurance': 'Страховка',
+        
+        // Типы действий
+        'user_login': 'Вход пользователя',
+        'user_logout': 'Выход пользователя',
+        'user_registration': 'Регистрация пользователя',
+        'car_rental_start': 'Начало аренды автомобиля',
+        'car_rental_end': 'Завершение аренды автомобиля',
+        'car_rental_cancel': 'Отмена аренды автомобиля',
+        'car_rental_pending_completion': 'Ожидание завершения аренды',
+        'payment_success': 'Успешный платеж',
+        'payment_failed': 'Неудачный платеж',
+        'maintenance_request': 'Запрос на обслуживание',
+        'maintenance_resolve': 'Решение запроса на обслуживание',
+        'profile_update': 'Обновление профиля',
+        'driver_license_upload': 'Загрузка водительских прав',
+        'car_status_change': 'Изменение статуса автомобиля',
+        'user_status_change': 'Изменение статуса пользователя',
+        'car_create': 'Создание автомобиля',
+        'car_update': 'Обновление автомобиля',
+        'car_delete': 'Удаление автомобиля',
+        'driver_license_create': 'Создание водительских прав',
+        'driver_license_update': 'Обновление водительских прав',
+        'driver_license_delete': 'Удаление водительских прав',
+        'maintenance_request_create': 'Создание запроса на обслуживание',
+        'maintenance_request_update': 'Обновление запроса на обслуживание',
+        'maintenance_request_delete': 'Удаление запроса на обслуживание',
+        'car_photo_upload': 'Загрузка фото автомобиля',
+        'car_photo_delete': 'Удаление фото автомобиля',
+        'trip_completion_create': 'Создание завершения поездки',
+        'trip_completion_update': 'Обновление завершения поездки',
+        'user_ban': 'Блокировка пользователя',
+        'user_unban': 'Разблокировка пользователя'
+    };
+    
+    // Определяем переводы для ID ролей
+    const roleTranslations = {
+        '1': 'Администратор',
+        '2': 'Пользователь'
+    };
+    
+    try {
+        // Парсим JSON строку в объект
+        const obj = JSON.parse(jsonString);
+        
+        // Рекурсивно проходим по всем ключам объекта и переводим их
+        function translateKeys(input) {
+            if (Array.isArray(input)) {
+                return input.map(item => translateKeys(item));
+            } else if (input !== null && typeof input === 'object') {
+                const translatedObj = {};
+                for (const [key, value] of Object.entries(input)) {
+                    // Пропускаем поле updated_at, чтобы оно не отображалось
+                    if (key === 'updated_at') {
+                        continue;
+                    }
+                    
+                    const translatedKey = fieldTranslations[key] || key;
+                    
+                    // Если это поле role_id, переводим его значение в название роли
+                    if (key === 'role_id' && typeof value === 'number') {
+                        translatedObj[translatedKey] = roleTranslations[value.toString()] || `Роль ${value}`;
+                    } else {
+                        translatedObj[translatedKey] = translateKeys(value);
+                    }
+                }
+                return translatedObj;
+            } else {
+                // Если значение является enum, переводим его
+                return enumTranslations[input] || input;
+            }
+        }
+        
+        const translatedObj = translateKeys(obj);
+        
+        // Возвращаем преобразованный объект в виде строки JSON
+        return JSON.stringify(translatedObj, null, 2);
+    } catch (e) {
+        // Если не удается распарсить JSON, возвращаем оригинальную строку
+        return jsonString;
+    }
 }

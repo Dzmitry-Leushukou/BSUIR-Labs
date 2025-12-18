@@ -29,31 +29,17 @@ def get_trip_completions(offset: int = 0, limit: int = 10):
                 WHEN tc.admin_approved IS NULL THEN 0  -- Unapproved items first
                 ELSE 1  -- Approved/rejected items after
             END,
-            tc.created_at ASC
+            CASE
+                WHEN tc.admin_approved IS NULL THEN tc.created_at  -- For unapproved: oldest first (ASC)
+                ELSE NULL  -- For approved/rejected: will be ordered by next clause
+            END ASC,
+            CASE
+                WHEN tc.admin_approved IS NOT NULL THEN tc.created_at  -- For approved/rejected: newest first (DESC)
+                ELSE NULL  -- For unapproved: will be ordered by next clause
+            END DESC
         LIMIT %s OFFSET %s
     """, (limit, offset))
     completions = cur.fetchall()
-    
-    # After fetching, we need to reorder in Python to achieve the required sorting
-    # First: oldest unapproved (admin_approved is NULL), then newest approved/rejected
-    unapproved = [item for item in completions if item['admin_approved'] is None]
-    approved = [item for item in completions if item['admin_approved'] is not None]
-    
-    # Sort unapproved by oldest first (ascending by created_at)
-    unapproved.sort(key=lambda x: x['created_at'])
-    
-    # Sort approved by newest first (descending by created_at)
-    approved.sort(key=lambda x: x['created_at'], reverse=True)
-    
-    # Combine the lists: unapproved first, then approved
-    ordered_completions = unapproved + approved
-    
-    # Apply offset and limit to the ordered list
-    start_index = offset
-    end_index = offset + limit
-    result = ordered_completions[start_index:end_index]
-    
-    return result
     
     # Process the results to handle the photo IDs array properly
     for completion in completions:
