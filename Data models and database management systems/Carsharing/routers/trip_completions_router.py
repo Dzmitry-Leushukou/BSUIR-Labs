@@ -86,11 +86,11 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
         updated_rental = update_rental(rental['id'], rental_update)
         
         # Determine car status based on admin approval and comments
-        if completion.admin_approved and not completion.admin_comment:
+        if completion.admin_approved is True and not completion.admin_comment:
             # Trip completed successfully with no damage - car becomes available
             car_update = CarUpdate(status="available")
             update_car(updated_rental['car_id'], car_update)
-        elif completion.admin_approved and completion.admin_comment:
+        elif completion.admin_approved is True and completion.admin_comment:
             # Trip completed but admin found damage - car needs maintenance
             car_update = CarUpdate(status="maintenance")
             update_car(updated_rental['car_id'], car_update)
@@ -104,14 +104,12 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
                 description=completion.admin_comment
             )
             create_maintenance_request(maintenance_request)
-        else:
-            # Trip was rejected by admin or still pending - set neutral status ("in_process")
-            # We'll use "maintenance" status as a neutral state for cases where admin hasn't decided yet
-            # or if admin rejected the trip completion
+        elif completion.admin_approved is False:
+            # Trip was rejected by admin due to damages - car needs maintenance
             car_update = CarUpdate(status="maintenance")
             update_car(updated_rental['car_id'], car_update)
             
-            # If admin provided a comment about damage, create a maintenance request
+            # Create a maintenance request for the damage
             if completion.admin_comment:
                 from crud.maintenance_requests_crud import create_maintenance_request
                 from schemas import MaintenanceRequestCreate
@@ -121,5 +119,13 @@ def update_trip_completion_endpoint(request: Request, completion_id: int, comple
                     description=completion.admin_comment
                 )
                 create_maintenance_request(maintenance_request)
+        else:
+            # Trip is still pending admin review
+            # We'll keep the car status as is or set to a neutral state if needed
+            # Get current car status to preserve it
+            from crud.cars_crud import get_car
+            current_car = get_car(updated_rental['car_id'])
+            car_update = CarUpdate(status=current_car['status'])
+            update_car(updated_rental['car_id'], car_update)
     
     return update_trip_completion(completion_id, completion)
