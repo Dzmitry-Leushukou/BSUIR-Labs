@@ -196,8 +196,8 @@ function displayActionLogs(actionLogs) {
             <td>${log.target_car_vin || log.target_car_id || ''}</td>
             <td>${log.target_rental_id || ''}</td>
             <td>${translateDescription(log.description || '')}</td>
-            <td>${log.old_values && log.old_values !== null ? JSON.stringify(log.old_values) : ''}</td>
-            <td>${log.new_values && log.new_values !== null ? JSON.stringify(log.new_values) : ''}</td>
+            <!-- <td>${log.old_values && log.old_values !== null ? JSON.stringify(log.old_values) : ''}</td>
+            <td>${log.new_values && log.new_values !== null ? JSON.stringify(log.new_values) : ''}</td> -->
             <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
         `;
         tableBody.appendChild(row);
