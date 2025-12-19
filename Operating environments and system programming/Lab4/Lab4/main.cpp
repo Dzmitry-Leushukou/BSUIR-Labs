@@ -12,39 +12,31 @@ const int PRODUCER_COUNT = 2;
 const int CONSUMER_COUNT = 3;
 const int ITEMS_PER_PRODUCER = 50;
 
-// one memory block
 struct Block
 {
     char data[BLOCK_SIZE];
 };
 
-// shared blocks array
 Block g_blocks[BLOCK_COUNT];
 
-// semaphores: free blocks / full blocks
 HANDLE g_freeBlocks = NULL;
 HANDLE g_fullBlocks = NULL;
 
-// critical sections: queues / console output
 CRITICAL_SECTION g_queueCS;
 CRITICAL_SECTION g_ioCS;
 
-// queues of block indices
 std::queue<int> g_freeQueue;
 std::queue<int> g_fullQueue;
 
-// simple statistics
 volatile LONG g_itemsProduced = 0;
 volatile LONG g_itemsConsumed = 0;
 volatile LONG g_producersFinished = 0;
 
-// thread parameter: just id
 struct ThreadParam
 {
     int id;
 };
 
-// producer thread: writes data to free blocks
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
     ThreadParam* p = static_cast<ThreadParam*>(lpParam);
@@ -79,7 +71,6 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
     return 0;
 }
 
-// consumer thread: reads data from full blocks
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
     ThreadParam* p = static_cast<ThreadParam*>(lpParam);
@@ -138,7 +129,6 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
     return 0;
 }
 
-// monitor thread: prints buffer state periodically
 DWORD WINAPI MonitorThread(LPVOID lpParam)
 {
     UNREFERENCED_PARAMETER(lpParam);
