@@ -3,11 +3,8 @@
 #include <iphlpapi.h>
 #include <iostream>
 #include <iomanip>
-#include <vector>
-#include <sstream>
 #include <psapi.h>
 #include <tlhelp32.h>
-#include <iomanip>
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "psapi.lib")
 
