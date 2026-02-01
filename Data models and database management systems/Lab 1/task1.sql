@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS MyTable
+(
+    id INTEGER,
+    val INTEGER
+);
