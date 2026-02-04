@@ -70,7 +70,9 @@ INSERT INTO Students (name, group_id) VALUES ('Пётр Иванов', 1);
 INSERT INTO Students (name, group_id) VALUES ('Пётр Петров', 2);
 INSERT INTO Students (name, group_id) VALUES ('Александр Фёдоров', 2);
 
-call restore_students_by_interval('1 minutes');
+call restore_students_by_interval('2 minutes');
 
 SELECT * FROM students_audit;
 SELECT * FROM students;
+
+UPDATE Students SET name = '12312 Петров' WHERE id = 5;

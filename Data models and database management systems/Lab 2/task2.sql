@@ -113,3 +113,6 @@ INSERT INTO Groups (id, name) VALUES (1, 'Группа 103'); -- Error
 INSERT INTO Students (name, group_id) VALUES ('Иван', 1); -- ID=1
 INSERT INTO Students (name, group_id) VALUES ('Петр', 1); -- ID=2
 INSERT INTO Students (id, name, group_id) VALUES (1, 'Дубликат', 1); -- Error
+
+SELECT * from students;
+
