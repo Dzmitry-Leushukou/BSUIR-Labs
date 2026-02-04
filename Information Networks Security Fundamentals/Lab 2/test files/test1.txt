@@ -1,0 +1,12 @@
+dzmitry-leushukou@dzmitry-leushukou:~$ curl https://api.deepseek.com/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-72043e54164342f0a47023b88c884ef3" \
+  -d '{
+    "model": "deepseek-chat",
+    "messages": [
+      {"role": "user", "content": "Привет! Расскажи о себе."}
+    ],
+    "stream": false
+  }'
+{"id":"baa952c5-2cc5-4801-9b15-cd7675f5cf05","object":"chat.completion","created":1770028699,"model":"deepseek-chat","choices":[{"index":0,"message":{"role":"assistant","content":"Привет! \n\nЯ DeepSeek — AI-ассистент, созданный компанией DeepSeek. Вот немного обо мне:\n\n**Что я умею:**\n- Отвечать на вопросы и вести беседы на самые разные темы\n- Помогать с текстами: писать, редактировать, анализировать\n- Работать с кодом и решать технические задачи\n- Обрабатывать загруженные файлы (изображения, PDF, Word, Excel, PowerPoint) и извлекать из них текстовую информацию\n- Помогать с обучением, исследованиями и творческими задачами\n\n**Мои особенности:**\n- Полностью бесплатный — никаких скрытых платежей\n- Поддерживаю длинный контекст (128K токенов)\n- Имею веб-версию и мобильное приложение\n- Постоянно обучаюсь и развиваюсь\n- Обладаю знаниями до июля 2024 года\n\n**Чего я не умею:**\n- Создавать изображения или работать с мультимедиа\n- Воспроизводить аудио или видео\n- Искать в интернете в реальном времени (но у меня есть функция поиска, которую можно включить вручную)\n\nЯ всегда стараюсь быть полезным, внимательным и дружелюбным! Чем могу помочь вам сегодня?"},"logprobs":null,"finish_reason":"stop"}],"usage":{"prompt_tokens":13,"completion_tokens":320,"total_tokens":333,"prompt_tokens_details":{"cached_tokens":0},"prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":13},"system_fingerprint":"fp_eaab8d114b_prod0820_fp8_kvcache"}dzmitry-leushukou@dzmitry-leushukou:~$
+
