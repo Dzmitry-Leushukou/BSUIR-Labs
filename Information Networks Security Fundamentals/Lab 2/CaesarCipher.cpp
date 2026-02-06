@@ -4,12 +4,12 @@
 
 #include "CaesarCipher.h"
 
-void CaesarCipher::encrypt(long long shift, const std::wstring& filepath) {
-    std::vector<std::wstring> text=ReadFile(filepath);
-    std::vector<std::wstring> encrypted_text;
+void CaesarCipher::encrypt(long long shift, const std::string& filepath) {
+    std::vector<std::string> text=ReadFile(filepath);
+    std::vector<std::string> encrypted_text;
 
     for (auto& i:text) {
-        std::wstring s=L"";
+        std::string s="";
         encrypted_text.push_back(s);
         for (auto& j:i) {
             encrypted_text.back().push_back(encryptSymbol(j, shift));
@@ -20,6 +20,6 @@ void CaesarCipher::encrypt(long long shift, const std::wstring& filepath) {
     SaveFile(filepath, encrypted_text);
 }
 
-void CaesarCipher::decrypt(long long shift, const std::wstring& filepath) {
+void CaesarCipher::decrypt(long long shift, const std::string& filepath) {
     encrypt(shift*(-1), filepath);
 }

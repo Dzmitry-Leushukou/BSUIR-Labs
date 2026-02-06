@@ -12,11 +12,12 @@
         <property name="row-homogeneous">True</property>
         <property name="column-homogeneous">True</property>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="caesarEncryptionButton">
             <property name="label" translatable="yes">Caesar encryption</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_caesarEncryptionButton_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -24,11 +25,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="caesarDecryptionButton">
             <property name="label" translatable="yes">Caesar decryption</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_caesarDecryptionButton_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -36,11 +38,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="vigenereEncryptionButton">
             <property name="label" translatable="yes">Vigenere encryption</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_vigenereEncryptionButton_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -48,11 +51,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="vigenereDecryptionButton">
             <property name="label" translatable="yes">Vigenere decryption</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_vigenereDecryptionButton_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="left-attach">3</property>
@@ -95,7 +99,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="statusLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
           </object>
@@ -106,7 +110,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry">
+          <object class="GtkEntry" id="keyEntry">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
           </object>

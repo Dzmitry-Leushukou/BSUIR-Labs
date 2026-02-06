@@ -7,11 +7,11 @@
 #include <filesystem>
 
 
-std::vector<std::wstring> CipherBase::ReadFile(const std::wstring& filepath) {
+std::vector<std::string> CipherBase::ReadFile(const std::string& filepath) {
     std::filesystem::path input_filepath = filepath;
-    std::wifstream fin(input_filepath);
-    std::wstring s;
-    std::vector<std::wstring> text;
+    std::ifstream fin(input_filepath);
+    std::string s;
+    std::vector<std::string> text;
     while (std::getline(fin,s)) {
         text.push_back(s);
     }
@@ -19,25 +19,24 @@ std::vector<std::wstring> CipherBase::ReadFile(const std::wstring& filepath) {
     return text;
 }
 
-void CipherBase::SaveFile(const std::wstring& filepath, const std::vector<std::wstring>& text) {
+void CipherBase::SaveFile(const std::string& filepath, const std::vector<std::string>& text) {
     std::filesystem::path input_filepath = filepath;
-    std::wofstream fout(input_filepath);
+    std::ofstream fout(input_filepath);
 
     for (const auto& s : text) {
-        fout << s<<L'\n';
+        fout << s<<'\n';
     }
     fout.close();
 }
 
-wchar_t CipherBase::encryptSymbol(const wchar_t& symbol, long long shift) {
+char CipherBase::encryptSymbol(const char& symbol, long long shift) {
     shift = shift % 0x10000;
     if (shift < 0) {
-        shift += 0x10000; // Обрабатываем отрицательные сдвиги
+        shift += 0x10000;
     }
 
-    wchar_t encrypted = symbol + static_cast<wchar_t>(shift);
+    char encrypted = symbol + static_cast<wchar_t>(shift);
 
-    // Проверяем, не вышли ли мы за пределы BMP (Basic Multilingual Plane)
     if (encrypted > 0xFFFF) {
         encrypted -= 0x10000;
     }

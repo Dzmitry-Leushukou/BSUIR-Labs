@@ -6,13 +6,13 @@
 
 
 
-void VigenereCipher::encrypt(const std::wstring& key, const std::wstring& filepath) {
-    std::vector<std::wstring> text=ReadFile(filepath);
-    std::vector<std::wstring> encrypted_text;
+void VigenereCipher::encrypt(const std::string& key, const std::string& filepath) {
+    std::vector<std::string> text=ReadFile(filepath);
+    std::vector<std::string> encrypted_text;
 
     unsigned long long  index=0;
     for (auto& i:text) {
-        std::wstring s=L"";
+        std::string s="";
         encrypted_text.push_back(s);
         for (auto& j:i) {
             if (index == key.size())
@@ -25,8 +25,8 @@ void VigenereCipher::encrypt(const std::wstring& key, const std::wstring& filepa
     SaveFile(filepath, encrypted_text);
 }
 
-void VigenereCipher::decrypt(const std::wstring& key, const std::wstring& filepath)  {
-    std::wstring reversed_key;
+void VigenereCipher::decrypt(const std::string& key, const std::string& filepath)  {
+    std::string reversed_key;
     for (auto& i:key) {
         reversed_key.push_back(i*(-1));
 

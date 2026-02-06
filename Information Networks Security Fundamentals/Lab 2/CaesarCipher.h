@@ -13,8 +13,8 @@
 
 class CaesarCipher:public CipherBase{
     public:
-    void encrypt(long long shift, const std::wstring& filepath) override;
-    void decrypt(long long shift, const std::wstring& filepath) override;
+    void encrypt(long long shift, const std::string& filepath) override;
+    void decrypt(long long shift, const std::string& filepath) override;
 
 
 
