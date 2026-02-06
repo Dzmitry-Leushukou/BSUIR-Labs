@@ -11,13 +11,13 @@
 class CipherBase {
     public:
     virtual ~CipherBase() = default;
-    virtual void encrypt(long long shift, const std::string& filepath){};
-    virtual void decrypt(long long shift, const std::string& filepath){};
-    char encryptSymbol(const char& symbol, long long shift);
+    virtual void encrypt(long long shift, const std::wstring& filepath){};
+    virtual void decrypt(long long shift, const std::wstring& filepath){};
+    wchar_t encryptSymbol(const wchar_t& symbol, long long shift);
     protected:
 
-    std::vector<std::string> ReadFile(const std::string& filepath);
-    void SaveFile(const std::string& filepath, const std::vector<std::string>& text);
+    std::vector<std::wstring> ReadFile(const std::wstring& filepath);
+    void SaveFile(const std::wstring& filepath, const std::vector<std::wstring>& text);
 
 };
 

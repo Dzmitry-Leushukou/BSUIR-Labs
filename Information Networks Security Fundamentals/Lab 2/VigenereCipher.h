@@ -9,8 +9,8 @@
 
 class VigenereCipher: public CipherBase {
 public:
-    void encrypt(const std::string& key, const std::string& filepath);
-    void decrypt(const std::string& key, const std::string& filepath);
+    void encrypt(const std::wstring& key, const std::wstring& filepath);
+    void decrypt(const std::wstring& key, const std::wstring& filepath);
 
 };
 

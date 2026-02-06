@@ -1,5 +1,18 @@
 #include "ui.h"
 #include <iostream>
+#include <locale>
+#include <codecvt>
+#include <string>
+
+static std::wstring utf8_to_wstring(const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return converter.from_bytes(str);
+}
+
+static std::string wstring_to_utf8(const std::wstring& wstr) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return converter.to_bytes(wstr);
+}
 
 ui::ui(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& builder)
     : Gtk::Window(cobject), builder(builder) {
@@ -69,7 +82,9 @@ void ui::on_caesarEncryptionButton_clicked() {
         return;
     }
     try {
-        cc->encrypt( getShift(keyEntry->get_text()),filepath->get_text());
+        std::string filepath_utf8 = filepath->get_text();
+        std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
+        cc->encrypt(getShift(keyEntry->get_text()), w_filepath);
     }
     catch (std::exception& e) {
         update_status(e.what(),false);
@@ -88,7 +103,9 @@ void ui::on_caesarDecryptionButton_clicked() {
         return;
     }
     try {
-        cc->decrypt( getShift(keyEntry->get_text()),filepath->get_text());
+        std::string filepath_utf8 = filepath->get_text();
+        std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
+        cc->decrypt(getShift(keyEntry->get_text()), w_filepath);
     }
     catch (std::exception& e) {
         update_status(e.what(),false);
@@ -107,7 +124,11 @@ void ui::on_vigenereEncryptionButton_clicked() {
         return;
     }
     try {
-        vc->encrypt( keyEntry->get_text(),filepath->get_text());
+        std::string filepath_utf8 = filepath->get_text();
+        std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
+        std::string key_utf8 = keyEntry->get_text();
+        std::wstring w_key = utf8_to_wstring(key_utf8);
+        vc->encrypt(w_key, w_filepath);
     }
     catch (std::exception& e) {
         update_status(e.what(),false);
@@ -126,7 +147,11 @@ void ui::on_vigenereDecryptionButton_clicked() {
         return;
     }
     try {
-        vc->decrypt( keyEntry->get_text(),filepath->get_text());
+        std::string filepath_utf8 = filepath->get_text();
+        std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
+        std::string key_utf8 = keyEntry->get_text();
+        std::wstring w_key = utf8_to_wstring(key_utf8);
+        vc->decrypt(w_key, w_filepath);
     }
     catch (std::exception& e) {
         update_status(e.what(),false);
@@ -134,7 +159,6 @@ void ui::on_vigenereDecryptionButton_clicked() {
     }
     update_status("Success!");
 }
-
 
 void ui::update_status(const std::string& message, bool response_ok) {
     statusLabel->set_text(message);
