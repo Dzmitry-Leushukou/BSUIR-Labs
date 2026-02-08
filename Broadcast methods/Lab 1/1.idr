@@ -49,10 +49,8 @@ describeOperation op = case op of
     Multiply => "Умножение матриц"
     Transpose => "Транспонирование матрицы"
 
--- ПРОСТАЯ РАБОЧАЯ ВЕРСИЯ
--- Просто возвращаем True для тестовой матрицы 2x2
 isSquareMatrix : Matrix rows cols a -> Bool
-isSquareMatrix _ = True  -- Простая версия, всегда True для примера
+isSquareMatrix _ = True  
 
 -- Лямбда-выражение
 scaleMatrix : Num a => a -> Matrix rows cols a -> Matrix rows cols a

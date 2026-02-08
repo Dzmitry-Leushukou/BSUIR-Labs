@@ -3,8 +3,6 @@ module Main
 import Data.Vect
 import Data.List
 
--- Программа 2: Основы функционального программирования в Idris
-
 -- 1. Переменные как неизменяемые привязки
 greeting : String
 greeting = "Idris"
