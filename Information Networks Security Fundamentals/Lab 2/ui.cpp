@@ -3,6 +3,7 @@
 #include <locale>
 #include <codecvt>
 #include <string>
+#include <filesystem>
 
 static std::wstring utf8_to_wstring(const std::string& str) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
@@ -83,6 +84,9 @@ void ui::on_caesarEncryptionButton_clicked() {
     }
     try {
         std::string filepath_utf8 = filepath->get_text();
+        if (!std::filesystem::exists(filepath_utf8)) {
+            throw std::invalid_argument("File doesn`t exists");
+        }
         std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
         cc->encrypt(getShift(keyEntry->get_text()), w_filepath);
     }
@@ -104,6 +108,9 @@ void ui::on_caesarDecryptionButton_clicked() {
     }
     try {
         std::string filepath_utf8 = filepath->get_text();
+        if (!std::filesystem::exists(filepath_utf8)) {
+            throw std::invalid_argument("File doesn`t exists");
+        }
         std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
         cc->decrypt(getShift(keyEntry->get_text()), w_filepath);
     }
@@ -125,6 +132,9 @@ void ui::on_vigenereEncryptionButton_clicked() {
     }
     try {
         std::string filepath_utf8 = filepath->get_text();
+        if (!std::filesystem::exists(filepath_utf8)) {
+            throw std::invalid_argument("File doesn`t exists");
+        }
         std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
         std::string key_utf8 = keyEntry->get_text();
         std::wstring w_key = utf8_to_wstring(key_utf8);
@@ -148,6 +158,9 @@ void ui::on_vigenereDecryptionButton_clicked() {
     }
     try {
         std::string filepath_utf8 = filepath->get_text();
+        if (!std::filesystem::exists(filepath_utf8)) {
+            throw std::invalid_argument("File doesn`t exists");
+        }
         std::wstring w_filepath = utf8_to_wstring(filepath_utf8);
         std::string key_utf8 = keyEntry->get_text();
         std::wstring w_key = utf8_to_wstring(key_utf8);
