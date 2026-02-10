@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ панель - Приложение каршеринга</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToMainPage()">&larr; Назад</button>
+            <h1>Админ панель</h1>
+        </div>
+        
+        <div class="admin-content">
+            <div class="admin-tables-grid">
+                <button class="admin-table-btn" onclick="showTable('action_logs')">Логи действий</button>
+                <button class="admin-table-btn" onclick="showTable('cars')">Автомобили</button>
+                <button class="admin-table-btn" onclick="showTable('maintenance_requests')">Запросы на обслуживание</button>
+                <button class="admin-table-btn" onclick="showTable('payment_logs')">Логи платежей</button>
+                <button class="admin-table-btn" onclick="showTable('driver_licenses')">Подтверждение документов</button>
+                <button class="admin-table-btn" onclick="showTable('rentals')">Аренды</button>
+                <button class="admin-table-btn" onclick="showTable('users')">Пользователи</button>
+                <button class="admin-table-btn" onclick="showTable('trip_completions')">Подтверждение завершения поездок</button>
+            </div>
+        </div>
+    
+    <script src="/static/admin.js"></script>
+</body>
+</html>

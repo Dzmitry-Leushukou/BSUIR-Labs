@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица Запросы на обслуживание - Админ панель</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
+            <h1>Таблица запросов на обслуживание</h1>
+        </div>
+        
+        <div class="admin-content">
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="filter-header">
+                                    <span>VIN автомобиля</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="vin">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Email пользователя</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="reported_by_email">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Создан</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="created_at">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Статус</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="status">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Описание</span>
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="description">
+                                </div>
+                            </th>
+                            <th>
+                                <div class="filter-header">
+                                    <span>Действия</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="maintenance-requests-table-body">
+                        <!-- Содержимое таблицы будет загружено через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+    <script src="/static/admin_common.js"></script>
+    <script src="/static/admin_maintenance_requests.js"></script>
+</body>
+</html>

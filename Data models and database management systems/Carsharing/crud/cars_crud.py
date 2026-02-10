@@ -1,0 +1,196 @@
+from schemas import CarCreate, CarUpdate, Car
+from database import get_db_connection
+from psycopg2.extras import RealDictCursor
+from fastapi import HTTPException
+import pytz
+from datetime import datetime
+
+# Cars CRUD
+def get_cars(offset: int = 0, limit: int = 100):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cars = cur.fetchall()
+    cur.close()
+    conn.close()
+    return cars
+
+def get_car(car_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars WHERE id = %s", (car_id,))
+    car = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not car:
+        raise HTTPException(status_code=404, detail=f"Автомобиль с ID {car_id} не найден")
+    return car
+
+def create_car(car: CarCreate):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if car.position:
+            # Проверяем, является ли позиция в формате POINT
+            if car.position.startswith('POINT'):
+                # Если это уже формат POINT, используем ST_GeomFromText без SRID
+                cur.execute(
+                    """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+                       VALUES (%s, %s, %s, 'available', ST_GeomFromText(%s), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.position, car.main_photo_id)
+                )
+            else:
+                # Если это строка координат, используем ST_GeomFromText с SRID 4326
+                cur.execute(
+                    """INSERT INTO cars (vin, plate_number, model, status, position, main_photo_id)
+                       VALUES (%s, %s, %s, 'available', ST_GeomFromText(%s, 4326), %s) RETURNING *""",
+                    (car.vin, car.plate_number, car.model, car.position, car.main_photo_id)
+                )
+        else:
+            cur.execute(
+                """INSERT INTO cars (vin, plate_number, model, status, main_photo_id)
+                   VALUES (%s, %s, %s, 'available', %s) RETURNING *""",
+                (car.vin, car.plate_number, car.model, car.main_photo_id)
+            )
+        new_car = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return new_car
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        # Проверяем тип ошибки и возвращаем соответствующее сообщение
+        if 'duplicate key value violates unique constraint "cars_vin_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким VIN уже существует")
+        elif 'duplicate key value violates unique constraint "cars_plate_number_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким номерным знаком уже существует")
+        else:
+            raise HTTPException(status_code=400, detail=f"Ошибка при создании автомобиля: {str(e)}")
+
+def update_car(car_id: int, car: CarUpdate):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        # Build dynamic update query
+        update_fields = []
+        values = []
+        
+        if car.model is not None:
+            update_fields.append("model = %s")
+            values.append(car.model)
+        # Пропускаем обновление статуса - он остается неизменным
+        if car.position is not None:
+            # Проверяем, является ли позиция в формате POINT
+            if car.position.startswith('POINT'):
+                # Если это уже формат POINT, используем ST_GeomFromText без SRID
+                update_fields.append("position = ST_GeomFromText(%s)")
+            else:
+                # Если это строка координат, используем ST_GeomFromText с SRID 4326
+                update_fields.append("position = ST_GeomFromText(%s, 4326)")
+            values.append(car.position)
+        if car.main_photo_id is not None:
+            update_fields.append("main_photo_id = %s")
+            values.append(car.main_photo_id)
+        
+        # Добавляем VIN и номерной знак в список обновляемых полей
+        if car.vin is not None:
+            update_fields.append("vin = %s")
+            values.append(car.vin)
+        if car.plate_number is not None:
+            update_fields.append("plate_number = %s")
+            values.append(car.plate_number)
+        
+        # Set updated_at to current time in UTC+3
+        utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
+        updated_at = datetime.now(utc_plus_3)
+        update_fields.append("updated_at = %s")
+        values.append(updated_at)
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="Нет полей для обновления")
+        
+        query = f"UPDATE cars SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
+        values.append(car_id)
+        
+        cur.execute(query, values)
+        updated_car = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        if not updated_car:
+            raise HTTPException(status_code=404, detail="Автомобиль не найден")
+        return updated_car
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        # Проверяем тип ошибки и возвращаем соответствующее сообщение
+        if 'duplicate key value violates unique constraint "cars_vin_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким VIN уже существует")
+        elif 'duplicate key value violates unique constraint "cars_plate_number_key"' in str(e):
+            raise HTTPException(status_code=400, detail="Автомобиль с таким номерным знаком уже существует")
+        else:
+            raise HTTPException(status_code=400, detail=f"Ошибка при обновлении автомобиля: {str(e)}")
+
+def delete_car(car_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
+    conn.commit()
+    deleted_count = cur.rowcount
+    cur.close()
+    conn.close()
+    if deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    return {"message": "Автомобиль успешно удален"}
+
+def get_cars_positions_with_user_rental_status(user_id: int):
+    """Возвращает машины для отображения на карте: если у пользователя есть активная аренда - только арендованная машина, иначе - только доступные машины"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Сначала проверяем, есть ли у пользователя активная аренда
+    cur.execute("""
+        SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
+               ST_AsText(c.position) as position_text,
+               ST_X(c.position::geometry) as longitude,
+               ST_Y(c.position::geometry) as latitude,
+               TRUE as is_rented_by_user
+        FROM cars c
+        JOIN rentals r ON c.id = r.car_id
+        WHERE r.user_id = %s AND r.status = 'active' AND c.position IS NOT NULL
+    """, (user_id,))
+    
+    rented_cars = cur.fetchall()
+    
+    if rented_cars:
+        # Если у пользователя есть активная аренда, возвращаем только арендованные им машины
+        cars = rented_cars
+    else:
+        # Если у пользователя нет активной аренды, возвращаем только доступные машины
+        cur.execute("""
+            SELECT c.id, c.vin, c.plate_number, c.model, c.status, c.main_photo_id,
+                   ST_AsText(c.position) as position_text,
+                   ST_X(c.position::geometry) as longitude,
+                   ST_Y(c.position::geometry) as latitude,
+                   FALSE as is_rented_by_user
+            FROM cars c
+            WHERE c.status = 'available' AND c.position IS NOT NULL
+        """)
+        cars = cur.fetchall()
+    
+    cur.close()
+    conn.close()
+    return cars
+    
+def get_cars_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT COUNT(*) as count FROM cars")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result['count'] if result else 0

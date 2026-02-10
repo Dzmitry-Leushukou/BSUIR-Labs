@@ -1,0 +1,115 @@
+from schemas import DriverLicenseCreate, DriverLicenseUpdate, DriverLicense
+from database import get_db_connection
+from psycopg2.extras import RealDictCursor
+from fastapi import HTTPException
+from typing import Optional
+
+# Driver Licenses CRUD
+def get_driver_licenses(offset: int = 0, limit: int = 100, driver_id: Optional[int] = None):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    if driver_id is not None:
+        cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s ORDER BY driver_id ASC LIMIT %s OFFSET %s", (driver_id, limit, offset))
+    else:
+        cur.execute("""
+            SELECT *
+            FROM driver_licenses
+            ORDER BY
+                CASE
+                    WHEN status = 'approved' OR status = 'rejected' THEN 1
+                    ELSE 0
+                END,
+                driver_id ASC
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
+    
+    licenses = cur.fetchall()
+    cur.close()
+    conn.close()
+    return licenses
+
+def get_driver_license(driver_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s", (driver_id,))
+    license = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not license:
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    return license
+
+def create_driver_license(license: DriverLicenseCreate, driver_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(
+        """INSERT INTO driver_licenses (license_number, issued_by, expiration_date, document_photo_id, document_photo_back_id, status, driver_id)
+           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+        (license.license_number, license.issued_by, license.expiration_date, license.document_photo_id, license.document_photo_back_id, license.status, driver_id)
+    )
+    new_license = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return new_license
+
+def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Build dynamic update query
+    update_fields = []
+    values = []
+    
+    if license.issued_by is not None:
+        update_fields.append("issued_by = %s")
+        values.append(license.issued_by)
+    if license.expiration_date is not None:
+        update_fields.append("expiration_date = %s")
+        values.append(license.expiration_date)
+    if license.document_photo_id is not None:
+        update_fields.append("document_photo_id = %s")
+        values.append(license.document_photo_id)
+    if license.document_photo_back_id is not None:
+        update_fields.append("document_photo_back_id = %s")
+        values.append(license.document_photo_back_id)
+    if license.status is not None:
+        update_fields.append("status = %s")
+        values.append(license.status)
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Нет полей для обновления")
+    
+    query = f"UPDATE driver_licenses SET {', '.join(update_fields)} WHERE driver_id = %s RETURNING *"
+    values.append(driver_id)
+    
+    cur.execute(query, values)
+    updated_license = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    if not updated_license:
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    return updated_license
+
+def delete_driver_license(driver_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM driver_licenses WHERE driver_id = %s", (driver_id,))
+    conn.commit()
+    deleted_count = cur.rowcount
+    cur.close()
+    conn.close()
+    if deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    return {"message": "Водительское удостоверение успешно удалено"}
+
+def get_driver_licenses_count():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM driver_licenses")
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result[0] if result else 0
