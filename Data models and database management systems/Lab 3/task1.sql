@@ -1,213 +1,278 @@
-DROP FUNCTION compare_schemas(dev TEXT, prod TEXT);
-CREATE OR REPLACE FUNCTION compare_schemas(dev TEXT, prod TEXT) 
-RETURNS TABLE(tbl TEXT, issue TEXT, details TEXT, ord INT) 
-LANGUAGE plpgsql AS $$
+-- 1. Создаем вспомогательные функции
+
+-- Функция для получения структуры таблицы в удобном формате
+CREATE OR REPLACE FUNCTION get_table_structure(schema_name TEXT, table_name TEXT)
+RETURNS TABLE (
+    column_name TEXT,
+    data_type TEXT,
+    is_nullable TEXT,
+    column_default TEXT,
+    character_maximum_length INTEGER,
+    numeric_precision INTEGER,
+    numeric_scale INTEGER
+) AS $$
 BEGIN
-    -- 1. Check cycles in BOTH schemas
-    WITH RECURSIVE fk_chain AS (
-        -- Check dev schema
-        SELECT conrelid::regclass AS child, confrelid::regclass AS parent,
-               connamespace::regnamespace AS schema_name,
-               ARRAY[conrelid::regclass] AS path,
-               FALSE AS cycle
-        FROM pg_constraint 
-        WHERE contype = 'f' 
-          AND connamespace IN (dev::regnamespace, prod::regnamespace)
-        
-        UNION ALL
-        
-        SELECT c.conrelid::regclass, c.confrelid::regclass, 
-               c.connamespace::regnamespace,
-               fc.path || c.conrelid::regclass,
-               c.conrelid::regclass = ANY(fc.path)
-        FROM pg_constraint c
-        JOIN fk_chain fc ON c.confrelid = fc.child 
-          AND c.connamespace = fc.schema_name
-        WHERE NOT fc.cycle
-    ),
-    cycles AS (
-        SELECT schema_name::TEXT AS schema_name,
-               STRING_AGG(DISTINCT child::TEXT, ', ') AS cycle_tables
-        FROM fk_chain 
-        WHERE cycle
-        GROUP BY schema_name
-    )
-    SELECT INTO tbl, issue, details, ord
-        '', 'CYCLIC_DEPENDENCY', 
-        CASE 
-            WHEN EXISTS(SELECT 1 FROM cycles WHERE schema_name = dev) 
-                 AND EXISTS(SELECT 1 FROM cycles WHERE schema_name = prod)
-            THEN 'Both schemas have circular FK dependencies'
-            WHEN EXISTS(SELECT 1 FROM cycles WHERE schema_name = dev)
-            THEN 'Dev schema has circular FK dependencies: ' || 
-                 (SELECT cycle_tables FROM cycles WHERE schema_name = dev)
-            ELSE 'Prod schema has circular FK dependencies: ' ||
-                 (SELECT cycle_tables FROM cycles WHERE schema_name = prod)
-        END, 0
-    FROM cycles
-    LIMIT 1;
-    
-    IF FOUND THEN RETURN NEXT; RETURN; END IF;
-
-    -- 2. Get ALL foreign key dependencies (from both schemas)
-    CREATE TEMP TABLE all_fk ON COMMIT DROP AS
-    SELECT 
-        c.oid AS child_id,
-        c.relname AS child_name,
-        p.oid AS parent_id,
-        p.relname AS parent_name,
-        ns.nspname AS schema_name
-    FROM pg_constraint con
-    JOIN pg_class c ON c.oid = con.conrelid
-    JOIN pg_class p ON p.oid = con.confrelid
-    JOIN pg_namespace ns ON ns.oid = c.relnamespace
-    WHERE con.contype = 'f'
-      AND ns.nspname IN (dev, prod)
-      AND con.confrelid IN (
-          SELECT oid FROM pg_class 
-          WHERE relnamespace IN (dev::regnamespace, prod::regnamespace)
-      );
-
-    -- 3. Topological sort for ALL tables in prod (considering dependencies from both schemas)
-    CREATE TEMP TABLE all_dependencies ON COMMIT DROP AS
-    WITH RECURSIVE topo_sort AS (
-        -- Start with tables that have no FK dependencies
-        SELECT 
-            c.oid,
-            c.relname AS table_name,
-            1 AS level,
-            ARRAY[c.relname] AS path
-        FROM pg_class c
-        JOIN pg_namespace ns ON ns.oid = c.relnamespace
-        WHERE ns.nspname = prod
-          AND c.relkind = 'r'
-          AND NOT EXISTS (
-              SELECT 1 FROM all_fk fk
-              WHERE fk.child_name = c.relname
-                AND fk.schema_name = prod
-          )
-        
-        UNION ALL
-        
-        -- Add dependent tables (considering dependencies from both schemas)
-        SELECT 
-            c.oid,
-            c.relname,
-            ts.level + 1,
-            ts.path || c.relname
-        FROM topo_sort ts
-        JOIN all_fk fk ON fk.parent_name = ts.table_name
-        JOIN pg_class c ON c.relname = fk.child_name
-        JOIN pg_namespace ns ON ns.oid = c.relnamespace
-        WHERE ns.nspname = prod
-          AND c.relname <> ALL(ts.path)
-    )
-    SELECT 
-        table_name,
-        ROW_NUMBER() OVER (ORDER BY MIN(level), table_name) AS sort_order
-    FROM topo_sort
-    GROUP BY table_name;
-
-    -- 4. Compare schemas
     RETURN QUERY
-    WITH dev_tbls AS (
-        SELECT c.relname, 
-               STRING_AGG(a.attname || ':' || 
-                         format_type(a.atttypid, a.atttypmod) || ':' ||
-                         CASE WHEN a.attnotnull THEN 'NOT NULL' ELSE 'NULL' END, 
-                         '|' ORDER BY a.attnum) AS sig
-        FROM pg_class c
-        JOIN pg_attribute a ON a.attrelid = c.oid
-        JOIN pg_namespace ns ON ns.oid = c.relnamespace
-        WHERE ns.nspname = dev
-          AND c.relkind = 'r'
-          AND a.attnum > 0 
-          AND NOT a.attisdropped
-        GROUP BY c.relname
-    ),
-    prod_tbls AS (
-        SELECT c.relname, 
-               STRING_AGG(a.attname || ':' || 
-                         format_type(a.atttypid, a.atttypmod) || ':' ||
-                         CASE WHEN a.attnotnull THEN 'NOT NULL' ELSE 'NULL' END, 
-                         '|' ORDER BY a.attnum) AS sig
-        FROM pg_class c
-        JOIN pg_attribute a ON a.attrelid = c.oid
-        JOIN pg_namespace ns ON ns.oid = c.relnamespace
-        WHERE ns.nspname = prod
-          AND c.relkind = 'r'
-          AND a.attnum > 0 
-          AND NOT a.attisdropped
-        GROUP BY c.relname
-    ),
-    -- For missing tables, estimate their possible position based on dev dependencies
-    missing_with_order AS (
-        SELECT 
-            d.relname,
-            -- Estimate order: if table has no dependencies in dev, put it early
-            -- If it depends on tables that exist in prod, put it after them
-            CASE 
-                WHEN EXISTS (
-                    SELECT 1 FROM all_fk fk 
-                    WHERE fk.child_name = d.relname 
-                      AND fk.schema_name = dev
-                      AND fk.parent_name IN (SELECT table_name FROM all_dependencies)
-                ) THEN (
-                    SELECT MAX(ad.sort_order) + 1
-                    FROM all_fk fk
-                    JOIN all_dependencies ad ON ad.table_name = fk.parent_name
-                    WHERE fk.child_name = d.relname 
-                      AND fk.schema_name = dev
-                )
-                ELSE (
-                    SELECT COALESCE(MAX(sort_order), 0) + 1 
-                    FROM all_dependencies
-                )
-            END AS estimated_order
-        FROM dev_tbls d
-        LEFT JOIN prod_tbls p ON d.relname = p.relname
-        WHERE p.relname IS NULL
-    )
     SELECT 
-        d.relname::TEXT,
+        c.column_name::TEXT,
         CASE 
-            WHEN p.relname IS NULL THEN 'MISSING_TABLE' 
-            ELSE 'DIFFERENT_STRUCTURE' 
+            WHEN c.data_type = 'USER-DEFINED' THEN c.udt_name::TEXT
+            ELSE c.data_type::TEXT
         END,
+        c.is_nullable::TEXT,
+        COALESCE(c.column_default::TEXT, ''),
+        c.character_maximum_length,
+        c.numeric_precision,
+        c.numeric_scale
+    FROM information_schema.columns c
+    WHERE c.table_schema = schema_name 
+        AND c.table_name = table_name
+    ORDER BY c.ordinal_position;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Основная процедура сравнения схем
+CREATE OR REPLACE PROCEDURE compare_schemas_tables(
+    dev_schema_name TEXT,
+    prod_schema_name TEXT,
+    INOUT result_table REFCURSOR = 'result_cursor'
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    table_record RECORD;
+    dev_column_count INTEGER;
+    prod_column_count INTEGER;
+    column_mismatch_count INTEGER;
+    dependency_graph TEXT[];
+    cyclic_dependency BOOLEAN := FALSE;
+    processed_tables TEXT[] := '{}';
+    
+BEGIN
+    -- Временная таблица для хранения результатов
+    CREATE TEMP TABLE IF NOT EXISTS comparison_results (
+        table_name TEXT,
+        status TEXT,
+        issue_description TEXT,
+        creation_order INTEGER DEFAULT 0
+    );
+    
+    TRUNCATE TABLE comparison_results;
+    
+    -- Находим таблицы, которые есть в Dev, но нет в Prod
+    FOR table_record IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = dev_schema_name 
+            AND table_type = 'BASE TABLE'
+        EXCEPT
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = prod_schema_name 
+            AND table_type = 'BASE TABLE'
+    LOOP
+        INSERT INTO comparison_results (table_name, status, issue_description)
+        VALUES (table_record.table_name, 'MISSING', 'Table exists only in Dev schema');
+    END LOOP;
+    
+    -- Находим таблицы, которые есть в обеих схемах, но с разной структурой
+    FOR table_record IN 
+        SELECT t1.table_name
+        FROM information_schema.tables t1
+        JOIN information_schema.tables t2 
+            ON t1.table_name = t2.table_name
+        WHERE t1.table_schema = dev_schema_name 
+            AND t2.table_schema = prod_schema_name
+            AND t1.table_type = 'BASE TABLE' 
+            AND t2.table_type = 'BASE TABLE'
+    LOOP
+        -- Проверяем количество столбцов
+        SELECT COUNT(*) INTO dev_column_count
+        FROM information_schema.columns
+        WHERE table_schema = dev_schema_name 
+            AND table_name = table_record.table_name;
+            
+        SELECT COUNT(*) INTO prod_column_count
+        FROM information_schema.columns
+        WHERE table_schema = prod_schema_name 
+            AND table_name = table_record.table_name;
+        
+        -- Если разное количество столбцов
+        IF dev_column_count != prod_column_count THEN
+            INSERT INTO comparison_results (table_name, status, issue_description)
+            VALUES (table_record.table_name, 'STRUCTURE_DIFF', 
+                    'Different column count: Dev=' || dev_column_count || ', Prod=' || prod_column_count);
+        ELSE
+            -- Проверяем различия в столбцах
+            SELECT COUNT(*) INTO column_mismatch_count
+            FROM (
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM get_table_structure(dev_schema_name, table_record.table_name)
+                EXCEPT
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM get_table_structure(prod_schema_name, table_record.table_name)
+            ) AS diff;
+            
+            IF column_mismatch_count > 0 THEN
+                INSERT INTO comparison_results (table_name, status, issue_description)
+                VALUES (table_record.table_name, 'STRUCTURE_DIFF', 
+                        'Column mismatch count: ' || column_mismatch_count);
+            END IF;
+        END IF;
+    END LOOP;
+    
+    -- Определяем порядок создания таблиц на основе foreign keys
+    WITH RECURSIVE table_deps AS (
+        -- Таблицы без зависимостей (корни)
+        SELECT 
+            tc.table_name,
+            ARRAY[tc.table_name] AS path,
+            false AS cycle
+        FROM information_schema.tables tc
+        WHERE tc.table_schema = dev_schema_name
+            AND tc.table_type = 'BASE TABLE'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM information_schema.table_constraints fk
+                JOIN information_schema.key_column_usage kcu 
+                    ON fk.constraint_name = kcu.constraint_name
+                WHERE fk.table_schema = dev_schema_name
+                    AND fk.constraint_type = 'FOREIGN KEY'
+                    AND fk.table_name = tc.table_name
+            )
+        
+        UNION ALL
+        
+        -- Рекурсивно добавляем таблицы с зависимостями
+        SELECT 
+            tc.table_name,
+            td.path || tc.table_name,
+            tc.table_name = ANY(td.path)
+        FROM information_schema.tables tc
+        JOIN information_schema.table_constraints fk 
+            ON fk.table_schema = dev_schema_name
+            AND fk.table_name = tc.table_name
+            AND fk.constraint_type = 'FOREIGN KEY'
+        JOIN information_schema.key_column_usage kcu 
+            ON fk.constraint_name = kcu.constraint_name
+        JOIN information_schema.table_constraints pk 
+            ON kcu.referenced_table_schema = dev_schema_name
+            AND pk.table_schema = dev_schema_name
+            AND pk.table_name = kcu.referenced_table_name
+            AND pk.constraint_name = fk.constraint_name
+        JOIN table_deps td 
+            ON pk.table_name = td.table_name
+        WHERE tc.table_schema = dev_schema_name
+            AND tc.table_type = 'BASE TABLE'
+    )
+    UPDATE comparison_results cr
+    SET creation_order = td.row_num
+    FROM (
+        SELECT 
+            table_name,
+            ROW_NUMBER() OVER (ORDER BY array_length(path, 1), table_name) as row_num
+        FROM table_deps
+        WHERE NOT cycle
+        GROUP BY table_name, path
+    ) td
+    WHERE cr.table_name = td.table_name;
+    
+    -- Проверяем наличие циклических зависимостей
+    SELECT EXISTS(
+        SELECT 1 
+        FROM (
+            SELECT DISTINCT table_name
+            FROM table_deps
+            WHERE cycle
+        ) cyclic_tables
+        WHERE table_name IN (SELECT table_name FROM comparison_results)
+    ) INTO cyclic_dependency;
+    
+    -- Открываем курсор с результатами
+    OPEN result_table FOR
+    SELECT 
+        cr.table_name,
+        cr.status,
+        cr.issue_description,
         CASE 
-            WHEN p.relname IS NULL THEN 'Table exists in dev but not in prod'
-            ELSE 'Column structure differs between schemas' 
-        END,
-        COALESCE(
-            ad.sort_order, 
-            mwo.estimated_order,
-            999999
-        )::INT
-    FROM dev_tbls d
-    LEFT JOIN prod_tbls p ON d.relname = p.relname
-    LEFT JOIN all_dependencies ad ON d.relname = ad.table_name
-    LEFT JOIN missing_with_order mwo ON d.relname = mwo.relname
-    WHERE p.relname IS NULL OR d.sig != p.sig
+            WHEN cr.creation_order = 0 THEN 'N/A - check dependencies'
+            ELSE cr.creation_order::TEXT
+        END as creation_order,
+        CASE 
+            WHEN cyclic_dependency AND cr.table_name IN (
+                SELECT DISTINCT table_name FROM table_deps WHERE cycle
+            ) THEN 'WARNING: Cyclic dependency detected'
+            ELSE ''
+        END as dependency_warning
+    FROM comparison_results cr
     ORDER BY 
-        COALESCE(ad.sort_order, mwo.estimated_order, 999999),
-        d.relname;
+        CASE WHEN cr.creation_order = 0 THEN 999999 ELSE cr.creation_order END,
+        cr.table_name;
+    
+    -- Дополнительное сообщение о циклических зависимостях
+    IF cyclic_dependency THEN
+        RAISE NOTICE 'ВНИМАНИЕ: Обнаружены циклические зависимости между таблицами. Требуется ручная проверка порядка создания таблиц.';
+    END IF;
+    
+    DROP TABLE comparison_results;
 END;
 $$;
 
 
+CREATE OR REPLACE FUNCTION compare_schemas_tables_func(
+    dev_schema_name TEXT,
+    prod_schema_name TEXT
+)
+RETURNS TABLE (
+    table_name TEXT,
+    status TEXT,
+    issue_description TEXT,
+    creation_order TEXT,
+    dependency_warning TEXT
+) AS $$
+DECLARE
+    result_cursor REFCURSOR;
+BEGIN
+    CALL compare_schemas_tables(dev_schema_name, prod_schema_name, result_cursor);
+    RETURN QUERY FETCH ALL FROM result_cursor;
+END;
+$$ LANGUAGE plpgsql;
 
-DROP SCHEMA IF EXISTS dev CASCADE;
-DROP SCHEMA IF EXISTS prod CASCADE;
 
-CREATE SCHEMA dev;
-CREATE SCHEMA prod;
 
--- В dev обе таблицы
-CREATE TABLE dev.users (id SERIAL PRIMARY KEY, name TEXT, email TEXT);
-CREATE TABLE dev.orders (id SERIAL PRIMARY KEY, user_id INT REFERENCES dev.users(id), amount DECIMAL);
 
--- В prod только users, причем без email
-CREATE TABLE prod.users (id SERIAL PRIMARY KEY, name TEXT);
 
--- Run comparison
-SELECT * FROM compare_schemas('dev', 'prod');
+
+
+
+
+
+
+
+CREATE SCHEMA IF NOT EXISTS dev_schema;
+CREATE SCHEMA IF NOT EXISTS prod_schema;
+
+CREATE TABLE dev_schema.departments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE dev_schema.employees (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    department_id INTEGER REFERENCES dev_schema.departments(id),
+    salary DECIMAL(10,2)
+);
+
+CREATE TABLE prod_schema.departments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL 
+);
+
+BEGIN;
+CALL compare_schemas_tables('dev_schema', 'prod_schema');
+FETCH ALL FROM result_cursor;
+COMMIT;
+
+
+SELECT * FROM compare_schemas_tables_func('dev_schema', 'prod_schema');
