@@ -9,5 +9,6 @@
   - [Lab 1](https://github.com/Dzmitry-Leushukou/353504_IGI_35350074/tree/STRWEB_LR1) 
   - [Lab 2](https://github.com/Dzmitry-Leushukou/353504_IGI_35350074/tree/STRWEB_LR2)
   - [Lab 3](https://github.com/Dzmitry-Leushukou/353504_IGI_35350074/tree/STRWEB_LR3)
-  - [Lab 3](https://github.com/Dzmitry-Leushukou/353504_IGI_35350074/tree/STRWEB_LR4)
+  - [Lab 4](https://github.com/Dzmitry-Leushukou/353504_IGI_35350074/tree/STRWEB_LR4)
+
 
