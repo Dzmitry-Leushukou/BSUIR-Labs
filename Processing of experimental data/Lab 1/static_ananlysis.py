@@ -7,14 +7,11 @@ from tabulate import tabulate
 def load_data() -> list:
     file_pattern = 'world_population_countries_*.csv'
     files = glob.glob(file_pattern)
-
     if not files:
         print(f"Files with pattern '{file_pattern}' doesn't exist.")
         exit()
-
     filename = files[0]
     print(f"Choosed file: {filename}")
-
     data = []
     with open(filename, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
@@ -27,22 +24,36 @@ def load_data() -> list:
             except ValueError:
                 print(f"Warning: invalid population value '{row['population']}', skipping.")
                 continue
-
     if not data:
         print("No valid data loaded.")
         exit()
-
     print(f"[Loading data] Data successfully loaded: {len(data)}")
     return data
+
+def remove_outliers_mad(data: list):
+    median_val = find_median(data)
+    abs_dev = [abs(x - median_val) for x in data]
+    sorted_abs = sorted(abs_dev)
+    n = len(sorted_abs)
+    mad = sorted_abs[n // 2]
+    threshold = 3 * mad
+    lower_bound = median_val - threshold
+    upper_bound = median_val + threshold
+    filtered = [x for x in data if lower_bound <= x <= upper_bound]
+    removed = len(data) - len(filtered)
+    if removed > 0:
+        print(f"[Outlier removal] Removed {removed} outliers using MAD method (3*MAD).")
+        print(f"               Bounds: [{lower_bound:,.0f}, {upper_bound:,.0f}]")
+    else:
+        print("[Outlier removal] No outliers detected.")
+    return filtered, lower_bound, upper_bound
 
 def find_mode(data: list):
     counter = Counter(data)
     max_freq = max(counter.values())
-
     if max_freq == 1:
         print("[Finding mode] No mode found, all values have the same frequency.")
         return None
-
     modes = [val for val, freq in counter.items() if freq == max_freq]
     if len(modes) == 1:
         print(f"[Finding mode] Mode found: {modes[0]}")
@@ -67,7 +78,7 @@ def find_average(data: list) -> float:
     return avg
 
 def find_variance(data: list) -> float:
-    avg = find_average(data)  
+    avg = find_average(data)
     variance = sum((x - avg) ** 2 for x in data) / len(data)
     print(f"[Finding variance] Variance found: {variance}")
     return variance
@@ -98,23 +109,42 @@ def assess_homogeneity(cv: float) -> str:
     else:
         return "Highly heterogeneous (CV > 100%)"
 
-
-
-
+def create_intervals(data):
+    n = len(data)
+    s = int(1 + math.log2(n))
+    if s < 2:
+        s = 2
+    data_min = min(data)
+    data_max = max(data)
+    width = (data_max - data_min) / s
+    intervals = []
+    for i in range(s):
+        left = data_min + i * width
+        right = data_min + (i + 1) * width
+        if i == s - 1:
+            freq = sum(1 for x in data if left <= x <= right)
+            intervals.append([f"[{left:,.0f}, {right:,.0f}]", freq])
+        else:
+            freq = sum(1 for x in data if left <= x < right)
+            intervals.append([f"[{left:,.0f}, {right:,.0f})", freq])
+    return intervals, s, width
 
 if __name__ == '__main__':
-    data = load_data()
-    mode = find_mode(data)
-    median = find_median(data)
-    average = find_average(data)
-    variance = find_variance(data)
-    std_dev = find_std_deviation(data)
-    cv = find_coefficient_of_variation(data)
+    raw_data = load_data()
+    clean_data, low, high = remove_outliers_mad(raw_data)
+    if not clean_data:
+        print("After outlier removal no data left. Exiting.")
+        exit()
 
+    mode = find_mode(raw_data)
+    median = find_median(raw_data)
+    average = find_average(raw_data)
+    variance = find_variance(raw_data)
+    std_dev = find_std_deviation(raw_data)
+    cv = find_coefficient_of_variation(raw_data)
     homogeneity = assess_homogeneity(cv)
 
     table = []
-    
     if mode is None:
         table.append(["Mode", "not defined (all values unique)"])
     elif isinstance(mode, list):
@@ -122,12 +152,17 @@ if __name__ == '__main__':
         table.append(["Mode (multiple)", mode_str])
     else:
         table.append(["Mode", f"{mode:,.0f}"])
-    
     table.append(["Median", f"{median:,.20f}"])
     table.append(["Average", f"{average:,.20f}"])
     table.append(["Variance", f"{variance:,.20f}"])
     table.append(["Standard deviation", f"{std_dev:,.20f}"])
     table.append(["Coefficient of variation", f"{cv:.20f}"])
     table.append(["Homogeneity assessment", homogeneity])
+    table.append(["Sample size (after removal)", f"{len(clean_data)}"])
+    table.append(["MAD interval", f"[{low:,.0f}; {high:,.0f}]"])
 
     print("\n" + tabulate(table, headers=["Statistic", "Value"], tablefmt="grid"))
+
+    intervals, num_int, w = create_intervals(clean_data)
+    print(f"\nInterval distribution for cleaned data (Sturges' rule, {num_int} intervals, width = {w:.2f}):")
+    print(tabulate(intervals, headers=["Interval", "Frequency"], tablefmt="grid"))
