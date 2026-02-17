@@ -2,4 +2,5 @@ requests
 pandas
 datetime
 tabulate
-math
+matplotlib
+numpy

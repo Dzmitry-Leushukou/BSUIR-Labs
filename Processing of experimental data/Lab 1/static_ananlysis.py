@@ -3,6 +3,8 @@ import csv
 import math
 from collections import Counter
 from tabulate import tabulate
+import matplotlib.pyplot as plt
+import numpy as np
 
 def load_data() -> list:
     file_pattern = 'world_population_countries_*.csv'
@@ -129,6 +131,36 @@ def create_intervals(data):
             intervals.append([f"[{left:,.0f}, {right:,.0f})", freq])
     return intervals, s, width
 
+def compute_group_statistics(data, n_bins):
+    data_min = min(data)
+    data_max = max(data)
+    width = (data_max - data_min) / n_bins
+    bins = [data_min + i * width for i in range(n_bins + 1)]
+    groups = [[] for _ in range(n_bins)]
+    for x in data:
+        if x == data_max:
+            idx = n_bins - 1
+        else:
+            idx = int((x - data_min) / width)
+            if idx >= n_bins:
+                idx = n_bins - 1
+        groups[idx].append(x)
+    group_sizes = []
+    group_means = []
+    group_vars = []
+    for g in groups:
+        ni = len(g)
+        group_sizes.append(ni)
+        if ni > 0:
+            mean_i = sum(g) / ni
+            var_i = sum((x - mean_i) ** 2 for x in g) / ni
+            group_means.append(mean_i)
+            group_vars.append(var_i)
+        else:
+            group_means.append(0.0)
+            group_vars.append(0.0)
+    return group_sizes, group_means, group_vars, width
+
 if __name__ == '__main__':
     raw_data = load_data()
     clean_data, low, high = remove_outliers_mad(raw_data)
@@ -166,3 +198,91 @@ if __name__ == '__main__':
     intervals, num_int, w = create_intervals(clean_data)
     print(f"\nInterval distribution for cleaned data (Sturges' rule, {num_int} intervals, width = {w:.2f}):")
     print(tabulate(intervals, headers=["Interval", "Frequency"], tablefmt="grid"))
+
+    plt.figure(figsize=(10, 5))
+    plt.hist(clean_data, bins=num_int, edgecolor='black', alpha=0.7, color='skyblue')
+    plt.title('Histogram of Population (After Outlier Removal)')
+    plt.xlabel('Population')
+    plt.ylabel('Frequency')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig('histogram.png')
+
+    counts, bin_edges = np.histogram(clean_data, bins=num_int)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    plt.figure(figsize=(10, 5))
+    plt.plot(bin_centers, counts, marker='o', linestyle='-', color='red', linewidth=2)
+    plt.title('Frequency Polygon of Population')
+    plt.xlabel('Population')
+    plt.ylabel('Frequency')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig('frequency_polygon.png')
+
+    print("\n" + "="*60)
+    print("GROUP VARIANCE ANALYSIS FOR DIFFERENT NUMBER OF INTERVALS")
+    print("="*60)
+
+    n_total = len(clean_data)
+    overall_mean = sum(clean_data) / n_total
+    total_var = sum((x - overall_mean) ** 2 for x in clean_data) / n_total
+    print(f"\nOverall statistics on cleaned data:")
+    print(f"  Sample size: {n_total}")
+    print(f"  Overall mean: {overall_mean:,.20f}")
+    print(f"  Total variance (population): {total_var:,.20f}")
+
+    s0 = num_int
+    splits = [max(2, s0 - 1), s0, s0 + 1]
+    results = []
+
+    for nb in splits:
+        print(f"\n{'-'*40}")
+        print(f"Split into {nb} intervals:")
+        sizes, means, vars_, width = compute_group_statistics(clean_data, nb)
+        within_var = 0.0
+        between_var = 0.0
+        for ni, mi, vari in zip(sizes, means, vars_):
+            if ni > 0:
+                within_var += ni * vari
+                between_var += ni * (mi - overall_mean) ** 2
+        within_var /= n_total
+        between_var /= n_total
+        total_check = within_var + between_var
+        eta2 = between_var / total_var if total_var != 0 else float('nan')
+
+        results.append({
+            'n_bins': nb,
+            'width': width,
+            'within_var': within_var,
+            'between_var': between_var,
+            'total_check': total_check,
+            'eta2': eta2
+        })
+
+        print(f"  Interval width: {width:,.2f}")
+        print(f"  Within‑group variance:  {within_var:,.20f}")
+        print(f"  Between‑group variance: {between_var:,.20f}")
+        print(f"  Sum (within + between):  {total_check:,.20f}")
+        print(f"  Total variance (original): {total_var:,.20f}")
+        print(f"  Difference: {abs(total_check - total_var):.2e}")
+        print(f"  Proportion of between‑group variance (η²): {eta2:.6f}")
+
+    print("\n" + "="*60)
+    print("COMPARISON OF SPLITS")
+    print("="*60)
+    comp_table = []
+    for r in results:
+        comp_table.append([
+            r['n_bins'],
+            f"{r['width']:,.2f}",
+            f"{r['within_var']:,.4e}",
+            f"{r['between_var']:,.4e}",
+            f"{r['eta2']:.6f}"
+        ])
+    print(tabulate(comp_table,
+                   headers=["Intervals", "Width", "Within var", "Between var", "η²"],
+                   tablefmt="grid"))
+
+    best_split = max(results, key=lambda x: x['eta2'])
+    print(f"\nThe split with the highest proportion of between‑group variance is {best_split['n_bins']} intervals (η² = {best_split['eta2']:.6f}).")
+    print("This grouping explains the largest fraction of total variability, hence it is the best among the three.")
