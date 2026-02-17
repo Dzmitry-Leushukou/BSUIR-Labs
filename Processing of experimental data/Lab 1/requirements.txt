@@ -1,3 +1,5 @@
 requests
 pandas
 datetime
+tabulate
+math

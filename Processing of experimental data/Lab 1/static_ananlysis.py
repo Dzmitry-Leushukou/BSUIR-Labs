@@ -1,6 +1,8 @@
 import glob
 import csv
+import math
 from collections import Counter
+from tabulate import tabulate
 
 def load_data() -> list:
     file_pattern = 'world_population_countries_*.csv'
@@ -86,6 +88,20 @@ def find_coefficient_of_variation(data: list) -> float:
     print(f"[Finding CV] Coefficient of variation found: {cv}")
     return cv
 
+def assess_homogeneity(cv: float) -> str:
+    if math.isnan(cv):
+        return "Undefined (average is zero)"
+    if cv < 0.33:
+        return "Homogeneous (CV < 33%)"
+    elif cv <= 1.0:
+        return "Moderately heterogeneous (33% ≤ CV ≤ 100%)"
+    else:
+        return "Highly heterogeneous (CV > 100%)"
+
+
+
+
+
 if __name__ == '__main__':
     data = load_data()
     mode = find_mode(data)
@@ -95,11 +111,23 @@ if __name__ == '__main__':
     std_dev = find_std_deviation(data)
     cv = find_coefficient_of_variation(data)
 
-    # Final output
-    print("\n=== Results ===")
-    print(f"Mode: {mode}")
-    print(f"Median: {median}")
-    print(f"Average: {average}")
-    print(f"Variance: {variance}")
-    print(f"Standard deviation: {std_dev}")
-    print(f"Coefficient of variation: {cv}")
+    homogeneity = assess_homogeneity(cv)
+
+    table = []
+    
+    if mode is None:
+        table.append(["Mode", "not defined (all values unique)"])
+    elif isinstance(mode, list):
+        mode_str = ', '.join(str(m) for m in mode)
+        table.append(["Mode (multiple)", mode_str])
+    else:
+        table.append(["Mode", f"{mode:,.0f}"])
+    
+    table.append(["Median", f"{median:,.20f}"])
+    table.append(["Average", f"{average:,.20f}"])
+    table.append(["Variance", f"{variance:,.20f}"])
+    table.append(["Standard deviation", f"{std_dev:,.20f}"])
+    table.append(["Coefficient of variation", f"{cv:.20f}"])
+    table.append(["Homogeneity assessment", homogeneity])
+
+    print("\n" + tabulate(table, headers=["Statistic", "Value"], tablefmt="grid"))
