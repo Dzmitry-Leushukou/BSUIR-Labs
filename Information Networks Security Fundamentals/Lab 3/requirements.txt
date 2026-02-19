@@ -1,0 +1,5 @@
+cryptography
+uvicorn
+fastapi
+dotenv
+requests
