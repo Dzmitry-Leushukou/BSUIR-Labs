@@ -4,27 +4,20 @@ const paymentLogsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Payment logs с пагинацией
 async function loadPaymentLogs(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentPaymentLogPage = validPageNum;
     const offset = validPageNum * paymentLogsPerPage;
-    
+
     try {
         // Загружаем логи платежей с пагинацией
-        const response = await fetch(`/payment_logs/?offset=${offset}&limit=${paymentLogsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/payment_logs/?offset=${offset}&limit=${paymentLogsPerPage}`);
         
         if (response.ok) {
             const paymentLogs = await response.json();
@@ -155,18 +148,11 @@ function setupPaymentLogPagination(currentPage) {
 // Функция для получения общего количества логов платежей
 async function getPaymentLogsCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/payment_logs/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/payment_logs/count');
         
         if (response.ok) {
             const countData = await response.json();

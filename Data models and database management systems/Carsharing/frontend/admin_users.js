@@ -4,27 +4,20 @@ const usersPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Users с пагинацией
 async function loadUsers(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentUsersPage = validPageNum;
     const offset = validPageNum * usersPerPage;
-    
+
     try {
         // Загружаем пользователей с пагинацией
-        const response = await fetch(`/users/?offset=${offset}&limit=${usersPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/users/?offset=${offset}&limit=${usersPerPage}`);
         
         if (response.ok) {
             const users = await response.json();
@@ -124,18 +117,11 @@ function setupUsersPagination(currentPage) {
 // Функция для получения общего количества пользователей
 async function getUsersCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/users/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/users/count');
         
         if (response.ok) {
             const countData = await response.json();
@@ -181,32 +167,30 @@ function displayUsers(users) {
 
 // Функция для изменения роли пользователя
 async function changeRole(userId) {
-    const userIdFromStorage = localStorage.getItem('user_id');
-    if (!userIdFromStorage) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     const newRoleId = prompt('Введите номер новой роли (1 - Администратор, 2 - Пользователь):');
     if (!newRoleId) return;
-    
+
     // Проверяем, что введенный ID - это число
     const roleId = parseInt(newRoleId);
     if (isNaN(roleId) || (roleId !== 1 && roleId !== 2)) {
         alert('Неверный ID роли. Допустимые значения: 1 (Администратор) или 2 (Пользователь)');
         return;
     }
-    
+
     const roleName = roleId === 1 ? 'Администратор' : 'Пользователь';
     if (!confirm(`Вы уверены, что хотите изменить роль пользователя на "${roleName}"?`)) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`/users/${userId}`, {
+        const response = await authenticatedFetch(`/users/${userId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userIdFromStorage,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ role_id: parseInt(newRoleId) })
@@ -240,22 +224,20 @@ async function changeRole(userId) {
 
 // Функция для изменения статуса пользователя (блокировка/разблокировка)
 async function toggleUserStatus(userId, newStatus) {
-    const userIdFromStorage = localStorage.getItem('user_id');
-    if (!userIdFromStorage) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     const statusText = newStatus === 'active' ? 'активен' : 'заблокирован';
     if (!confirm(`Вы уверены, что хотите изменить статус пользователя на "${statusText}"?`)) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`/users/${userId}`, {
+        const response = await authenticatedFetch(`/users/${userId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userIdFromStorage,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: newStatus })

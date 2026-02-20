@@ -4,26 +4,19 @@ const carsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Cars с пагинацией
 async function loadCars(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     currentCarPage = pageNum;
     const offset = pageNum * carsPerPage;
-    
+
     try {
         // Загружаем автомобили с пагинацией
-        const response = await fetch(`/cars/?offset=${offset}&limit=${carsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/cars/?offset=${offset}&limit=${carsPerPage}`);
         
         if (response.ok) {
             const cars = await response.json();
@@ -154,18 +147,11 @@ function setupCarPagination(currentPage) {
 // Функция для получения общего количества автомобилей
 async function getCarCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/cars/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/cars/count');
         
         if (response.ok) {
             const countData = await response.json();
@@ -277,20 +263,12 @@ function openCreateCarModal() {
 
 // Функция для открытия модального окна редактирования автомобиля
 async function openEditCarModal(carId) {
-    try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
-            alert('Пользователь не авторизован');
-            return;
-        }
-        
-        const response = await fetch(`/cars/${carId}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+    if (!isAuthenticated()) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+
+    const response = await authenticatedFetch(`/cars/${carId}`);
         
         if (response.ok) {
             const car = await response.json();
@@ -345,25 +323,24 @@ function closeCarModal() {
 // Функция для отправки формы создания/редактирования автомобиля
 async function submitCarForm(event) {
     event.preventDefault();
-    
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     const carId = document.getElementById('car-id').value;
     const vin = document.getElementById('vin').value;
     const plateNumber = document.getElementById('plate_number').value;
     const model = document.getElementById('model').value;
     const position = document.getElementById('position').value;
-    
+
     const carData = {
         vin,
         plate_number: plateNumber,
         model
     };
-    
+
     // Добавляем статус только при создании автомобиля
     if (!carId) {
         carData.status = 'available'; // Всегда 'available' при создании
@@ -372,7 +349,7 @@ async function submitCarForm(event) {
         carData.vin = vin;
         carData.plate_number = plateNumber;
     }
-    
+
     // Добавляем позицию если она указана
     if (position.trim()) {
         // Преобразуем строку позиции в формат POINT для PostgreSQL
@@ -390,25 +367,23 @@ async function submitCarForm(event) {
         // Если позиция не указана, но мы в режиме обновления, все равно отправляем обновление
         // для других полей
     }
-    
+
     try {
         let response;
         if (carId) {
             // Режим обновления
-            response = await fetch(`/cars/${carId}`, {
+            response = await authenticatedFetch(`/cars/${carId}`, {
                 method: 'PUT',
                 headers: {
-                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(carData)
             });
         } else {
             // Режим создания
-            response = await fetch('/cars/', {
+            response = await authenticatedFetch('/cars/', {
                 method: 'POST',
                 headers: {
-                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(carData)

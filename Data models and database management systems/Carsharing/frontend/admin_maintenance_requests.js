@@ -4,27 +4,20 @@ const maintenanceRequestsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Maintenance requests с пагинацией
 async function loadMaintenanceRequests(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentMaintenanceRequestPage = validPageNum;
     const offset = validPageNum * maintenanceRequestsPerPage;
-    
+
     try {
         // Загружаем запросы на обслуживание с пагинацией
-        const response = await fetch(`/maintenance_requests/?offset=${offset}&limit=${maintenanceRequestsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/maintenance_requests/?offset=${offset}&limit=${maintenanceRequestsPerPage}`);
         
         if (response.ok) {
             const maintenanceRequests = await response.json();
@@ -124,18 +117,11 @@ function setupMaintenanceRequestPagination(currentPage) {
 // Функция для получения общего количества запросов на обслуживание
 async function getMaintenanceRequestsCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/maintenance_requests/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/maintenance_requests/count');
         
         if (response.ok) {
             const countData = await response.json();
@@ -189,21 +175,19 @@ function displayMaintenanceRequests(maintenanceRequests) {
 
 // Функция для обновления статуса заявки на "Решена"
 async function resolveMaintenanceRequest(requestId, buttonElement) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     if (!confirm('Вы уверены, что хотите отметить эту заявку как решённую?')) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`/maintenance_requests/${requestId}`, {
+        const response = await authenticatedFetch(`/maintenance_requests/${requestId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

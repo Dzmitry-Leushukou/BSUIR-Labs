@@ -4,27 +4,20 @@ const actionLogsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Action logs с пагинацией
 async function loadActionLogs(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentActionLogPage = validPageNum;
     const offset = validPageNum * actionLogsPerPage;
-    
+
     try {
         // Загружаем логи действий с пагинацией
-        const response = await fetch(`/action_logs/?offset=${offset}&limit=${actionLogsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/action_logs/?offset=${offset}&limit=${actionLogsPerPage}`);
         
         if (response.ok) {
             const actionLogs = await response.json();
@@ -155,18 +148,11 @@ function setupActionLogPagination(currentPage) {
 // Функция для получения общего количества логов действий
 async function getActionLogsCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/action_logs/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/action_logs/count');
         
         if (response.ok) {
             const countData = await response.json();

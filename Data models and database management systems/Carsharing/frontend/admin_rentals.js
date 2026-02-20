@@ -4,27 +4,20 @@ const rentalsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Rentals с пагинацией
 async function loadRentals(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentRentalPage = validPageNum;
     const offset = validPageNum * rentalsPerPage;
-    
+
     try {
         // Загружаем аренды с пагинацией и информацией о пользователе и автомобиле
-        const response = await fetch(`/rentals/with-user-and-car-info?offset=${offset}&limit=${rentalsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/rentals/with-user-and-car-info?offset=${offset}&limit=${rentalsPerPage}`);
         
         if (response.ok) {
             const rentals = await response.json();
@@ -124,18 +117,11 @@ function setupRentalPagination(currentPage) {
 // Функция для получения общего количества аренд
 async function getRentalsCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/rentals/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/rentals/count');
         
         if (response.ok) {
             const countData = await response.json();

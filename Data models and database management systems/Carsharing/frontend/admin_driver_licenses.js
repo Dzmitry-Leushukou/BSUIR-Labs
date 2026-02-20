@@ -4,27 +4,20 @@ const driverLicensesPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Driver licenses с пагинацией
 async function loadDriverLicenses(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentDriverLicensePage = validPageNum;
     const offset = validPageNum * driverLicensesPerPage;
-    
+
     try {
         // Загружаем водительские лицензии с пагинацией
-        const response = await fetch(`/driver_licenses/?offset=${offset}&limit=${driverLicensesPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/driver_licenses/?offset=${offset}&limit=${driverLicensesPerPage}`);
         
         if (response.ok) {
             const driverLicenses = await response.json();
@@ -160,18 +153,11 @@ function setupDriverLicensePagination(currentPage) {
 // Функция для получения общего количества водительских лицензий
 async function getDriverLicensesCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/driver_licenses/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/driver_licenses/count');
         
         if (response.ok) {
             const countData = await response.json();
@@ -226,22 +212,20 @@ async function displayDriverLicenses(driverLicenses) {
 
 // Функция для обновления статуса водительской лицензии
 async function updateLicenseStatus(licenseId, status) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     const statusText = status === 'pending' ? 'Ожидает проверки' : status === 'approved' ? 'Подтверждено' : status === 'rejected' ? 'Отклонено' : status;
     if (!confirm(`Вы уверены, что хотите изменить статус лицензии на "${statusText}"?`)) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`/driver_licenses/${licenseId}`, {
+        const response = await authenticatedFetch(`/driver_licenses/${licenseId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: status })

@@ -2,11 +2,9 @@ fastapi
 uvicorn
 psycopg2-binary
 python-multipart
-sqlalchemy
-asyncpg
 pydantic[email]
-pydantic-settings
-alembic
 python-dotenv
 bcrypt
 pytz
+PyJWT
+redis

@@ -4,26 +4,19 @@ const tripCompletionsPerPage = 10;
 
 // Функция для загрузки и отображения данных таблицы Trip completions с пагинацией
 async function loadTripCompletions(page = 0) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentTripCompletionPage = validPageNum;
     const offset = validPageNum * tripCompletionsPerPage;
-    
+
     try {
-        const response = await fetch(`/trip-completions/?offset=${offset}&limit=${tripCompletionsPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/trip-completions/?offset=${offset}&limit=${tripCompletionsPerPage}`);
         
         if (response.ok) {
             const tripCompletions = await response.json();
@@ -156,18 +149,11 @@ function setupTripCompletionPagination(currentPage) {
 // Функция для получения общего количества завершений поездок
 async function getTripCompletionsCount() {
     try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        if (!isAuthenticated()) {
             throw new Error('Пользователь не авторизован');
         }
-        
-        const response = await fetch('/trip-completions/count', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        const response = await authenticatedFetch('/trip-completions/count');
         
         if (response.ok) {
             const countData = await response.json();
@@ -187,44 +173,29 @@ async function getTripCompletionsCount() {
 async function displayTripCompletionsData(tripCompletions) {
     const tableBody = document.getElementById('trip-completions-table-body');
     tableBody.innerHTML = '';
-    
+
     for (const completion of tripCompletions) {
         // First get the associated rental to get user_id, car_id, etc.
         let rental = null;
         try {
-            const userId = localStorage.getItem('user_id');
-            const rentalResponse = await fetch(`/rentals/${completion.rental_id}`, {
-                method: 'GET',
-                headers: {
-                    'X-User-ID': userId,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
+            const rentalResponse = await authenticatedFetch(`/rentals/${completion.rental_id}`);
+
             if (rentalResponse.ok) {
                 rental = await rentalResponse.json();
             }
         } catch (error) {
             console.error('Ошибка при загрузке данных аренды:', error);
         }
-        
+
         // Загружаем фотографии завершения поездки
         let photosHtml = 'Нет фото';
         try {
-            const userId = localStorage.getItem('user_id');
-            
             // Check if completion has multiple photo IDs
             if (completion.completion_photo_ids && Array.isArray(completion.completion_photo_ids) && completion.completion_photo_ids.length > 0) {
                 photosHtml = '';
                 for (const photoId of completion.completion_photo_ids) {
-                    const photosResponse = await fetch(`/photos/${photoId}`, {
-                        method: 'GET',
-                        headers: {
-                            'X-User-ID': userId,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
+                    const photosResponse = await authenticatedFetch(`/photos/${photoId}`);
+
                     if (photosResponse.ok) {
                         const photo = await photosResponse.json();
                         if (photo) {
@@ -276,21 +247,19 @@ async function displayTripCompletionsData(tripCompletions) {
 
 // Функция для подтверждения завершения поездки (без повреждений)
 async function confirmTrip(completionId) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     if (!confirm('Вы уверены, что хотите подтвердить завершение поездки (без повреждений)?')) {
         return;
     }
-    
+
     try {
-        const response = await fetch(`/trip-completions/${completionId}`, {
+        const response = await authenticatedFetch(`/trip-completions/${completionId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -360,28 +329,26 @@ async function confirmTrip(completionId) {
 
 // Функция для сообщения о повреждениях
 async function reportDamage(completionId) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
     const damageDescription = prompt('Введите описание повреждений:');
     if (damageDescription === null) {
         // User cancelled
         return;
     }
-    
+
     if (damageDescription.trim() === '') {
         alert('Пожалуйста, введите описание повреждений');
         return;
     }
-    
+
     try {
-        const response = await fetch(`/trip-completions/${completionId}`, {
+        const response = await authenticatedFetch(`/trip-completions/${completionId}`, {
             method: 'PUT',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

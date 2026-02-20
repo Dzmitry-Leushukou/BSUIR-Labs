@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile, Request
 from schemas import *
 from crud.photos_crud import *
 from typing import List
@@ -69,6 +69,7 @@ def create_photo_endpoint(photo: PhotoCreate):
 
 @router.post("/upload", response_model=Photo)
 async def upload_photo_endpoint(
+    request: Request,
     file: UploadFile = File(...),
     object_type: str = None,
     user_id: int = None,
@@ -78,16 +79,26 @@ async def upload_photo_endpoint(
     """
     Upload a photo file and create a record in the database
     """
+    from .users_router import get_current_user
+    from fastapi import Depends
+
     # Validate file type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
+
+    # Get current user from JWT token
+    try:
+        current_user = await get_current_user(request)
+        current_user_id = current_user['id']
+    except Exception:
+        current_user_id = None
+
     # Read file content
     content = await file.read()
-    
-    # Create photo record in database ensuring constraint compliance
-    # Ensure that when object_type is 'document' or 'driver', user_id is not null to satisfy the constraint
-    effective_user_id = user_id or uploaded_by or 1
+
+    # Use user_id from token if not provided
+    effective_user_id = user_id or current_user_id or uploaded_by or 1
+    effective_uploaded_by = uploaded_by or current_user_id or 1
     effective_object_type = object_type or "document"
     
     if effective_object_type in ['document', 'driver']:
@@ -112,7 +123,7 @@ async def upload_photo_endpoint(
         filename=file.filename,
         content_type=file.content_type,
         file_size=len(content),
-        uploaded_by=uploaded_by or 1
+        uploaded_by=effective_uploaded_by
     )
     
     created_photo = create_photo(photo_create)

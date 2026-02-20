@@ -5,26 +5,18 @@ function goToAdminPanel() {
 
 // Функция для проверки, является ли пользователь администратором
 async function checkAdminAccess() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         window.location.href = '/';
         return false;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
+        const response = await authenticatedFetch('/users/profile');
+
         if (response.ok) {
             const userData = await response.json();
-            if (userData.role_id !== 1) { // admin role ID is 1
-                // Проверяем, является ли роль неизвестной (например, ID=0)
+            if (userData.role_id !== 1) {
                 let roleName;
                 if (userData.role_id === 1) {
                     roleName = 'Администратор';

@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from schemas import *
 from crud.cars_crud import *
 from typing import List
-from .users_router import get_current_user_from_header
+from .users_router import get_current_user
 
 router = APIRouter(prefix="/cars", tags=["Автомобили"])
 
 @router.get("/count", response_model=dict)
-def get_cars_count_endpoint(current_user: dict = Depends(get_current_user_from_header)):
+def get_cars_count_endpoint(current_user: dict = Depends(get_current_user)):
     from crud.cars_crud import get_cars_count
     count = get_cars_count()
     return {"count": count}
@@ -23,17 +23,17 @@ def get_car_endpoint(car_id: int):
     return get_car(car_id)
 
 @router.post("/", response_model=Car)
-def create_car_endpoint(car: CarCreate):
+def create_car_endpoint(car: CarCreate, current_user: dict = Depends(get_current_user)):
     return create_car(car)
 
 @router.put("/{car_id}", response_model=Car)
-def update_car_endpoint(car_id: int, car: CarUpdate):
+def update_car_endpoint(car_id: int, car: CarUpdate, current_user: dict = Depends(get_current_user)):
     if car_id <= 0:
         raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return update_car(car_id, car)
 
 @router.delete("/{car_id}")
-def delete_car_endpoint(car_id: int):
+def delete_car_endpoint(car_id: int, current_user: dict = Depends(get_current_user)):
     if car_id <= 0:
         raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return delete_car(car_id)
@@ -49,7 +49,7 @@ class CarPosition(BaseModel):
     latitude: Optional[float] = None
 
 @router.get("/all/positions", response_model=List[CarPosition])
-def get_cars_positions_with_user_rental_status_endpoint(request: Request, current_user: dict = Depends(get_current_user_from_header)):
+def get_cars_positions_with_user_rental_status_endpoint(request: Request, current_user: dict = Depends(get_current_user)):
     """Возвращает все машины с информацией о том, арендована ли машина пользователем"""
     user_id = current_user['id']
     return get_cars_positions_with_user_rental_status(user_id)

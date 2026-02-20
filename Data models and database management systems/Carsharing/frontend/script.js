@@ -1,19 +1,12 @@
 // Функция для проверки статуса пользователя
 async function checkUserStatus() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    const userData = getUserData();
+    if (!userData) {
         return null;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
+        const response = await authenticatedFetch('/users/profile');
         if (response.ok) {
             const userData = await response.json();
             return userData.status;
@@ -101,30 +94,22 @@ function addMarker(lat, lng) {
 async function showCarsOnMap() {
     // Очистить предыдущие маркеры машин
     clearCarMarkers();
-    
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        console.error('Пользователь не авторизован');
+
+    const userData = getUserData();
+    if (!userData) {
+        // Пользователь не авторизован - просто не показываем машины
         return;
     }
-    
-    // Проверяем статус пользователя
-    const userStatus = await checkUserStatus();
-    if (userStatus === 'banned') {
+
+    // Проверяем, не забанен ли пользователь
+    if (userData.status === 'banned') {
         // Если пользователь забанен, не показываем машины
-        console.log('Пользователь заблокирован, машины не отображаются');
         return;
     }
-    
+
     try {
-        const response = await fetch('/cars/all/positions', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
+        const response = await authenticatedFetch('/cars/all/positions');
+
         if (response.ok) {
             const cars = await response.json();
             
@@ -220,10 +205,8 @@ function clearCarMarkers() {
 
 // Проверка статуса авторизации пользователя
 function checkAuthStatus() {
-    // Здесь будет логика проверки сессии
-    // Проверяем наличие user_id в localStorage
-    const userId = localStorage.getItem('user_id');
-    if (userId) {
+    // Проверяем наличие валидного токена
+    if (isAuthenticated()) {
         loadUserInfo();
     } else {
         showAuthButtons();
@@ -310,15 +293,8 @@ async function showUserInfo(userData) {
             } else {
                 // Если role_id нет в userData, запрашиваем информацию о роли
                 try {
-                    const userId = localStorage.getItem('user_id');
-                    const response = await fetch(`/users/${userData.id}`, {
-                        method: 'GET',
-                        headers: {
-                            'X-User-ID': userId,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
+                    const response = await authenticatedFetch(`/users/${userData.id}`);
+
                     if (response.ok) {
                         const fullUserData = await response.json();
                         isAdmin = fullUserData.role_id === 1;
@@ -358,29 +334,25 @@ function handleProfileClick(e) {
 
 // Функция для загрузки информации о пользователе
 async function loadUserInfo() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         showAuthButtons();
         return;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        
+        const response = await authenticatedFetch('/users/profile');
+
         if (response.ok) {
             const userData = await response.json();
-            
+
+            // Сохраняем данные пользователя
+            setUserData(userData);
+
             // Проверяем статус пользователя
             if (userData.status === 'banned') {
                 // Если пользователь заблокирован, показываем соответствующее меню
                 showUserInfo(userData);
-                
+
                 // Также удаляем активную аренду, если она есть
                 const rentalPanel = document.getElementById('active-rental-panel');
                 if (rentalPanel) {
@@ -389,17 +361,16 @@ async function loadUserInfo() {
             } else {
                 // Если пользователь не заблокирован, показываем обычное меню
                 showUserInfo(userData);
+                
+                // Проверяем и показываем активную аренду после загрузки данных
+                setTimeout(checkAndShowActiveRental, 100);
             }
         } else {
-            // Если user_id недействителен, удаляем его
-            const errorData = await response.json();
-            console.error('Ошибка при загрузке информации о пользователе:', errorData.detail || 'Неизвестная ошибка');
-            localStorage.removeItem('user_id');
+            // 401 или другая ошибка - просто показываем кнопки входа
             showAuthButtons();
         }
     } catch (error) {
         console.error('Ошибка при загрузке информации о пользователе:', error);
-        localStorage.removeItem('user_id');
         showAuthButtons();
     }
 }
@@ -407,26 +378,25 @@ async function loadUserInfo() {
 // Функция для обновления статуса авторизации
 function updateAuthStatus(isAuthenticated, userData = null) {
     if (isAuthenticated && userData) {
-        // Сохраняем user_id, полученный от сервера
-        if (userData.id) {
-            localStorage.setItem('user_id', userData.id);
-        }
+        // Сохраняем данные пользователя
+        setUserData(userData);
         // Очищаем сохраненные данные форм при успешной аутентификации
         localStorage.removeItem('loginFormData');
         localStorage.removeItem('registerFormData');
         showUserInfo(userData);
         // Проверяем и показываем активную аренду при входе
-        setTimeout(checkAndShowActiveRental, 500); // Используем таймаут, чтобы дождаться полной загрузки интерфейса
+        setTimeout(checkAndShowActiveRental, 500);
     } else {
-        localStorage.removeItem('user_id');
+        removeAuthToken();
+        removeUserData();
         showAuthButtons();
-        
+
         // Удаляем панель активной аренды при выходе из аккаунта
         const rentalPanel = document.getElementById('active-rental-panel');
         if (rentalPanel) {
             rentalPanel.remove();
         }
-        
+
         // Скрываем кнопку админ панели при выходе из аккаунта
         const adminPanelButton = document.getElementById('admin-panel-button');
         if (adminPanelButton) {
@@ -436,7 +406,9 @@ function updateAuthStatus(isAuthenticated, userData = null) {
 }
 
 // Обработчики для кнопок входа и регистрации
-document.querySelector('.login-btn').addEventListener('click', () => {
+const loginBtn = document.querySelector('.login-btn');
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
     // Создаем модальное окно для входа
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
@@ -476,40 +448,27 @@ document.querySelector('.login-btn').addEventListener('click', () => {
     document.getElementById('submit-login').addEventListener('click', async () => {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        
+
         if (email && password) {
             try {
-                const response = await fetch('/users/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (response.ok) {
-                    const userData = await response.json();
-                    // Проверяем, есть ли user_id в ответе от сервера
-                    if (!userData.id) {
-                        alert('Ошибка: сервер не вернул идентификатор пользователя');
-                        return;
-                    }
-                    updateAuthStatus(true, userData);
-                    
+                const result = await login(email, password);
+
+                if (result.success) {
+                    updateAuthStatus(true, result.user);
+
                     // После успешного входа обновляем карту с машинами
                     // Очищаем сохраненные данные формы
                     localStorage.removeItem('loginFormData');
-                    
+
                     // Закрываем модальное окно входа
                     document.body.removeChild(modal);
-                    
+
                     // Проверяем и обновляем статус авторизации
                     checkAuthStatus();
-                    
+
                     showCarsOnMap();
                 } else {
-                    const errorData = await response.json();
-                    alert(`Ошибка входа: ${errorData.detail || 'Неверный email или пароль'}`);
+                    alert(`Ошибка входа: ${result.error}`);
                     // Сохраняем введенные данные при ошибке
                     document.getElementById('login-email').value = email;
                     document.getElementById('login-password').value = password;
@@ -544,8 +503,11 @@ document.querySelector('.login-btn').addEventListener('click', () => {
         document.body.removeChild(modal);
     });
 });
+}
 
-document.querySelector('.register-btn').addEventListener('click', () => {
+const registerBtn = document.querySelector('.register-btn');
+if (registerBtn) {
+    registerBtn.addEventListener('click', () => {
     // Создаем модальное окно для регистрации
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
@@ -598,7 +560,7 @@ document.querySelector('.register-btn').addEventListener('click', () => {
         
         if (email && name && surname && password) {
             try {
-                const response = await fetch('/users/register', {
+                const response = await authenticatedFetch('/users/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -743,47 +705,34 @@ document.querySelector('.register-btn').addEventListener('click', () => {
         document.body.removeChild(modal);
     });
 });
+}
 
-document.querySelector('.logout-btn').addEventListener('click', async () => {
+const logoutBtn = document.querySelector('.logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
     // Логика для выхода
     console.log('Кнопка выхода нажата');
-    
-    const userId = localStorage.getItem('user_id');
-    if (userId) {
-        try {
-            // Вызываем API endpoint для логирования выхода
-            const response = await fetch('/users/logout', {
-                method: 'POST',
-                headers: {
-                    'X-User-ID': userId,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                console.error('Ошибка при логировании выхода пользователя:', response.status);
-            }
-        } catch (error) {
-            console.error('Ошибка при попытке логирования выхода пользователя:', error);
-        }
-    }
-    
+
+    // Вызываем API endpoint для логирования выхода
+    await logout();
+
     // Обновление статуса авторизации
     updateAuthStatus(false);
-    
+
     // После выхода очищаем маркеры машин
     clearCarMarkers();
-    
+
     // Удаляем панель активной аренды при выходе из аккаунта
     const rentalPanel = document.getElementById('active-rental-panel');
     if (rentalPanel) {
         rentalPanel.remove();
     }
-    
+
     // Также очищаем сохраненные данные форм при выходе
     localStorage.removeItem('loginFormData');
     localStorage.removeItem('registerFormData');
 });
+}
 
 // Функция для перехода к местоположению пользователя на карте
 function goToUserLocation() {
@@ -813,8 +762,8 @@ function goToUserLocation() {
 document.addEventListener('DOMContentLoaded', () => {
     getCurrentLocation();
     checkAuthStatus();
-    checkAndShowActiveRental(); // Добавляем проверку активной аренды
-    
+    // checkAndShowActiveRental() вызывается внутри loadUserInfo() после загрузки данных
+
     // Добавляем обработчик для кнопки "Мое местоположение"
     const locateBtn = document.getElementById('locate-user-btn');
     if (locateBtn) {
@@ -824,50 +773,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Функция для аренды автомобиля
 async function rentCar(carId) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Для аренды автомобиля необходимо авторизоваться');
         return;
     }
-    
+
+    const userData = getUserData();
+    if (!userData) {
+        alert('Для аренды автомобиля необходимо авторизоваться');
+        return;
+    }
+
     // Проверяем, есть ли у пользователя уже активная аренда
     const activeRental = await getActiveRental();
     if (activeRental) {
         alert('У вас уже есть активная аренда. Завершите её перед тем, как арендовать новую машину.');
         return;
     }
-    
+
     try {
-        // Отправляем запрос на создание аренды
-        const response = await fetch('/rentals/', {
+        // Отправляем запрос на создание аренды с JWT токеном
+        const response = await authenticatedFetch('/rentals/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                user_id: parseInt(userId),
+                user_id: userData.id,
                 car_id: parseInt(carId),
-                started_at: new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"})).toISOString(), // Устанавливаем время с учетом часового пояса UTC+3 (Москва)
-                price: 1, // Начальная цена 1 BYN
+                started_at: new Date().toISOString(),
+                price: 1,
                 status: "active"
             })
         });
-        
+
         if (response.ok) {
             const rentalData = await response.json();
             alert(`Автомобиль успешно арендован! Номер аренды: ${rentalData.id}`);
-            
+
             // Обновляем статус машины на "rented" визуально на карте
             updateCarMarkerStatus(carId, "rented");
-            
+
             // Показываем панель активной аренды сразу после аренды
             await showActiveRentalPanel(rentalData);
-            
+
             // Обновляем карту, чтобы отобразить только арендованную машину
             showCarsOnMap();
         } else {
             const errorData = await response.json();
+            console.error('Ошибка аренды:', errorData);
             alert(`Ошибка при аренде автомобиля: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
     } catch (error) {
@@ -884,21 +838,24 @@ function updateCarMarkerStatus(carId, newStatus) {
 
 // Функция для получения активной аренды пользователя
 async function getActiveRental() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         return null;
     }
-    
+
+    const userData = getUserData();
+    if (!userData || !userData.id) {
+        return null;
+    }
+
     try {
         // Запрашиваем все аренды пользователя с информацией о машинах
-        const response = await fetch(`/rentals/user/${userId}/with-car-info`, {
+        const response = await authenticatedFetch(`/rentals/user/${userData.id}/with-car-info`, {
             method: 'GET',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
-        
+
         if (response.ok) {
             const rentals = await response.json();
             // Находим активную аренду (если есть)
@@ -925,17 +882,15 @@ async function showActiveRentalPanel(rental) {
     
     if (rental) {
         // Загружаем информацию о машине, связанной с арендой
-        const userId = localStorage.getItem('user_id');
+        if (!isAuthenticated()) {
+            return;
+        }
         let rentalWithCarInfo = rental;
-        
+
         // Запрашиваем расширенную информацию об аренде с информацией о машине
         try {
-            const response = await fetch(`/rentals/user/${userId}/with-car-info?limit=100`, {
-                method: 'GET',
-                headers: {
-                    'X-User-ID': userId,
-                    'Content-Type': 'application/json'
-                }
+            const response = await authenticatedFetch(`/rentals/user/with-car-info?limit=100`, {
+                method: 'GET'
             });
             
             if (response.ok) {
@@ -1037,24 +992,25 @@ async function showActiveRentalPanel(rental) {
 
 // Функция для завершения аренды
 async function endRental(rentalId) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Необходима авторизация для управления арендой');
         return;
     }
-    
+
+    const userData = getUserData();
+    if (!userData) {
+        alert('Необходима авторизация для управления арендой');
+        return;
+    }
+
     if (!confirm('Вы уверены, что хотите завершить аренду?')) {
         return;
     }
-    
+
     try {
         // Получаем текущую аренду для расчета цены
-        const rentalResponse = await fetch(`/rentals/${rentalId}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
+        const rentalResponse = await authenticatedFetch(`/rentals/${rentalId}`, {
+            method: 'GET'
         });
         
         if (!rentalResponse.ok) {
@@ -1101,32 +1057,24 @@ async function endRental(rentalId) {
         // Создаем запись в логе оплаты
         const paymentLog = {
             rental_id: rentalId,
-            user_id: parseInt(userId),
+            user_id: parseInt(userData.id),
             pay_type: 'card',  // По умолчанию оплата картой в этой функции
             card_number: null, // В этой функции не используется карта, но поле должно быть
             price: price
         };
-        
-        const paymentLogResponse = await fetch('/payment_logs/', {
+
+        const paymentLogResponse = await authenticatedFetch('/payment_logs/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
             body: JSON.stringify(paymentLog)
         });
-        
+
         if (!paymentLogResponse.ok) {
             const errorData = await paymentLogResponse.json();
             throw new Error(`Ошибка при создании записи об оплате: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
-        
-        const response = await fetch(`/rentals/${rentalId}`, {
+
+        const response = await authenticatedFetch(`/rentals/${rentalId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
             body: JSON.stringify({
                 ended_at: endedAt.toISOString(),
                 status: "completed",
@@ -1155,27 +1103,28 @@ async function endRental(rentalId) {
 }
  
 // Функция для отображения модального окна завершения аренды
-function showCompletionModal(rentalId) {
+async function showCompletionModal(rentalId) {
     // Проверяем, существует ли уже модальное окно
     const existingModal = document.getElementById('completion-modal');
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     // Получаем информацию о текущей аренде для расчета цены
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Необходима авторизация для завершения аренды');
         return;
     }
-    
+
+    const userData = getUserData();
+    if (!userData) {
+        alert('Необходима авторизация для завершения аренды');
+        return;
+    }
+
     // Асинхронно получаем информацию об аренде и рассчитываем цену
-    fetch(`/rentals/${rentalId}`, {
-        method: 'GET',
-        headers: {
-            'X-User-ID': userId,
-            'Content-Type': 'application/json'
-        }
+    authenticatedFetch(`/rentals/${rentalId}`, {
+        method: 'GET'
     })
     .then(response => response.json())
     .then(rental => {
@@ -1274,7 +1223,7 @@ function showCompletionModal(rentalId) {
                     </div>
                     <div id="cashback-input-container" style="margin-top: 10px; display: none;">
                         <input type="number" id="cashback-amount-input" placeholder="Сумма кэшбэка" min="0" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #66;">Максимум можно использовать: <span id="max-cashback-amount">0</span> BYN</div>
+                        <div style="margin-top: 5px; font-size: 0.8em; color: #66;">Максимум можно использовать:�: <span id="max-cashback-amount">0</span> BYN</div>
                     </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1422,20 +1371,15 @@ function showCompletionModal(rentalId) {
 
 // Функция для загрузки информации о пользователе и отображения кэшбэка
 async function loadUserInfoForCashback() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         return;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
+        const response = await authenticatedFetch('/users/profile', {
+            method: 'GET'
         });
-        
+
         if (response.ok) {
             const userData = await response.json();
             document.getElementById('cashback-amount').textContent = `Доступно: ${userData.cashback} BYN`;
@@ -1462,20 +1406,20 @@ function updateCashbackDisplay() {
 
 // Функция для обработки оплаты и завершения аренды
 async function processPaymentAndComplete(rentalId) {
-    // Получаем текущую информацию о аренде
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Необходима авторизация для завершения аренды');
         return;
     }
-    
+
+    const userData = getUserData();
+    if (!userData) {
+        alert('Необходима авторизация для завершения аренды');
+        return;
+    }
+
     try {
-        const rentalResponse = await fetch(`/rentals/${rentalId}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
+        const rentalResponse = await authenticatedFetch(`/rentals/${rentalId}`, {
+            method: 'GET'
         });
         
         if (!rentalResponse.ok) {
@@ -1582,79 +1526,81 @@ async function processPaymentAndComplete(rentalId) {
             // Создаем запись для использованного кэшбэка
             const cashbackPaymentLog = {
                 rental_id: rentalId,
-                user_id: parseInt(userId),
+                user_id: parseInt(userData.id),
                 pay_type: 'cashback',
                 card_number: null,
                 price: cashbackUsed
             };
-            
+
             // Отправляем данные оплаты кэшбэком
-            const cashbackPaymentLogResponse = await fetch('/payment_logs/', {
+            const cashbackPaymentLogResponse = await authenticatedFetch('/payment_logs/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': userId
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(cashbackPaymentLog)
             });
-            
+
             if (!cashbackPaymentLogResponse.ok) {
+                const errorData = await cashbackPaymentLogResponse.json();
+                console.error('Ошибка создания payment log (cashback):', errorData);
                 throw new Error('Ошибка при создании записи об оплате кэшбэком');
             }
         }
-        
+
         // Если осталась цена для оплаты картой (не вся оплата была кэшбэком)
         if (finalPrice > 0) {
             const cardPaymentLog = {
                 rental_id: rentalId,
-                user_id: parseInt(userId),
+                user_id: parseInt(userData.id),
                 pay_type: 'card',
                 card_number: cardNumber,
                 price: finalPrice
             };
-            
+
             // Отправляем данные оплаты картой
-            const cardPaymentLogResponse = await fetch('/payment_logs/', {
+            const cardPaymentLogResponse = await authenticatedFetch('/payment_logs/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': userId
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(cardPaymentLog)
             });
-            
+
             if (!cardPaymentLogResponse.ok) {
+                const errorData = await cardPaymentLogResponse.json();
+                console.error('Ошибка создания payment log (card):', errorData);
                 throw new Error('Ошибка при создании записи об оплате картой');
             }
         }
-        
+
         // Если вся оплата была кэшбэком (finalPrice = 0), создаем только запись о кэшбэке
         else if (finalPrice === 0 && useCashback && cashbackUsed > 0) {
             // Запись уже создана выше, ничего дополнительно не нужно
         }
-        
-        
+
+
         // Проверяем, загружены ли фотографии (минимум 1 обязательно)
         const photoUpload = document.getElementById('photo-upload');
         const files = photoUpload.files;
-        
+
         if (files.length === 0) {
             alert('Пожалуйста, загрузите хотя бы одну фотографию завершения поездки.');
             return;
         }
-        
+
         // Загружаем все фотографии и создаем массив ID фотографий
         const completionPhotoIds = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.type.startsWith('image/')) {
-                const photoId = await uploadPhoto(file, rental.car_id, parseInt(userId));
+                const photoId = await uploadPhoto(file, rental.car_id, parseInt(userData.id));
                 if (photoId) {
                     completionPhotoIds.push(photoId);
                 }
             }
         }
-        
+
         if (completionPhotoIds.length === 0) {
             alert('Не удалось загрузить фотографии. Пожалуйста, попробуйте снова.');
             return;
@@ -1662,29 +1608,21 @@ async function processPaymentAndComplete(rentalId) {
         
         // Сначала создаем запрос на подтверждение завершения поездки (для сохранения документа)
         // Аренда еще в статусе active, чтобы пройти проверку в бэкенде
-        const tripCompletionResponse = await fetch('/trip-completions/', {
+        const tripCompletionResponse = await authenticatedFetch('/trip-completions/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
             body: JSON.stringify({
                 rental_id: rentalId,
                 completion_photo_ids: completionPhotoIds, // Send array of photo IDs instead of single ID
                 admin_approved: null // Set to null initially, to be reviewed by admin
             })
         });
-        
+
         if (tripCompletionResponse.ok) {
             // После успешного создания запроса на завершение, обновляем статус аренды
             // Update the rental to set end date and status to pending_completion
             // Use the properly calculated time in UTC+3
-            const updateRentalResponse = await fetch(`/rentals/${rentalId}`, {
+            const updateRentalResponse = await authenticatedFetch(`/rentals/${rentalId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': userId
-                },
                 body: JSON.stringify({
                     ended_at: endedAt.toISOString(),
                     status: "pending_completion", // Changed from "completed" to "pending_completion"
@@ -1744,27 +1682,29 @@ async function processPaymentAndComplete(rentalId) {
 
 // Функция для загрузки фотографии
 async function uploadPhoto(file, carId, userId) {
-    const currentUserId = localStorage.getItem('user_id');
-    if (!currentUserId) {
+    if (!isAuthenticated()) {
         console.error('Необходима авторизация для загрузки фотографий');
         return null;
     }
-    
+
+    const userData = getUserData();
+    if (!userData) {
+        console.error('Необходима авторизация для загрузки фотографий');
+        return null;
+    }
+
     try {
         // Создаем FormData для отправки файла
         const formData = new FormData();
         formData.append('file', file);
         formData.append('object_type', 'car');
         formData.append('car_id', carId);
-        formData.append('user_id', currentUserId);
-        formData.append('uploaded_by', currentUserId);
-        
+        formData.append('user_id', userData.id);
+        formData.append('uploaded_by', userData.id);
+
         // Отправляем запрос на загрузку фотографии
-        const response = await fetch('/photos/upload', {
+        const response = await authenticatedFetch('/photos/upload', {
             method: 'POST',
-            headers: {
-                'X-User-ID': currentUserId
-            },
             body: formData
         });
         
@@ -1816,20 +1756,15 @@ function validateCardData(cardNumber, cardHolder, expiryDate, cvv) {
 
 // Функция для получения данных пользователя
 async function getUserData() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         return null;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
+        const response = await authenticatedFetch('/users/profile', {
+            method: 'GET'
         });
-        
+
         if (response.ok) {
             return await response.json();
         }
@@ -1842,31 +1777,26 @@ async function getUserData() {
 
 // Функция для обновления баланса кэшбэка
 async function updateCashbackBalance(amount) {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         return;
     }
-    
+
     try {
         const userData = await getUserData();
         if (!userData) {
             return;
         }
-        
+
         const newCashback = userData.cashback + amount;
-        
+
         // Обновляем данные пользователя
-        const response = await fetch(`/users/${userData.id}`, {
+        const response = await authenticatedFetch(`/users/${userData.id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId
-            },
             body: JSON.stringify({
                 cashback: newCashback
             })
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Ошибка при обновлении кэшбэка:', errorData.detail || 'Неизвестная ошибка');

@@ -11,21 +11,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Функция для загрузки информации о пользователе
 async function loadProfileInfo() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        // Если пользователь не авторизован, перенаправляем на главную страницу
+    if (!isAuthenticated()) {
         window.location.href = '/';
         return;
     }
-    
+
     try {
-        const response = await fetch('/users/profile', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch('/users/profile');
         
         if (response.ok) {
                     const userData = await response.json();
@@ -96,8 +88,8 @@ async function loadProfileInfo() {
                     }
                     
                     // Загружаем статус водительских прав
-                                await loadDriverLicenseStatus(userId);
-                                
+                                await loadDriverLicenseStatus();
+
                                 // Начинаем отслеживание изменений статуса водительских прав
                                 startLicenseStatusPolling();
                             } else {
@@ -126,15 +118,9 @@ async function loadProfileInfo() {
 }
 
 // Функция для загрузки статуса водительских прав
-async function loadDriverLicenseStatus(userId) {
+async function loadDriverLicenseStatus() {
     // Проверяем статус пользователя
-    const response = await fetch('/users/profile', {
-        method: 'GET',
-        headers: {
-            'X-User-ID': userId,
-            'Content-Type': 'application/json'
-        }
-    });
+    const response = await authenticatedFetch('/users/profile');
     
     if (response.ok) {
         const userData = await response.json();
@@ -148,13 +134,7 @@ async function loadDriverLicenseStatus(userId) {
     
     try {
         // Сначала получаем все водительские права пользователя
-        const response = await fetch('/driver_licenses/', {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch('/driver_licenses/');
         
         if (response.ok) {
             const licenses = await response.json();
@@ -191,24 +171,23 @@ async function loadDriverLicenseStatus(userId) {
 
 // Функция для периодического обновления статуса водительских прав без перезагрузки страницы
 function startLicenseStatusPolling() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (!isAuthenticated()) {
         console.error('Пользователь не авторизован');
         return;
     }
-    
+
     let pollingInterval;
-    
+
     // Функция для проверки статуса
     const checkStatus = async () => {
         const currentStatusElement = document.getElementById('profile-license-status');
         if (!currentStatusElement) return;
-        
+
         // Получаем текущий статус из элемента (для сравнения)
         const currentDisplayStatus = currentStatusElement.textContent;
-        
+
         // Загружаем актуальный статус
-        const newStatus = await loadDriverLicenseStatus(userId);
+        const newStatus = await loadDriverLicenseStatus();
         
         // Если статус изменился, можно выполнить дополнительные действия
         if (newStatus && newStatus !== 'error' && newStatus !== 'not_submitted') {
@@ -304,13 +283,12 @@ const changePasswordForm = document.getElementById('change-password-form');
 if (changePasswordForm) {
     changePasswordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+
+        if (!isAuthenticated()) {
             alert('Пользователь не авторизован');
             return;
         }
-        
+
         const currentPassword = document.getElementById('current-password').value;
         const newPassword = document.getElementById('new-password').value;
         const confirmPassword = document.getElementById('confirm-new-password').value;
@@ -333,10 +311,9 @@ if (changePasswordForm) {
         };
         
         try {
-            const response = await fetch('/users/change-password', {
+            const response = await authenticatedFetch('/users/change-password', {
                 method: 'PUT',
                 headers: {
-                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
@@ -463,24 +440,22 @@ const editProfileForm = document.getElementById('edit-profile-form');
 if (editProfileForm) {
     editProfileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+
+        if (!isAuthenticated()) {
             alert('Пользователь не авторизован');
             return;
         }
-        
+
         const formData = {
             name: document.getElementById('edit-name').value,
             surname: document.getElementById('edit-surname').value,
             email: document.getElementById('edit-email').value
         };
-        
+
         try {
-            const response = await fetch('/users/profile', {
+            const response = await authenticatedFetch('/users/profile', {
                 method: 'PUT',
                 headers: {
-                    'X-User-ID': userId,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
@@ -513,12 +488,12 @@ if (editProfileForm) {
         }
     });
 }
-// Функция для получения ID пользователя из localStorage
+// Функция для получения ID пользователя из токена
 function getUserIdFromToken() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) return null;
-    
-    return parseInt(userId);
+    const userData = getUserData();
+    if (!userData) return null;
+
+    return userData.id;
 }
 
 // Глобальные переменные для пагинации моих заказов
@@ -527,26 +502,25 @@ const myOrdersPerPage = 10;
 
 // Функция для отображения заказов пользователя
 async function showMyOrders(page = 0) {
-    const userId = getUserIdFromToken();
-    if (!userId) {
+    if (!isAuthenticated()) {
         alert('Пользователь не авторизован');
         return;
     }
-    
+
+    const userData = getUserData();
+    if (!userData || !userData.id) {
+        alert('Пользователь не авторизован');
+        return;
+    }
+
     // Ensure page is a valid number
     const pageNum = parseInt(page) || 0;
     const validPageNum = isFinite(pageNum) ? pageNum : 0;
     currentMyOrdersPage = validPageNum;
     const offset = validPageNum * myOrdersPerPage;
-    
+
     try {
-        const response = await fetch(`/rentals/user/${userId}/with-car-info?offset=${offset}&limit=${myOrdersPerPage}`, {
-            method: 'GET',
-            headers: {
-                'X-User-ID': userId,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await authenticatedFetch(`/rentals/user/${userData.id}/with-car-info?offset=${offset}&limit=${myOrdersPerPage}`);
         
         if (response.ok) {
             const rentals = await response.json();
@@ -656,16 +630,16 @@ function setupMyOrdersPagination(currentPage) {
 
 // Функция для получения общего количества заказов пользователя
 async function getMyOrdersCount() {
-    const userId = getUserIdFromToken();
-    if (!userId) {
+    if (!isAuthenticated()) {
         return 0;
     }
-    
+
+    const userId = getUserData().id;
+
     try {
-        const response = await fetch(`/rentals/user/${userId}/count`, {
+        const response = await authenticatedFetch(`/rentals/user/${userId}/count`, {
             method: 'GET',
             headers: {
-                'X-User-ID': userId,
                 'Content-Type': 'application/json'
             }
         });
@@ -838,24 +812,25 @@ async function uploadDriverLicense() {
         // Обработчик отправки формы загрузки водительских прав
         document.getElementById('upload-license-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const userId = localStorage.getItem('user_id');
-            if (!userId) {
+
+            if (!isAuthenticated()) {
                 alert('Пользователь не авторизован');
                 return;
             }
-            
+
+            const userId = getUserData().id;
+
             const licenseNumber = document.getElementById('license-number').value;
             const issuedBy = document.getElementById('issued-by').value;
             const expirationDate = document.getElementById('expiration-date').value;
             const licensePhoto = document.getElementById('license-photo').files[0];
             const licensePhotoBack = document.getElementById('license-photo-back').files[0];
-            
+
             if (!licensePhoto || !licensePhotoBack) {
                 alert('Пожалуйста, загрузите обе фотографии водительских прав');
                 return;
             }
-            
+
             try {
                 // Загружаем первую фотографию
                 const photoFormData = new FormData();
@@ -863,18 +838,19 @@ async function uploadDriverLicense() {
                 photoFormData.append('object_type', 'document');
                 photoFormData.append('user_id', userId);
                 photoFormData.append('uploaded_by', userId);
-                
-                const photoResponse = await fetch('/photos/upload', {
+
+                const photoResponse = await authenticatedFetch('/photos/upload', {
                     method: 'POST',
-                    headers: {
-                        'X-User-ID': userId
-                    },
                     body: photoFormData
                 });
                 
                 if (!photoResponse.ok) {
                     const errorData = await photoResponse.json();
-                    alert(`Ошибка при загрузке первой фотографии: ${errorData.detail || 'Неизвестная ошибка'}`);
+                    console.error('Ошибка загрузки первой фотографии:', JSON.stringify(errorData, null, 2));
+                    const detailMsg = Array.isArray(errorData.detail) 
+                        ? errorData.detail.map(d => d.msg || d.msg?.message || JSON.stringify(d)).join(', ')
+                        : errorData.detail;
+                    alert(`Ошибка при загрузке первой фотографии: ${detailMsg || 'Неизвестная ошибка'}`);
                     return;
                 }
                 
@@ -887,12 +863,9 @@ async function uploadDriverLicense() {
                 photoBackFormData.append('object_type', 'document');
                 photoBackFormData.append('user_id', userId);
                 photoBackFormData.append('uploaded_by', userId);
-                
-                const photoBackResponse = await fetch('/photos/upload', {
+
+                const photoBackResponse = await authenticatedFetch('/photos/upload', {
                     method: 'POST',
-                    headers: {
-                        'X-User-ID': userId
-                    },
                     body: photoBackFormData
                 });
                 
@@ -915,11 +888,10 @@ async function uploadDriverLicense() {
                     status: 'pending',
                     driver_id: parseInt(userId)  // Привязываем права к пользователю
                 };
-                
-                const licenseResponse = await fetch('/driver_licenses/', {
+
+                const licenseResponse = await authenticatedFetch('/driver_licenses/', {
                     method: 'POST',
                     headers: {
-                        'X-User-ID': userId,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(licenseData)
