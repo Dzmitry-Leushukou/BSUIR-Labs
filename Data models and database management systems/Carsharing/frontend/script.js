@@ -883,16 +883,40 @@ async function showActiveRentalPanel(rental) {
     if (rental) {
         // Загружаем информацию о машине, связанной с арендой
         if (!isAuthenticated()) {
+            console.error('showActiveRentalPanel: пользователь не авторизован');
             return;
         }
+        
+        let userData = getUserData();
+        
+        // Если userData нет, загружаем его из профиля
+        if (!userData || !userData.id) {
+            try {
+                const response = await authenticatedFetch('/users/profile');
+                if (response.ok) {
+                    userData = await response.json();
+                    setUserData(userData);
+                    console.log('showActiveRentalPanel: userData загружен из профиля:', userData);
+                }
+            } catch (error) {
+                console.error('showActiveRentalPanel: ошибка загрузки userData:', error);
+                return;
+            }
+        }
+        
+        if (!userData || !userData.id) {
+            console.error('showActiveRentalPanel: userData или userData.id отсутствует после загрузки');
+            return;
+        }
+        
         let rentalWithCarInfo = rental;
 
         // Запрашиваем расширенную информацию об аренде с информацией о машине
         try {
-            const response = await authenticatedFetch(`/rentals/user/with-car-info?limit=100`, {
+            const response = await authenticatedFetch(`/rentals/user/${userData.id}/with-car-info?limit=100`, {
                 method: 'GET'
             });
-            
+
             if (response.ok) {
                 const rentalsWithCarInfo = await response.json();
                 rentalWithCarInfo = rentalsWithCarInfo.find(r => r.id === rental.id) || rental;
@@ -1223,7 +1247,7 @@ async function showCompletionModal(rentalId) {
                     </div>
                     <div id="cashback-input-container" style="margin-top: 10px; display: none;">
                         <input type="number" id="cashback-amount-input" placeholder="Сумма кэшбэка" min="0" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #66;">Максимум можно использовать:�: <span id="max-cashback-amount">0</span> BYN</div>
+                        <div style="margin-top: 5px; font-size: 0.8em; color: #66;">Максимум можно использовать: <span id="max-cashback-amount">0</span> BYN</div>
                     </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1411,7 +1435,7 @@ async function processPaymentAndComplete(rentalId) {
         return;
     }
 
-    const userData = getUserData();
+    let userData = getUserData();
     if (!userData) {
         alert('Необходима авторизация для завершения аренды');
         return;
@@ -1477,9 +1501,9 @@ async function processPaymentAndComplete(rentalId) {
         const useCashback = document.getElementById('use-cashback').checked;
         let finalPrice = totalPrice;
         let cashbackUsed = 0;
-        
+
         if (useCashback) {
-            const userData = await getUserData();
+            let userData = await getUserData();
             if (userData.cashback > 0) {
                 // Получаем выбранную сумму кэшбэка
                 const cashbackInputValue = document.getElementById('cashback-amount-input').value;
@@ -1522,11 +1546,32 @@ async function processPaymentAndComplete(rentalId) {
         
         // Создаем запись в логе оплаты
         // Если использовался кэшбэк, создаем отдельные записи для кэшбэка и для оплаты картой
+        
+        // Проверяем, что userData.id существует
+        if (!userData || !userData.id) {
+            // Загружаем данные пользователя из профиля
+            try {
+                const response = await authenticatedFetch('/users/profile');
+                if (response.ok) {
+                    userData = await response.json();
+                    setUserData(userData);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователя:', error);
+                throw new Error('Не удалось загрузить данные пользователя для создания payment log');
+            }
+        }
+        
+        if (!userData || !userData.id) {
+            throw new Error('userData.id отсутствует');
+        }
+        
         if (useCashback && cashbackUsed > 0) {
             // Создаем запись для использованного кэшбэка
             const cashbackPaymentLog = {
                 rental_id: rentalId,
                 user_id: parseInt(userData.id),
+                user_email: userData.email || null,
                 pay_type: 'cashback',
                 card_number: null,
                 price: cashbackUsed
@@ -1553,10 +1598,13 @@ async function processPaymentAndComplete(rentalId) {
             const cardPaymentLog = {
                 rental_id: rentalId,
                 user_id: parseInt(userData.id),
+                user_email: userData.email || null,
                 pay_type: 'card',
-                card_number: cardNumber,
+                card_number: cardNumber || null,
                 price: finalPrice
             };
+
+            console.log('Отправляем payment log:', cardPaymentLog);
 
             // Отправляем данные оплаты картой
             const cardPaymentLogResponse = await authenticatedFetch('/payment_logs/', {
@@ -1569,8 +1617,11 @@ async function processPaymentAndComplete(rentalId) {
 
             if (!cardPaymentLogResponse.ok) {
                 const errorData = await cardPaymentLogResponse.json();
-                console.error('Ошибка создания payment log (card):', errorData);
-                throw new Error('Ошибка при создании записи об оплате картой');
+                console.error('Ошибка создания payment log (card):', JSON.stringify(errorData, null, 2));
+                const detailMsg = Array.isArray(errorData.detail) 
+                    ? errorData.detail.map(d => d.msg || d.msg?.message || JSON.stringify(d)).join(', ')
+                    : errorData.detail;
+                throw new Error(`Ошибка при создании записи об оплате картой: ${detailMsg || 'Неизвестная ошибка'}`);
             }
         }
 
@@ -1644,30 +1695,30 @@ async function processPaymentAndComplete(rentalId) {
                 // Обновляем информацию о пользователе (включая кэшбэк)
                 await loadUserInfo();
             }
-            
+
             // Рассчитываем и добавляем кэшбэк (3% от стоимости поездки)
             const cashbackToAdd = totalPrice * 0.03;
             await updateCashbackBalance(cashbackToAdd);
             // Обновляем информацию о пользователе (включая кэшбэк)
             await loadUserInfo();
-            
+
             // Удаляем панель активной аренды
             const rentalPanel = document.getElementById('active-rental-panel');
             if (rentalPanel) {
                 rentalPanel.remove();
             }
-            
+
             // Закрываем модальное окно
             const modal = document.getElementById('completion-modal');
             if (modal) {
                 modal.remove();
             }
-            
+
             alert(`Аренда успешно завершена! С вас списано: ${finalPrice} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут). Добавлено кэшбэка: ${cashbackToAdd.toFixed(2)} BYN.`);
-            
+
             // Обновляем информацию о пользователе (включая кэшбэк)
             loadUserInfo();
-            
+
             // Обновляем карту
             showCarsOnMap();
         } else {
@@ -1677,6 +1728,12 @@ async function processPaymentAndComplete(rentalId) {
     } catch (error) {
         console.error('Ошибка при завершении аренды:', error);
         alert('Ошибка при завершении аренды');
+        
+        // Закрываем модальное окно в случае ошибки
+        const modal = document.getElementById('completion-modal');
+        if (modal) {
+            modal.remove();
+        }
     }
 }
 

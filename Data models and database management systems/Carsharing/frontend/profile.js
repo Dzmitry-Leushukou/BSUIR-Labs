@@ -121,7 +121,7 @@ async function loadProfileInfo() {
 async function loadDriverLicenseStatus() {
     // Проверяем статус пользователя
     const response = await authenticatedFetch('/users/profile');
-    
+
     if (response.ok) {
         const userData = await response.json();
         if (userData.status === 'banned') {
@@ -130,43 +130,51 @@ async function loadDriverLicenseStatus() {
             document.getElementById('profile-license-status').className = 'status-not-loaded';
             return 'banned';
         }
-    }
-    
-    try {
-        // Сначала получаем все водительские права пользователя
-        const response = await authenticatedFetch('/driver_licenses/');
-        
-        if (response.ok) {
-            const licenses = await response.json();
-            // Находим права, связанные с текущим пользователем (предполагаем, что driver_id в таблице прав соответствует user_id)
-            const userLicense = licenses.find(license => license.driver_id == userId);
-            
-            if (userLicense) {
-                // Обновляем отображение статуса водительских прав с цветовой индикацией
-                const licenseStatusElement = document.getElementById('profile-license-status');
-                licenseStatusElement.textContent = userLicense.status === 'pending' ? 'Ожидает проверки' : userLicense.status === 'approved' ? 'Подтверждено' : userLicense.status === 'rejected' ? 'Отклонено' : userLicense.status;
-                licenseStatusElement.className = userLicense.status === 'approved' ? 'status-approved' : userLicense.status === 'rejected' ? 'status-rejected' : `status-${userLicense.status}`;
-                
-                // Возвращаем статус для возможного использования в других функциях
-                return userLicense.status;
+
+        // Получаем ID пользователя из userData
+        const userId = userData.id;
+
+        try {
+            // Сначала получаем все водительские права пользователя
+            const response = await authenticatedFetch('/driver_licenses/');
+
+            if (response.ok) {
+                const licenses = await response.json();
+                // Находим права, связанные с текущим пользователем (предполагаем, что driver_id в таблице прав соответствует user_id)
+                const userLicense = licenses.find(license => license.driver_id == userId);
+
+                if (userLicense) {
+                    // Обновляем отображение статуса водительских прав с цветовой индикацией
+                    const licenseStatusElement = document.getElementById('profile-license-status');
+                    licenseStatusElement.textContent = userLicense.status === 'pending' ? 'Ожидает проверки' : userLicense.status === 'approved' ? 'Подтверждено' : userLicense.status === 'rejected' ? 'Отклонено' : userLicense.status;
+                    licenseStatusElement.className = userLicense.status === 'approved' ? 'status-approved' : userLicense.status === 'rejected' ? 'status-rejected' : `status-${userLicense.status}`;
+
+                    // Возвращаем статус для возможного использования в других функциях
+                    return userLicense.status;
+                } else {
+                    // Если права не найдены, отображаем "Не отправлены на проверку"
+                    document.getElementById('profile-license-status').textContent = 'Не отправлены на проверку';
+                    document.getElementById('profile-license-status').className = 'status-not-loaded';
+                    return 'not_submitted';
+                }
             } else {
-                // Если права не найдены, отображаем "Не отправлены на проверку"
-                document.getElementById('profile-license-status').textContent = 'Не отправлены на проверку';
+                // Если произошла ошибка, отображаем "Не загружены"
+                document.getElementById('profile-license-status').textContent = 'Не загружены';
                 document.getElementById('profile-license-status').className = 'status-not-loaded';
-                return 'not_submitted';
+                return 'error';
             }
-        } else {
-            // Если произошла ошибка, отображаем "Не загружены"
+        } catch (error) {
+            console.error('Ошибка при загрузке статуса водительских прав:', error);
             document.getElementById('profile-license-status').textContent = 'Не загружены';
             document.getElementById('profile-license-status').className = 'status-not-loaded';
             return 'error';
         }
-    } catch (error) {
-        console.error('Ошибка при загрузке статуса водительских прав:', error);
-        document.getElementById('profile-license-status').textContent = 'Не загружены';
-        document.getElementById('profile-license-status').className = 'status-not-loaded';
-        return 'error';
     }
+    
+    // Если не удалось получить данные пользователя
+    document.getElementById('profile-license-status').textContent = 'Не загружены';
+    document.getElementById('profile-license-status').className = 'status-not-loaded';
+    return 'error';
 }
 
 // Функция для периодического обновления статуса водительских прав без перезагрузки страницы
@@ -507,7 +515,21 @@ async function showMyOrders(page = 0) {
         return;
     }
 
-    const userData = getUserData();
+    let userData = getUserData();
+    
+    // Если userData нет, загружаем его из профиля
+    if (!userData || !userData.id) {
+        try {
+            const response = await authenticatedFetch('/users/profile');
+            if (response.ok) {
+                userData = await response.json();
+                setUserData(userData);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных пользователя:', error);
+        }
+    }
+    
     if (!userData || !userData.id) {
         alert('Пользователь не авторизован');
         return;
