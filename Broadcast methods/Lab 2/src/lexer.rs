@@ -351,8 +351,9 @@ impl<'a> Lexer<'a> {
                 }
             }
 
-            // Check for exponent
-            if (self.current_char == Some('e') || self.current_char == Some('E')) && is_float {
+            // Check for exponent (can occur in decimals or plain integers)
+            if self.current_char == Some('e') || self.current_char == Some('E') {
+                is_float = true;
                 num_str.push(self.current_char.unwrap());
                 self.advance();
                 
@@ -467,7 +468,7 @@ impl<'a> Lexer<'a> {
         }
 
         // Handle identifiers and numbers
-        if ch.is_ascii_alphabetic() {
+        if ch.is_ascii_alphabetic() || ch == '_' {
             let ident = self.read_identifier();
             if Self::is_keyword(&ident) {
                 return Some(Ok(Token {
@@ -552,7 +553,12 @@ impl<'a> Lexer<'a> {
             }
             '/' => {
                 self.advance();
-                TokenType::Slash
+                if self.current_char == Some('=') {
+                    self.advance();
+                    TokenType::NotEqual
+                } else {
+                    TokenType::Slash
+                }
             }
             '%' => {
                 self.advance();

@@ -1,0 +1,25 @@
+12 apple banana cat dog
+5 a orange grape fruit
+8 a apple banana cherry
+3 a a a a a
+15 orange a banana kiwi
+2 a simple test
+10 a a a a
+7 a test line
+20 a banana apple
+1 a fruit
+25 a a a
+9 a a a
+11 a a a a
+4 a a a a a
+30 a a a a a a
+
+Строка с 123 цифрами 456
+   лишние   пробелы   тут   
+Пустая строка выше
+
+a b c d e
+тестовая строка для проверки
+
+
+

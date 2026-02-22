@@ -1,0 +1,63 @@
+192.168.1.1 - GET /index.html HTTP/1.1
+10.0.0.5 - POST /api/data HTTP/1.1
+172.16.254.3 - GET /static/image.jpg HTTP/1.1
+8.8.8.8 - GET /static/css/style.css HTTP/1.1
+192.168.1.100 - GET /api/users HTTP/1.1
+10.0.0.1 - POST /static/data.json HTTP/1.1
+192.168.0.1 - GET /home HTTP/1.1
+172.31.255.255 - GET /static/img/logo.png HTTP/1.1
+10.10.10.10 - POST /api/v1/users HTTP/1.1
+192.0.2.1 - GET /about HTTP/1.1
+203.0.113.5 - GET /static/js/app.js HTTP/1.1
+198.51.100.7 - POST /api/auth HTTP/1.1
+169.254.1.1 - GET /health HTTP/1.1
+127.0.0.1 - GET /static/robots.txt HTTP/1.1
+192.168.1.200 - POST /api/update HTTP/1.1
+10.0.0.100 - GET /dashboard HTTP/1.1
+172.16.0.1 - GET /api/data HTTP/1.1
+192.168.10.1 - GET /blog/post/1 HTTP/1.1
+172.20.10.5 - POST /api/comments HTTP/1.1
+8.8.4.4 - GET /static/favicon.ico HTTP/1.1
+192.168.1.50 - GET /search?q=linux HTTP/1.1
+10.1.1.1 - POST /api/upload HTTP/1.1
+172.30.0.15 - GET /static/pdf/manual.pdf HTTP/1.1
+192.168.5.25 - GET /products/category/electronics HTTP/1.1
+203.0.113.100 - GET /contact HTTP/1.1
+198.51.100.200 - POST /api/feedback HTTP/1.1
+192.168.100.50 - GET /static/video/tutorial.mp4 HTTP/1.1
+10.200.200.1 - GET /profile/settings HTTP/1.1
+172.25.25.25 - POST /api/notifications HTTP/1.1
+192.168.0.150 - GET /static/audio/podcast.mp3 HTTP/1.1
+
+
+2001:0db8:85a3:0000:0000:8a2e:0370:7334 - GET /api/v2/users HTTP/1.1
+fe80::1 - GET /static/images/icon.svg HTTP/1.1
+::1 - GET /localhost-test HTTP/1.1
+2001:db8::2:1 - POST /api/data HTTP/1.1
+2a00:1450:4001:81e::200e - GET /static/css/main.css HTTP/1.1
+2607:f8b0:4005:804::200e - GET /search?q=ipv6 HTTP/1.1
+::ffff:192.168.1.1 - GET /ipv4-mapped HTTP/1.1
+2001:0db8:85a3::8a2e:0370:7335 - POST /static/upload HTTP/1.1
+fc00::1:2:3:4 - GET /internal/api HTTP/1.1
+2001:4860:4860::8888 - GET /dns-test HTTP/1.1
+fe80::2:2:2:2 - GET /static/js/vendor.js HTTP/1.1
+::ffff:ac10:0a01 - POST /api/mapped HTTP/1.1
+2001:0db8:0000:0042:0000:0000:0000:0123 - GET /static/backup/data.json HTTP/1.1
+2a02:6b8:0:1::feed:beef - GET /api/status HTTP/1.1
+fe80::216:3eff:fe0b:12d5 - POST /static/event HTTP/1.1
+2001:db8:1:2:3:4:5:6 - GET /blog/ipv6 HTTP/1.1
+::ffff:7f00:0001 - GET /localhost-mapped HTTP/1.1
+2001:0db8:85a3:08d3:1319:8a2e:0370:7344 - POST /api/secure HTTP/1.1
+fe80::224:21ff:feab:dc0f - GET /static/fonts/roboto.woff HTTP/1.1
+2600:: - GET /global-route HTTP/1.1
+
+
+256.100.50.25 - GET /admin HTTP/1.1
+invalid_address - GET /test HTTP/1.1
+192.168.1.300 - GET /test HTTP/1.1
+2001:db8:85a3::8a2e:0370:7334:extra - GET /invalid-ipv6 HTTP/1.1
+::g - GET /wrong-ipv6 HTTP/1.1
+192.168.1. - GET /incomplete-ip HTTP/1.1
+:1 - GET /invalid-ipv6 HTTP/1.1
+999.999.999.999 - GET /impossible-ip HTTP/1.1
+
