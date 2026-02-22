@@ -29,12 +29,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Get the current character without advancing
     fn peek(&mut self) -> Option<char> {
         self.input.peek().copied()
     }
 
-    /// Advance to the next character
     fn advance(&mut self) {
         if let Some(ch) = self.current_char {
             if ch == '\n' {
@@ -47,7 +45,6 @@ impl<'a> Lexer<'a> {
         self.current_char = self.input.next();
     }
 
-    /// Skip whitespace
     fn skip_whitespace(&mut self) {
         while let Some(ch) = self.current_char {
             if ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
@@ -58,12 +55,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Skip a single-line comment (--)
     fn skip_line_comment(&mut self) {
-        // Consume the second '-'
+
         self.advance();
         
-        // Skip until newline or EOF
         while let Some(ch) = self.current_char {
             if ch == '\n' {
                 self.advance();
@@ -73,12 +68,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Skip a multi-line comment with nesting support
     fn skip_multi_comment(&mut self) -> Result<(), LexicalError> {
         let start_line = self.line;
         let start_column = self.column;
         
-        // Consume the '-'
         self.advance();
         
         let mut nesting_level = 1;
@@ -107,14 +100,13 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    /// Parse a string literal
     fn read_string(&mut self, start_line: usize, start_column: usize) -> Result<String, LexicalError> {
-        self.advance(); // Skip opening quote
+        self.advance();
         let mut result = String::new();
         
         while let Some(ch) = self.current_char {
             if ch == '"' {
-                self.advance(); // Skip closing quote
+                self.advance();
                 return Ok(result);
             } else if ch == '\n' {
                 return Err(LexicalError {
@@ -171,14 +163,13 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    /// Parse a character literal
     fn read_char(&mut self, start_line: usize, start_column: usize) -> Result<String, LexicalError> {
-        self.advance(); // Skip opening quote
+        self.advance();
         let mut result = String::new();
         
         while let Some(ch) = self.current_char {
             if ch == '\'' {
-                self.advance(); // Skip closing quote
+                self.advance();
                 if result.is_empty() {
                     return Err(LexicalError {
                         line: start_line,
@@ -242,12 +233,10 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    /// Check if a character is valid for identifiers
     fn is_alnum(&self, ch: char) -> bool {
         ch.is_ascii_alphanumeric() || ch == '_'
     }
 
-    /// Read an identifier or keyword
     fn read_identifier(&mut self) -> String {
         let mut result = String::new();
         
@@ -263,7 +252,6 @@ impl<'a> Lexer<'a> {
         result
     }
 
-    /// Check if a string is a keyword
     fn is_keyword(s: &str) -> bool {
         matches!(
             s,
@@ -274,13 +262,11 @@ impl<'a> Lexer<'a> {
         )
     }
 
-    /// Parse a number (decimal, hex, or float)
     fn read_number(&mut self, start_line: usize, start_column: usize) -> Result<TokenType, LexicalError> {
         let mut num_str = String::new();
         let mut is_hex = false;
         let mut is_float = false;
 
-        // Check for 0x prefix
         if self.current_char == Some('0') {
             num_str.push('0');
             self.advance();
@@ -290,7 +276,6 @@ impl<'a> Lexer<'a> {
                 num_str.push('x');
                 self.advance();
                 
-                // Read hex digits
                 let start_len = num_str.len();
                 while let Some(ch) = self.current_char {
                     if ch.is_ascii_hexdigit() {
@@ -321,7 +306,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Read decimal part or continue from first digit
         if !is_hex {
             if num_str.is_empty() {
                 while let Some(ch) = self.current_char {
@@ -334,13 +318,11 @@ impl<'a> Lexer<'a> {
                 }
             }
 
-            // Check for dot (float)
             if self.current_char == Some('.') && self.peek() != Some('.') && self.peek().map(|c| c.is_ascii_digit()).unwrap_or(false) {
                 is_float = true;
                 num_str.push('.');
                 self.advance();
                 
-                // Read fractional part
                 while let Some(ch) = self.current_char {
                     if ch.is_ascii_digit() {
                         num_str.push(ch);
@@ -351,19 +333,16 @@ impl<'a> Lexer<'a> {
                 }
             }
 
-            // Check for exponent (can occur in decimals or plain integers)
             if self.current_char == Some('e') || self.current_char == Some('E') {
                 is_float = true;
                 num_str.push(self.current_char.unwrap());
                 self.advance();
                 
-                // Optional sign
                 if self.current_char == Some('+') || self.current_char == Some('-') {
                     num_str.push(self.current_char.unwrap());
                     self.advance();
                 }
                 
-                // Exponent digits
                 let exp_start_len = num_str.len();
                 while let Some(ch) = self.current_char {
                     if ch.is_ascii_digit() {
@@ -384,7 +363,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Determine token type
         if is_float {
             Ok(TokenType::FloatLiteral(num_str))
         } else if is_hex {
@@ -394,7 +372,6 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Get the next token
     pub fn next_token(&mut self) -> Option<Result<Token, LexicalError>> {
         self.skip_whitespace();
 
@@ -411,7 +388,6 @@ impl<'a> Lexer<'a> {
         let column = self.column;
         let ch = self.current_char.unwrap();
 
-        // Handle comments
         if ch == '-' && self.peek() == Some('-') {
             self.skip_line_comment();
             return self.next_token();
@@ -427,7 +403,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Handle strings
         if ch == '"' {
             match self.read_string(line, column) {
                 Ok(string_val) => {
@@ -447,7 +422,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Handle characters
         if ch == '\'' {
             match self.read_char(line, column) {
                 Ok(char_val) => {
@@ -467,7 +441,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Handle identifiers and numbers
         if ch.is_ascii_alphabetic() || ch == '_' {
             let ident = self.read_identifier();
             if Self::is_keyword(&ident) {
@@ -532,7 +505,6 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // Handle operators and delimiters
         let token_type = match ch {
             '+' => {
                 self.advance();
@@ -736,7 +708,6 @@ impl<'a> Lexer<'a> {
         }))
     }
 
-    /// Get all tokens
     pub fn tokenize(&mut self) -> (Vec<Token>, Vec<LexicalError>) {
         let mut tokens = Vec::new();
         
@@ -750,8 +721,7 @@ impl<'a> Lexer<'a> {
                     tokens.push(token);
                 }
                 Some(Err(_)) => {
-                    // Error already pushed to self.errors
-                    // Continue tokenizing to find all errors
+
                 }
                 None => break,
             }

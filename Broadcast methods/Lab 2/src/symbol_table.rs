@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
-/// Entry in the constant table
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConstantValue {
     Int(i64),
     Hex(u64),
-    Float(String), // Store as string to preserve precision
+    Float(String),
     String(String),
     Char(String),
 }
@@ -32,13 +31,13 @@ impl ConstantValue {
     }
 
     pub fn value_string_raw(&self) -> String {
-        // Returns original representation as it appears in source, with proper escaping for display
+
         match self {
             ConstantValue::Int(n) => n.to_string(),
             ConstantValue::Hex(n) => format!("0x{:X}", n),
-            ConstantValue::Float(s) => s.clone(), // Already has original format
-            ConstantValue::String(s) => format!("\"{}\"", escape_string(s)), // With escaped sequences
-            ConstantValue::Char(s) => format!("'{}'", escape_string(s)), // With escaped sequences
+            ConstantValue::Float(s) => s.clone(),
+            ConstantValue::String(s) => format!("\"{}\"", escape_string(s)),
+            ConstantValue::Char(s) => format!("'{}'", escape_string(s)),
         }
     }
 
@@ -61,7 +60,6 @@ fn escape_string(s: &str) -> String {
         .replace("\r", "\\r")
 }
 
-/// Identifier table
 pub struct IdentifierTable {
     identifiers: Vec<String>,
     indices: HashMap<String, usize>,
@@ -99,7 +97,6 @@ impl IdentifierTable {
     }
 }
 
-/// Constant table
 pub struct ConstantTable {
     constants: Vec<ConstantValue>,
     indices: HashMap<String, usize>,
@@ -139,7 +136,6 @@ impl ConstantTable {
     }
 }
 
-/// Unified table entry (either identifier or constant)
 #[derive(Debug, Clone)]
 pub enum TableEntry {
     Identifier(String),
@@ -155,7 +151,6 @@ impl TableEntry {
     }
 }
 
-/// Unified table combining identifiers and constants in order of first appearance
 pub struct UnifiedTable {
     entries: Vec<TableEntry>,
     indices: HashMap<String, usize>,
@@ -169,7 +164,6 @@ impl UnifiedTable {
         }
     }
 
-    /// Add an identifier to the table (if not already present)
     pub fn add_identifier(&mut self, name: &str) -> usize {
         let key = format!("IDENT:{}", name);
         if let Some(&idx) = self.indices.get(&key) {
@@ -182,7 +176,6 @@ impl UnifiedTable {
         }
     }
 
-    /// Add a constant to the table (if not already present)
     pub fn add_constant(&mut self, value: ConstantValue) -> usize {
         let key = format!("CONST:{}", value.canonical_key());
         if let Some(&idx) = self.indices.get(&key) {
@@ -195,19 +188,16 @@ impl UnifiedTable {
         }
     }
 
-    /// Get index of an identifier
     pub fn get_identifier_index(&self, name: &str) -> Option<usize> {
         let key = format!("IDENT:{}", name);
         self.indices.get(&key).copied()
     }
 
-    /// Get index of a constant
     pub fn get_constant_index(&self, value: &ConstantValue) -> Option<usize> {
         let key = format!("CONST:{}", value.canonical_key());
         self.indices.get(&key).copied()
     }
 
-    /// Get all entries in order
     pub fn list(&self) -> Vec<(usize, &TableEntry)> {
         self.entries
             .iter()

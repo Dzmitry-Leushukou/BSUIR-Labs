@@ -31,7 +31,6 @@ fn main() {
     let mut lexer = Lexer::new(&content);
     let (tokens, errors) = lexer.tokenize();
 
-    // If there are errors, output only them
     if !errors.is_empty() {
         for error in &errors {
             println!(
@@ -42,7 +41,6 @@ fn main() {
         process::exit(1);
     }
 
-    // Build unified table in order of appearance
     let mut unified_table = UnifiedTable::new();
     
     for token in &tokens {
@@ -73,7 +71,6 @@ fn main() {
         }
     }
 
-    // Output the unified table
     println!("CONSTANTS AND IDENTS");
     println!();
     println!("ID    | Value");
@@ -85,7 +82,6 @@ fn main() {
     
     println!();
     
-    // Output transformed code (tokens with replacements)
     let mut transformed = String::new();
     
     for token in &tokens {
