@@ -1,5 +1,5 @@
 use crate::token::{LexicalError, Token, TokenType};
-use crate::symbol_table::{ConstantTable, ConstantValue, IdentifierTable};
+use crate::symbol_table::{ConstantTable, ConstantValue, IdentifierTable, KeywordTable};
 use std::str::Chars;
 use std::iter::Peekable;
 
@@ -253,13 +253,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn is_keyword(s: &str) -> bool {
-        matches!(
-            s,
-            "module" | "import" | "data" | "where" | "let" | "in" | "if" | "then" | "else"
-                | "case" | "of" | "do" | "record" | "interface" | "implementation" | "forall"
-                | "with" | "mutual" | "total" | "partial" | "export" | "private" | "public"
-                | "parameters" | "using" | "namespace"
-        )
+        KeywordTable::is_keyword(s)
     }
 
     fn read_number(&mut self, start_line: usize, start_column: usize) -> Result<TokenType, LexicalError> {
