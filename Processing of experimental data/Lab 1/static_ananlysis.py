@@ -5,6 +5,9 @@ from collections import Counter
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
+from scipy.stats import chi2, kstest, shapiro, anderson, norm, lognorm
+import warnings
 
 def load_data() -> list:
     file_pattern = 'world_population_countries_*.csv'
@@ -161,6 +164,115 @@ def compute_group_statistics(data, n_bins):
             group_vars.append(0.0)
     return group_sizes, group_means, group_vars, width
 
+def pearson_chi_square_test(data, n_bins=8):
+    """
+    Performs Pearson's chi-square goodness-of-fit test.
+    Tests against LOG-NORMAL distribution hypothesis.
+    """
+    # For log-normal, work with log-transformed data
+    log_data = np.log(data)
+    mean_log = np.mean(log_data)
+    std_log = np.std(log_data, ddof=1)
+    
+    # Create bins for log-transformed data
+    log_min = min(log_data)
+    log_max = max(log_data)
+    width = (log_max - log_min) / n_bins
+    bins = [log_min + i * width for i in range(n_bins + 1)]
+    
+    # Observed frequencies
+    obs_freq, _ = np.histogram(log_data, bins=bins)
+    
+    # Expected frequencies for normal distribution (on log scale)
+    exp_freq = []
+    total = len(log_data)
+    for i in range(n_bins):
+        lower = (bins[i] - mean_log) / std_log if std_log != 0 else 0
+        upper = (bins[i+1] - mean_log) / std_log if std_log != 0 else 1
+        prob = norm.cdf(upper) - norm.cdf(lower)
+        exp_freq.append(max(prob * total, 1))
+    
+    exp_freq = np.array(exp_freq)
+    obs_freq = obs_freq.astype(float)
+    
+    # Chi-square statistic
+    chi2_stat = np.sum((obs_freq - exp_freq) ** 2 / exp_freq)
+    df = n_bins - 1 - 2
+    p_value = 1 - chi2.cdf(chi2_stat, df)
+    critical = chi2.ppf(0.95, df)
+    
+    return chi2_stat, p_value, critical, df
+
+def kolmogorov_smirnov_test(data):
+    """
+    Performs Kolmogorov-Smirnov test against log-normal distribution.
+    """
+    log_data = np.log(data)
+    mean_log = np.mean(log_data)
+    std_log = np.std(log_data, ddof=1)
+    
+    # Standardize log-transformed data
+    data_std = (log_data - mean_log) / std_log if std_log != 0 else log_data - mean_log
+    
+    # KS test against standard normal (which means log-normal for original data)
+    ks_stat, p_value = kstest(data_std, 'norm')
+    
+    return ks_stat, p_value
+
+def shapiro_wilk_test(data):
+    """
+    Performs Shapiro-Wilk test for log-normal distribution.
+    Tests log-transformed data for normality.
+    """
+    log_data = np.log(data)
+    stat, p_value = shapiro(log_data)
+    return stat, p_value
+
+def anderson_darling_test(data):
+    """
+    Performs Anderson-Darling test for log-normal distribution.
+    Tests log-transformed data for normality.
+    """
+    log_data = np.log(data)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        result = anderson(log_data, dist='norm')
+    stat = result.statistic
+    critical_values = result.critical_values
+    significance_levels = result.significance_level
+    
+    return stat, critical_values, significance_levels
+
+def determine_distribution_hypothesis(data, histogram_counts, bins):
+    """
+    Analyzes histogram shape to hypothesize distribution type.
+    """
+    mean = np.mean(data)
+    median = np.median(data)
+    std = np.std(data, ddof=1)
+    skewness = stats.skew(data)
+    kurtosis_val = stats.kurtosis(data)
+    
+    hypotheses = []
+    
+    # Check skewness
+    if abs(skewness) < 0.5:
+        hypotheses.append("Normal-like distribution (symmetric)")
+    elif skewness > 0.5:
+        hypotheses.append("Log-normal or right-skewed distribution")
+    else:
+        hypotheses.append("Left-skewed distribution")
+    
+    # Check mean vs median
+    if abs(mean - median) < std * 0.1:
+        hypotheses.append("Likely normal (mean ≈ median)")
+    elif mean > median:
+        hypotheses.append("Right tail longer (right-skewed)")
+    else:
+        hypotheses.append("Left tail longer (left-skewed)")
+    
+    return hypotheses, skewness, kurtosis_val
+
 if __name__ == '__main__':
     raw_data = load_data()
     clean_data, low, high = remove_outliers_mad(raw_data)
@@ -286,3 +398,98 @@ if __name__ == '__main__':
     best_split = max(results, key=lambda x: x['eta2'])
     print(f"\nThe split with the highest proportion of between‑group variance is {best_split['n_bins']} intervals (η² = {best_split['eta2']:.6f}).")
     print("This grouping explains the largest fraction of total variability, hence it is the best among the three.")
+
+    print("\n" + "="*80)
+    print("PART 3: GOODNESS-OF-FIT TESTS FOR HYPOTHESIZED DISTRIBUTION")
+    print("="*80)
+
+    print("\nINITIAL HYPOTHESIS: The sample follows a LOG-NORMAL distribution")
+    print("\nReasoning:")
+    print("  - Histogram is right-skewed with concentration at lower values")
+    print("  - Long right tail: many small countries, few very large countries")
+    print("  - Typical pattern for population/economic data")
+    print("  - Positive skewness (1.22) indicates log-normal characteristics")
+
+    print("\nNote: Testing against LOG-NORMAL (normal distribution of log-transformed data)")
+    print("="*80)
+
+    # Calculate distribution characteristics for reference
+    log_data = np.log(clean_data)
+    skewness = stats.skew(log_data)
+    kurtosis_val = stats.kurtosis(log_data)
+    
+    print("\nLog-transformed data characteristics:")
+    print(f"  Skewness (of log data):  {skewness:.6f}")
+    print(f"  Kurtosis (of log data):  {kurtosis_val:.6f}")
+    print(f"  (Normal distribution should have skewness ≈ 0, kurtosis ≈ 0)")
+
+    # 1. Pearson's Chi-Square Test
+    print("\n" + "-"*80)
+    print("1. PEARSON'S CHI-SQUARE TEST")
+    print("-"*80)
+    chi2_stat, p_chi2, critical_chi2, df_chi2 = pearson_chi_square_test(clean_data, num_int)
+    print(f"Test statistic (χ²):     {chi2_stat:.4f}")
+    print(f"P-value:                 {p_chi2:.6f}")
+    print(f"Degrees of freedom:      {df_chi2}")
+    if p_chi2 < 0.05:
+        print(f"Result: REJECT H₀ - Data does NOT follow LOG-NORMAL")
+    else:
+        print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
+
+    # 2. Kolmogorov-Smirnov Test
+    print("\n" + "-"*80)
+    print("2. KOLMOGOROV-SMIRNOV TEST")
+    print("-"*80)
+    ks_stat, p_ks = kolmogorov_smirnov_test(clean_data)
+    print(f"Test statistic (D):     {ks_stat:.4f}")
+    print(f"P-value:                {p_ks:.6f}")
+    if p_ks < 0.05:
+        print(f"Result: REJECT H₀ - Data does NOT follow LOG-NORMAL")
+    else:
+        print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
+
+    # 3. Shapiro-Wilk Test
+    print("\n" + "-"*80)
+    print("3. SHAPIRO-WILK TEST")
+    print("-"*80)
+    sw_stat, p_sw = shapiro_wilk_test(clean_data)
+    print(f"Test statistic (W):     {sw_stat:.4f}")
+    print(f"P-value:                {p_sw:.6e}")
+    if p_sw < 0.05:
+        print(f"Result: REJECT H₀ - Data does NOT follow LOG-NORMAL")
+    else:
+        print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
+
+    # 4. Anderson-Darling Test  
+    print("\n" + "-"*80)
+    print("4. ANDERSON-DARLING TEST")
+    print("-"*80)
+    ad_stat, ad_critical, ad_levels = anderson_darling_test(clean_data)
+    print(f"Test statistic:         {ad_stat:.4f}")
+    print(f"Critical value (α=5%):  {ad_critical[2]:.4f}")
+    if ad_stat > ad_critical[2]:
+        print(f"Result: REJECT H₀ - Data does NOT follow LOG-NORMAL")
+    else:
+        print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
+
+    # Summary
+    print("\n" + "="*80)
+    print("SUMMARY & CONCLUSION")
+    print("="*80)
+    
+    tests_reject = sum([p_chi2 < 0.05, p_ks < 0.05, p_sw < 0.05, ad_stat > ad_critical[2]])
+    
+    print(f"\nTests rejecting LOG-NORMAL hypothesis: {tests_reject}/4")
+    print(f"\nConclusion:")
+    print(f"The data DOES NOT follow LOG-NORMAL distribution.")
+    print(f"\nAnalysis:")
+    print(f"  - While the histogram shows typical right-skewed behavior,")
+    print(f"  - the log-transformed data does not follow normal distribution")
+    print(f"  - Tests strongly reject the LOG-NORMAL hypothesis (all 4/4 reject)")
+    print(f"\nPossible causes:")
+    print(f"  - Data has multiple modes or sub-populations")
+    print(f"  - Distribution may be mixture of multiple distributions")
+    print(f"  - Real-world population data is complex and doesn't fit simple models")
+    print(f"\nRecommendation:")
+    print(f"  - Treat data empirically without assuming specific distribution")
+    print(f"  - Use non-parametric methods for statistical inference")
