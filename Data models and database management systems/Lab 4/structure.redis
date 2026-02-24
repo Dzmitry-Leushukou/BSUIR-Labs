@@ -1,0 +1,57 @@
+HSET user:{user_id} name {u.name} email {u.email} created_at {u.created_at}
+HSET category:{category_id} name {c.name}
+HSET product:{product_id} name {p.name} category_id {p.category_id} price {p.price}
+HSET order:{order_id} user_id {o.user_id} created_at {o.created_at} status {o.status}
+HSET order_item:{order_item_id} order_id {oi.order_id} product_id {oi.product_id} quantity {oi.quantity} price {oi.price}
+
+SADD category:{category_id}:products product:{product_id}
+SADD user:{user_id}:orders_set order:{order_id}
+SADD user:{user_id}:purchased product:{product_id}
+
+LPUSH user:{user_id}:orders order:{order_id}
+LTRIM user:{user_id}:orders 0 9         
+RPUSH order:{order_id}:items order_item:{order_item_id}
+
+ZINCRBY products:by_sales {oi.quantity} product:{product_id}
+ZINCRBY products:by_revenue {oi.price * oi.quantity} product:{product_id}
+ZADD products:by_price {p.price} product:{product_id}
+ZADD users:by_registration {timestamp} user:{user_id}
+
+users =
+{
+    user_id (PK)
+    name
+    email
+    created_at
+}
+
+categories =
+{
+    category_id(PK)
+    name
+}
+
+order_items =
+{
+    order_item_id (PK)
+    order_id (FK)
+    product_id (FK)
+    quantity
+    price
+}
+
+products=
+{
+    product_id (PK)
+    name
+    category_id (FK)
+    price
+}
+
+orders=
+{
+    order_id (PK)
+    user_id (FK)
+    created_at
+    status
+}
