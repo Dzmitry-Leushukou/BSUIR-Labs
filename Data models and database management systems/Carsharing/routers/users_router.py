@@ -339,7 +339,7 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
     }
 
 
-@router.post("/register", response_model=User)
+@router.post("/register")
 async def register_user_endpoint(request: Request, user: UserRegistration):
     print(f"Registration attempt with email: {user.email}")
 

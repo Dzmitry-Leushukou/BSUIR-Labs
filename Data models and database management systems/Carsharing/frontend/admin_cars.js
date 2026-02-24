@@ -268,8 +268,9 @@ async function openEditCarModal(carId) {
         return;
     }
 
-    const response = await authenticatedFetch(`/cars/${carId}`);
-        
+    try {
+        const response = await authenticatedFetch(`/cars/${carId}`);
+
         if (response.ok) {
             const car = await response.json();
             
