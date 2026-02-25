@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime
 
 
-# Get data without aggregates
 url_countries = "http://api.worldbank.org/v2/country?format=json&per_page=20000"
 resp = requests.get(url_countries)
 if resp.status_code != 200:
@@ -18,7 +17,6 @@ for c in countries_data:
 
 print(f"Found countries: {len(country_codes)}")
 
-# Get population data for all countries for latest year
 year = datetime.now().year
 while True:
     indicator = 'SP.POP.TOTL'

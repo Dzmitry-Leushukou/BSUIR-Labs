@@ -169,21 +169,17 @@ def pearson_chi_square_test(data, n_bins=8):
     Performs Pearson's chi-square goodness-of-fit test.
     Tests against LOG-NORMAL distribution hypothesis.
     """
-    # For log-normal, work with log-transformed data
     log_data = np.log(data)
     mean_log = np.mean(log_data)
     std_log = np.std(log_data, ddof=1)
     
-    # Create bins for log-transformed data
     log_min = min(log_data)
     log_max = max(log_data)
     width = (log_max - log_min) / n_bins
     bins = [log_min + i * width for i in range(n_bins + 1)]
     
-    # Observed frequencies
     obs_freq, _ = np.histogram(log_data, bins=bins)
     
-    # Expected frequencies for normal distribution (on log scale)
     exp_freq = []
     total = len(log_data)
     for i in range(n_bins):
@@ -195,7 +191,6 @@ def pearson_chi_square_test(data, n_bins=8):
     exp_freq = np.array(exp_freq)
     obs_freq = obs_freq.astype(float)
     
-    # Chi-square statistic
     chi2_stat = np.sum((obs_freq - exp_freq) ** 2 / exp_freq)
     df = n_bins - 1 - 2
     p_value = 1 - chi2.cdf(chi2_stat, df)
@@ -211,10 +206,8 @@ def kolmogorov_smirnov_test(data):
     mean_log = np.mean(log_data)
     std_log = np.std(log_data, ddof=1)
     
-    # Standardize log-transformed data
     data_std = (log_data - mean_log) / std_log if std_log != 0 else log_data - mean_log
     
-    # KS test against standard normal (which means log-normal for original data)
     ks_stat, p_value = kstest(data_std, 'norm')
     
     return ks_stat, p_value
@@ -255,7 +248,6 @@ def determine_distribution_hypothesis(data, histogram_counts, bins):
     
     hypotheses = []
     
-    # Check skewness
     if abs(skewness) < 0.5:
         hypotheses.append("Normal-like distribution (symmetric)")
     elif skewness > 0.5:
@@ -263,7 +255,6 @@ def determine_distribution_hypothesis(data, histogram_counts, bins):
     else:
         hypotheses.append("Left-skewed distribution")
     
-    # Check mean vs median
     if abs(mean - median) < std * 0.1:
         hypotheses.append("Likely normal (mean ≈ median)")
     elif mean > median:
@@ -413,7 +404,6 @@ if __name__ == '__main__':
     print("\nNote: Testing against LOG-NORMAL (normal distribution of log-transformed data)")
     print("="*80)
 
-    # Calculate distribution characteristics for reference
     log_data = np.log(clean_data)
     skewness = stats.skew(log_data)
     kurtosis_val = stats.kurtosis(log_data)
@@ -423,7 +413,6 @@ if __name__ == '__main__':
     print(f"  Kurtosis (of log data):  {kurtosis_val:.6f}")
     print(f"  (Normal distribution should have skewness ≈ 0, kurtosis ≈ 0)")
 
-    # 1. Pearson's Chi-Square Test
     print("\n" + "-"*80)
     print("1. PEARSON'S CHI-SQUARE TEST")
     print("-"*80)
@@ -436,7 +425,6 @@ if __name__ == '__main__':
     else:
         print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
 
-    # 2. Kolmogorov-Smirnov Test
     print("\n" + "-"*80)
     print("2. KOLMOGOROV-SMIRNOV TEST")
     print("-"*80)
@@ -448,7 +436,6 @@ if __name__ == '__main__':
     else:
         print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
 
-    # 3. Shapiro-Wilk Test
     print("\n" + "-"*80)
     print("3. SHAPIRO-WILK TEST")
     print("-"*80)
@@ -460,7 +447,6 @@ if __name__ == '__main__':
     else:
         print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
 
-    # 4. Anderson-Darling Test  
     print("\n" + "-"*80)
     print("4. ANDERSON-DARLING TEST")
     print("-"*80)
@@ -472,7 +458,6 @@ if __name__ == '__main__':
     else:
         print(f"Result: FAIL TO REJECT H₀ - Data may follow LOG-NORMAL")
 
-    # Summary
     print("\n" + "="*80)
     print("SUMMARY & CONCLUSION")
     print("="*80)
@@ -486,10 +471,4 @@ if __name__ == '__main__':
     print(f"  - While the histogram shows typical right-skewed behavior,")
     print(f"  - the log-transformed data does not follow normal distribution")
     print(f"  - Tests strongly reject the LOG-NORMAL hypothesis (all 4/4 reject)")
-    print(f"\nPossible causes:")
-    print(f"  - Data has multiple modes or sub-populations")
-    print(f"  - Distribution may be mixture of multiple distributions")
-    print(f"  - Real-world population data is complex and doesn't fit simple models")
-    print(f"\nRecommendation:")
-    print(f"  - Treat data empirically without assuming specific distribution")
-    print(f"  - Use non-parametric methods for statistical inference")
+
