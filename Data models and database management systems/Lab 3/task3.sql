@@ -84,7 +84,7 @@ BEGIN
     ORDER BY t.table_name;
 END;
 $$ LANGUAGE plpgsql;
-
+    
 CREATE OR REPLACE FUNCTION sort_tables_by_dependencies(
     table_names text[],
     schema_name text
@@ -962,8 +962,11 @@ CREATE INDEX IF NOT EXISTS idx_orders_amount ON dev.orders(amount);
 CREATE INDEX IF NOT EXISTS idx_products_price ON dev.products(price);
 CREATE INDEX IF NOT EXISTS idx_products_price ON prod.products(price) WHERE price > 100;
 
+
+
+
 SELECT '=== Comparison result ===' as info;
 SELECT * FROM compare_schemas('dev', 'prod');
 
 SELECT '=== Generated DDL script ===' as info;
-SELECT generate_sync_ddl('dev', 'prod');
+SELECT unnest(string_to_array(generate_sync_ddl('dev', 'prod'), E'\n')) AS line;
