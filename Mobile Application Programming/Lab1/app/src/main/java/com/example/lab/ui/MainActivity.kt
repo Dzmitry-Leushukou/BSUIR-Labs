@@ -44,6 +44,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnClear).setOnClickListener {
             tvResult.text = calculator.clear()
         }
+
+        findViewById<Button>(R.id.btnBackspace).setOnClickListener {
+            tvResult.text = calculator.backspace(tvResult.text.toString())
+        }
     }
 
     private fun setNumberButton(buttonId: Int, digit: String) {

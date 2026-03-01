@@ -6,12 +6,35 @@ class Calculator {
     private var newInput = true
 
     fun appendDigit(digit: String, currentText: String): String {
+        if (digit == ".") {
+            if (newInput) {
+                newInput = false
+                return "0."
+            }
+            if (currentText.contains(".")) {
+                return currentText
+            }
+        }
+
         val result = if (newInput || currentText == "0") {
             digit
         } else {
             currentText + digit
         }
         newInput = false
+        return result
+    }
+
+    fun backspace(currentText: String): String {
+        if (newInput || currentText == "Error") return "0"
+        
+        val result = if (currentText.length <= 1) {
+            "0"
+        } else {
+            currentText.substring(0, currentText.length - 1)
+        }
+        
+        if (result == "0") newInput = true
         return result
     }
 
@@ -35,7 +58,6 @@ class Calculator {
         return if (resultValue.isNaN()) {
             "Error"
         } else {
-            // Убираем .0 если число целое
             val formatted = resultValue.toString()
             if (formatted.endsWith(".0")) {
                 formatted.substring(0, formatted.length - 2)
