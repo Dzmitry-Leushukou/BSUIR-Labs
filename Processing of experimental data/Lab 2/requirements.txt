@@ -1,6 +1,5 @@
 requests
 pandas
-datetime
-tabulate
 matplotlib
-numpy
+seaborn
+tabulate
