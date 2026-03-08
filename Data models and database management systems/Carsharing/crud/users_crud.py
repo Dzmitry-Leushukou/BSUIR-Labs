@@ -2,11 +2,29 @@ from schemas import UserCreate, UserUpdate, User
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+from redis_client import redis_client, USERS_CACHE_TTL, USER_CACHE_TTL
 import pytz
 from datetime import datetime
 
+# Cache key constants
+USERS_LIST_CACHE_KEY = "users:list"
+USER_CACHE_KEY_PREFIX = "users:id"
+USER_BY_EMAIL_CACHE_KEY_PREFIX = "users:email"
+USERS_COUNT_CACHE_KEY = "users:count"
+
+
 # Users CRUD
 def get_users(offset: int = 0, limit: int = 100):
+    """
+    Get all users with caching.
+    """
+    cache_key = f"{USERS_LIST_CACHE_KEY}:{offset}:{limit}"
+    
+    # Try to get from cache first
+    cached_users = redis_client.get_cache(cache_key)
+    if cached_users is not None:
+        return cached_users
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
@@ -19,20 +37,48 @@ def get_users(offset: int = 0, limit: int = 100):
     users = cur.fetchall()
     cur.close()
     conn.close()
-    return users
+    
+    # Convert to list of dicts
+    users_list = [dict(user) for user in users] if users else []
+    
+    # Cache the result
+    redis_client.set_cache(cache_key, users_list, ttl=USERS_CACHE_TTL)
+    
+    return users_list
+
 
 def get_user(user_id: int):
+    """
+    Get a single user by ID with caching.
+    """
+    cache_key = f"{USER_CACHE_KEY_PREFIX}:{user_id}"
+    
+    # Try to get from cache first
+    cached_user = redis_client.get_cache(cache_key)
+    if cached_user is not None:
+        return cached_user
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
     user = cur.fetchone()
     cur.close()
     conn.close()
+    
     if not user:
         raise HTTPException(status_code=404, detail=f"Пользователь с ID {user_id} не найден")
-    return user
+    
+    # Convert to dict and cache
+    user_dict = dict(user)
+    redis_client.set_cache(cache_key, user_dict, ttl=USER_CACHE_TTL)
+    
+    return user_dict
+
 
 def create_user(user: UserCreate):
+    """
+    Create a new user and invalidate cache.
+    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
@@ -47,6 +93,10 @@ def create_user(user: UserCreate):
         )
         new_user = cur.fetchone()
         conn.commit()
+        
+        # Invalidate users list cache
+        redis_client.invalidate_list_cache("users")
+        
         return new_user
     except Exception as e:
         conn.rollback()
@@ -59,7 +109,11 @@ def create_user(user: UserCreate):
         cur.close()
         conn.close()
 
+
 def update_user(user_id: int, user: UserUpdate):
+    """
+    Update an existing user and invalidate cache.
+    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
@@ -103,11 +157,27 @@ def update_user(user_id: int, user: UserUpdate):
     conn.commit()
     cur.close()
     conn.close()
+    
     if not updated_user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
+    
+    # Invalidate user-specific cache and list caches
+    redis_client.delete_cache(f"{USER_CACHE_KEY_PREFIX}:{user_id}")
+    redis_client.delete_cache(f"{USER_BY_EMAIL_CACHE_KEY_PREFIX}:{updated_user.get('email')}")
+    redis_client.invalidate_list_cache("users")
+    redis_client.delete_cache(USERS_COUNT_CACHE_KEY)
+    
     return updated_user
 
+
 def delete_user(user_id: int):
+    """
+    Delete a user and invalidate cache.
+    """
+    # Get user email first for cache invalidation
+    user = get_user(user_id)
+    user_email = user.get('email')
+    
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
@@ -115,24 +185,66 @@ def delete_user(user_id: int):
     deleted_count = cur.rowcount
     cur.close()
     conn.close()
+    
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
+    
+    # Invalidate user-specific cache and list caches
+    redis_client.delete_cache(f"{USER_CACHE_KEY_PREFIX}:{user_id}")
+    if user_email:
+        redis_client.delete_cache(f"{USER_BY_EMAIL_CACHE_KEY_PREFIX}:{user_email}")
+    redis_client.invalidate_list_cache("users")
+    redis_client.delete_cache(USERS_COUNT_CACHE_KEY)
+    
     return {"message": "Пользователь успешно удален"}
 
+
 def get_user_by_email(email: str):
+    """
+    Get a user by email with caching.
+    """
+    cache_key = f"{USER_BY_EMAIL_CACHE_KEY_PREFIX}:{email}"
+    
+    # Try to get from cache first
+    cached_user = redis_client.get_cache(cache_key)
+    if cached_user is not None:
+        return cached_user
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT * FROM users WHERE email = %s", (email,))
     user = cur.fetchone()
     cur.close()
     conn.close()
-    return user
+    
+    if user:
+        # Convert to dict and cache
+        user_dict = dict(user)
+        redis_client.set_cache(cache_key, user_dict, ttl=USER_CACHE_TTL)
+        return user_dict
+    
+    return None
+
     
 def get_users_count():
+    """
+    Get total users count with caching.
+    """
+    # Try to get from cache first
+    cached_count = redis_client.get_cache(USERS_COUNT_CACHE_KEY)
+    if cached_count is not None:
+        return cached_count
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT COUNT(*) as count FROM users")
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    
+    count = result['count'] if result else 0
+    
+    # Cache the result
+    redis_client.set_cache(USERS_COUNT_CACHE_KEY, count, ttl=USERS_CACHE_TTL)
+    
+    return count

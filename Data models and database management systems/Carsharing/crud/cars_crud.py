@@ -2,31 +2,90 @@ from schemas import CarCreate, CarUpdate, Car
 from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+from redis_client import redis_client, CARS_CACHE_TTL, CAR_CACHE_TTL
 import pytz
 from datetime import datetime
 
+# Cache key constants
+CARS_LIST_CACHE_KEY = "cars:list"
+CARS_AVAILABLE_CACHE_KEY = "cars:available"
+CAR_CACHE_KEY_PREFIX = "cars:id"
+CARS_POSITIONS_CACHE_KEY = "cars:positions"
+CARS_COUNT_CACHE_KEY = "cars:count"
+
+
 # Cars CRUD
 def get_cars(offset: int = 0, limit: int = 100):
+    """
+    Get all cars with caching.
+    Cache invalidated on every update/delete due to frequent status changes.
+    """
+    cache_key = f"{CARS_LIST_CACHE_KEY}:{offset}:{limit}"
+    
+    # Try to get from cache first
+    cached_cars = redis_client.get_cache(cache_key)
+    if cached_cars is not None:
+        return cached_cars
+    
+    # If not in cache, query database
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
+    cur.execute("""
+        SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at 
+        FROM cars 
+        ORDER BY id 
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
     cars = cur.fetchall()
     cur.close()
     conn.close()
-    return cars
+    
+    # Convert to list of dicts
+    cars_list = [dict(car) for car in cars] if cars else []
+    
+    # Cache the result (10 minutes - cars status changes frequently)
+    redis_client.set_cache(cache_key, cars_list, ttl=CARS_CACHE_TTL)
+    
+    return cars_list
+
 
 def get_car(car_id: int):
+    """
+    Get a single car by ID with caching.
+    """
+    cache_key = f"{CAR_CACHE_KEY_PREFIX}:{car_id}"
+    
+    # Try to get from cache first
+    cached_car = redis_client.get_cache(cache_key)
+    if cached_car is not None:
+        return cached_car
+    
+    # If not in cache, query database
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at FROM cars WHERE id = %s", (car_id,))
+    cur.execute("""
+        SELECT id, vin, plate_number, model, status, ST_AsText(position) as position, main_photo_id, updated_at 
+        FROM cars 
+        WHERE id = %s
+    """, (car_id,))
     car = cur.fetchone()
     cur.close()
     conn.close()
+    
     if not car:
         raise HTTPException(status_code=404, detail=f"Автомобиль с ID {car_id} не найден")
-    return car
+    
+    # Convert to dict and cache
+    car_dict = dict(car)
+    redis_client.set_cache(cache_key, car_dict, ttl=CAR_CACHE_TTL)
+    
+    return car_dict
+
 
 def create_car(car: CarCreate):
+    """
+    Create a new car and invalidate cache.
+    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
@@ -56,6 +115,10 @@ def create_car(car: CarCreate):
         conn.commit()
         cur.close()
         conn.close()
+        
+        # Invalidate cars cache
+        redis_client.invalidate_list_cache("cars")
+        
         return new_car
     except Exception as e:
         conn.rollback()
@@ -69,7 +132,11 @@ def create_car(car: CarCreate):
         else:
             raise HTTPException(status_code=400, detail=f"Ошибка при создании автомобиля: {str(e)}")
 
+
 def update_car(car_id: int, car: CarUpdate):
+    """
+    Update an existing car and invalidate cache.
+    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
@@ -120,8 +187,16 @@ def update_car(car_id: int, car: CarUpdate):
         conn.commit()
         cur.close()
         conn.close()
+        
         if not updated_car:
             raise HTTPException(status_code=404, detail="Автомобиль не найден")
+        
+        # Invalidate car-specific cache and list caches
+        redis_client.delete_cache(f"{CAR_CACHE_KEY_PREFIX}:{car_id}")
+        redis_client.invalidate_list_cache("cars")
+        redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
+        redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
+        
         return updated_car
     except Exception as e:
         conn.rollback()
@@ -135,7 +210,11 @@ def update_car(car_id: int, car: CarUpdate):
         else:
             raise HTTPException(status_code=400, detail=f"Ошибка при обновлении автомобиля: {str(e)}")
 
+
 def delete_car(car_id: int):
+    """
+    Delete a car and invalidate cache.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
@@ -143,12 +222,32 @@ def delete_car(car_id: int):
     deleted_count = cur.rowcount
     cur.close()
     conn.close()
+    
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    
+    # Invalidate car-specific cache and list caches
+    redis_client.delete_cache(f"{CAR_CACHE_KEY_PREFIX}:{car_id}")
+    redis_client.invalidate_list_cache("cars")
+    redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
+    redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
+    
     return {"message": "Автомобиль успешно удален"}
 
+
 def get_cars_positions_with_user_rental_status(user_id: int):
-    """Возвращает машины для отображения на карте: если у пользователя есть активная аренда - только арендованная машина, иначе - только доступные машины"""
+    """
+    Get cars for map display.
+    If user has active rental: only rented car, otherwise: only available cars.
+    Cache is invalidated when rentals change.
+    """
+    cache_key = f"{CARS_POSITIONS_CACHE_KEY}:user:{user_id}"
+    
+    # Try to get from cache first
+    cached_cars = redis_client.get_cache(cache_key)
+    if cached_cars is not None:
+        return cached_cars
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
@@ -184,13 +283,33 @@ def get_cars_positions_with_user_rental_status(user_id: int):
     
     cur.close()
     conn.close()
-    return cars
+    
+    # Convert to list of dicts and cache
+    cars_list = [dict(car) for car in cars] if cars else []
+    redis_client.set_cache(cache_key, cars_list, ttl=CARS_CACHE_TTL)
+    
+    return cars_list
+
     
 def get_cars_count():
+    """
+    Get total cars count with caching.
+    """
+    # Try to get from cache first
+    cached_count = redis_client.get_cache(CARS_COUNT_CACHE_KEY)
+    if cached_count is not None:
+        return cached_count
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT COUNT(*) as count FROM cars")
     result = cur.fetchone()
     cur.close()
     conn.close()
-    return result['count'] if result else 0
+    
+    count = result['count'] if result else 0
+    
+    # Cache the result
+    redis_client.set_cache(CARS_COUNT_CACHE_KEY, count, ttl=CARS_CACHE_TTL)
+    
+    return count

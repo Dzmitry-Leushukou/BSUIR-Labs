@@ -1,6 +1,7 @@
 import redis
 import os
-from typing import Optional
+import json
+from typing import Optional, Any, List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +17,16 @@ FAILED_LOGIN_PREFIX = "failed_login:"
 MAX_FAILED_ATTEMPTS = 3
 BLACKLIST_TTL_MINUTES = 10
 FAILED_LOGIN_TTL_MINUTES = 30  # Failed login counter expires after 30 minutes
+
+# Cache configuration with TTL (Time To Live) in seconds
+CACHE_PREFIX = "cache:"
+ROLES_CACHE_TTL = 3600  # 1 hour - справочник, статичные данные
+USERS_CACHE_TTL = 1800  # 30 minutes - список пользователей
+CARS_CACHE_TTL = 600    # 10 minutes - каталог активных автомобилей (часто меняется)
+SESSIONS_CACHE_TTL = 1800  # 30 minutes - сессионные данные
+USER_CACHE_TTL = 300    # 5 minutes - отдельный пользователь
+CAR_CACHE_TTL = 300     # 5 minutes - отдельный автомобиль
+DRIVER_LICENSES_CACHE_TTL = 3600  # 1 hour - справочник
 
 
 class RedisClient:
@@ -123,6 +134,105 @@ class RedisClient:
         key = f"{FAILED_LOGIN_PREFIX}{email}"
         count = self.redis_client.get(key)
         return int(count) if count else 0
+    
+    # =========================================================================
+    # Cache management methods for general caching
+    # =========================================================================
+    
+    def set_cache(self, key: str, value: Any, ttl: int = 3600) -> None:
+        """
+        Set a value in cache with TTL.
+        
+        Args:
+            key: Cache key
+            value: Value to cache (will be JSON serialized if dict/list)
+            ttl: Time to live in seconds (default 1 hour)
+        """
+        try:
+            # Serialize dict/list to JSON, keep other types as-is
+            if isinstance(value, (dict, list)):
+                serialized_value = json.dumps(value)
+            else:
+                serialized_value = value
+            
+            cache_key = f"{CACHE_PREFIX}{key}"
+            self.redis_client.setex(cache_key, ttl, serialized_value)
+        except Exception as e:
+            # If caching fails, log but don't raise - don't break the app
+            print(f"Cache set failed for key {key}: {str(e)}")
+    
+    def get_cache(self, key: str) -> Optional[Any]:
+        """
+        Get a value from cache.
+        
+        Args:
+            key: Cache key
+            
+        Returns:
+            Cached value (deserialized if JSON) or None if not found
+        """
+        try:
+            cache_key = f"{CACHE_PREFIX}{key}"
+            value = self.redis_client.get(cache_key)
+            
+            if value is None:
+                return None
+            
+            # Try to deserialize JSON
+            try:
+                return json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                # Return as-is if not JSON
+                return value
+        except Exception as e:
+            print(f"Cache get failed for key {key}: {str(e)}")
+            return None
+    
+    def delete_cache(self, key: str) -> None:
+        """
+        Delete a value from cache.
+        
+        Args:
+            key: Cache key to delete
+        """
+        try:
+            cache_key = f"{CACHE_PREFIX}{key}"
+            self.redis_client.delete(cache_key)
+        except Exception as e:
+            print(f"Cache delete failed for key {key}: {str(e)}")
+    
+    def delete_cache_by_pattern(self, pattern: str) -> int:
+        """
+        Delete cache entries matching a pattern (useful for invalidating related caches).
+        
+        Args:
+            pattern: Pattern to match (e.g., "users:*" will match cache:users:* and cache:users:list)
+            
+        Returns:
+            Number of keys deleted
+        """
+        try:
+            full_pattern = f"{CACHE_PREFIX}{pattern}"
+            # Find all keys matching pattern
+            keys = self.redis_client.keys(full_pattern)
+            
+            if keys:
+                deleted_count = self.redis_client.delete(*keys)
+                return deleted_count
+            return 0
+        except Exception as e:
+            print(f"Cache delete pattern failed for pattern {pattern}: {str(e)}")
+            return 0
+    
+    def invalidate_list_cache(self, entity_type: str) -> None:
+        """
+        Invalidate list cache for a specific entity type.
+        
+        Args:
+            entity_type: Type of entity (e.g., 'roles', 'users', 'cars')
+        """
+        self.delete_cache_by_pattern(f"{entity_type}:list")
+        self.delete_cache_by_pattern(f"{entity_type}:ids")
     
     def is_connected(self) -> bool:
         """
