@@ -2,6 +2,8 @@ import redis
 import os
 import json
 from typing import Optional, Any, List
+from decimal import Decimal
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,6 +29,20 @@ SESSIONS_CACHE_TTL = 1800  # 30 minutes - сессионные данные
 USER_CACHE_TTL = 300    # 5 minutes - отдельный пользователь
 CAR_CACHE_TTL = 300     # 5 minutes - отдельный автомобиль
 DRIVER_LICENSES_CACHE_TTL = 3600  # 1 hour - справочник
+
+
+class CacheEncoder(json.JSONEncoder):
+    """Custom JSON encoder for handling Decimal and datetime objects from PostgreSQL."""
+    
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            # Convert Decimal to float
+            return float(obj)
+        elif isinstance(obj, datetime):
+            # Convert datetime to ISO format string
+            return obj.isoformat()
+        return super().default(obj)
+
 
 
 class RedisClient:
@@ -149,9 +165,9 @@ class RedisClient:
             ttl: Time to live in seconds (default 1 hour)
         """
         try:
-            # Serialize dict/list to JSON, keep other types as-is
-            if isinstance(value, (dict, list)):
-                serialized_value = json.dumps(value)
+            # Serialize to JSON using custom encoder that handles Decimal, datetime, etc.
+            if isinstance(value, (dict, list)) or value is not None:
+                serialized_value = json.dumps(value, cls=CacheEncoder)
             else:
                 serialized_value = value
             
