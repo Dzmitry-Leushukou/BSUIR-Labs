@@ -16,6 +16,9 @@ ZINCRBY products:by_sales {oi.quantity} product:{product_id}
 ZINCRBY products:by_revenue {oi.price * oi.quantity} product:{product_id}
 ZADD products:by_price {p.price} product:{product_id}
 ZADD users:by_registration {timestamp} user:{user_id}
+ZINCRBY users:by_revenue {oi.price * oi.quantity} user:{user_id}
+ZINCRBY users:by_orders_count 1 user:{user_id}
+ZINCRBY category:{category_id}:products_by_sales {oi.quantity} product:{product_id}
 
 users =
 {
