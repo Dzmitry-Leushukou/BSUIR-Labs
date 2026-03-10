@@ -137,3 +137,83 @@ class RedisService:
 
     def close(self):
         self.client.close()
+
+
+    def get_last_user_orders(self, user_id: str, limit: int = 10):
+        order_keys = self.client.lrange(f"user:{user_id}:orders", 0, limit - 1)
+        orders = []
+        for key in order_keys:
+            order_data = self.client.hgetall(key)
+            if order_data:
+                order_data['order_id'] = key.split(':')[1]
+                orders.append(order_data)
+        return orders
+
+    def get_top_products_by_sales(self, limit: int = 10):
+        products_with_scores = self.client.zrevrange("products:by_sales", 0, limit - 1, withscores=True)
+        result = []
+        for product_key, score in products_with_scores:
+            product_id = product_key.split(':')[1]
+            product_data = self.client.hgetall(product_key)
+            product_data['product_id'] = product_id
+            product_data['total_sold'] = int(score)
+            result.append(product_data)
+        return result
+
+    def get_products_by_category(self, category_id: str):
+        product_keys = self.client.smembers(f"category:{category_id}:products")
+        products = []
+        for key in product_keys:
+            product_data = self.client.hgetall(key)
+            if product_data:
+                product_data['product_id'] = key.split(':')[1]
+                products.append(product_data)
+        return products
+
+    def get_user_revenue(self, user_id: str):
+        score = self.client.zscore("users:by_revenue", f"user:{user_id}")
+        return float(score) if score else 0.0
+
+    def get_top_users_by_orders_count(self, limit: int = 10):
+        users_with_scores = self.client.zrevrange("users:by_orders_count", 0, limit - 1, withscores=True)
+        result = []
+        for user_key, score in users_with_scores:
+            user_id = user_key.split(':')[1]
+            user_data = self.client.hgetall(user_key)
+            user_data['user_id'] = user_id
+            user_data['orders_count'] = int(score)
+            result.append(user_data)
+        return result
+
+    def get_top_users_by_revenue(self, limit: int = 10):
+        users_with_scores = self.client.zrevrange("users:by_revenue", 0, limit - 1, withscores=True)
+        result = []
+        for user_key, score in users_with_scores:
+            user_id = user_key.split(':')[1]
+            user_data = self.client.hgetall(user_key)
+            user_data['user_id'] = user_id
+            user_data['total_revenue'] = float(score)
+            result.append(user_data)
+        return result
+
+    def get_top_product_in_category(self, category_id: str):
+        result = self.client.zrevrange(f"category:{category_id}:products_by_sales", 0, 0, withscores=True)
+        if not result:
+            return None
+        product_key, score = result[0]
+        product_id = product_key.split(':')[1]
+        product_data = self.client.hgetall(product_key)
+        product_data['product_id'] = product_id
+        product_data['total_sold'] = int(score)
+        return product_data
+
+    def get_last_registered_users(self, limit: int = 5):
+        user_keys_with_scores = self.client.zrevrange("users:by_registration", 0, limit - 1, withscores=True)
+        result = []
+        for user_key, timestamp in user_keys_with_scores:
+            user_id = user_key.split(':')[1]
+            user_data = self.client.hgetall(user_key)
+            user_data['user_id'] = user_id
+            user_data['registered_at'] = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            result.append(user_data)
+        return result

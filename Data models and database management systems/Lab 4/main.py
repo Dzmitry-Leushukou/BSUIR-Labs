@@ -1,6 +1,8 @@
 import os
 import sys
 from RedisService import RedisService
+import uvicorn
+
 
 def main():
     DATA_DIR = "Data_csv"
@@ -32,7 +34,9 @@ def main():
         redis_service.load_order_items_from_csv(files["order_items"])
 
         print("Migration succesfully completed!")
-
+        from api import app
+        print("Starting API server...")
+        uvicorn.run(app, host="0.0.0.0", port=8000)
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -40,6 +44,8 @@ def main():
     finally:
         redis_service.close()
         print("Redis connection closed.")
+
+    
 
 if __name__ == "__main__":
     main()

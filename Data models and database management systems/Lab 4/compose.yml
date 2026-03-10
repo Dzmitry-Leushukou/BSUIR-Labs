@@ -22,3 +22,5 @@ services:
     volumes:
       - ./data:/app/data
     command: python main.py
+    ports:
+      - 8000:8000
