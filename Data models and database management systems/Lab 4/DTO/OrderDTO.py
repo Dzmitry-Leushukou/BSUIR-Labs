@@ -3,10 +3,10 @@ import datetime
 
 @dataclass
 class OrderDTO:
-    order_id:str
-    user_id:str
-    created_at:datetime
-    status:str
+    order_id: str = ""
+    user_id: str = ""
+    created_at: datetime = ""
+    status: str = ""
 
     def from_csv(self, csv_row):
         self.order_id = csv_row[0]

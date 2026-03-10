@@ -38,7 +38,7 @@ class RedisService:
         self.client.zadd("products:by_price", {f"product:{product.product_id}": float(product.price)})
 
     def add_order_item(self, order_item:OrderItemDTO):
-        self.client.hset(f"order_item:{order_item.order_item_id}", mapping=order_item.to_key_dict())
+        self.client.hset(f"order_item:{order_item.order_items_id}", mapping=order_item.to_key_dict())
         order_key = f"order:{order_item.order_id}"
         product_key = f"product:{order_item.product_id}"
         user_id = self.client.hget(order_key, "user_id")
@@ -53,7 +53,7 @@ class RedisService:
             raise ValueError(f"Product {order_item.product_id} not found")
 
         category_key = f"category:{category_id}"
-        self.client.rpush(f"{order_key}:items", f"order_item:{order_item.order_item_id}")
+        self.client.rpush(f"{order_key}:items", f"order_item:{order_item.order_items_id}")
         revenue = float(order_item.price) * int(order_item.quantity)
         quantity = int(order_item.quantity)
 
@@ -63,7 +63,7 @@ class RedisService:
         self.client.zincrby("users:by_revenue", revenue, user_key)
         self.client.sadd(f"{user_key}:purchased", product_key)
 
-    def load_categories_from_csv(self, filepath: str, has_header: bool = False):
+    def load_categories_from_csv(self, filepath: str, has_header: bool = True):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             if has_header:
@@ -74,7 +74,7 @@ class RedisService:
                 self.add_category(category)
         print(f"Categories loaded from {filepath}")
 
-    def load_users_from_csv(self, filepath: str, has_header: bool = False):
+    def load_users_from_csv(self, filepath: str, has_header: bool = True):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             if has_header:
@@ -85,7 +85,7 @@ class RedisService:
                 self.add_user(user)
         print(f"Users loaded from {filepath}")
 
-    def load_products_from_csv(self, filepath: str, has_header: bool = False):
+    def load_products_from_csv(self, filepath: str, has_header: bool = True):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             if has_header:
@@ -96,7 +96,7 @@ class RedisService:
                 self.add_product(product)
         print(f"Products loaded from {filepath}")
 
-    def load_orders_from_csv(self, filepath: str, has_header: bool = False):
+    def load_orders_from_csv(self, filepath: str, has_header: bool = True):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             if has_header:
@@ -107,7 +107,7 @@ class RedisService:
                 self.add_order(order)
         print(f"Orders loaded from {filepath}")
 
-    def load_order_items_from_csv(self, filepath: str, has_header: bool = False):
+    def load_order_items_from_csv(self, filepath: str, has_header: bool = True):
         with open(filepath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             if has_header:

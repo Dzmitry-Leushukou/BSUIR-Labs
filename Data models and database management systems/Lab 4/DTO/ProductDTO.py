@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 @dataclass
 class ProductDTO:
-    product_id:str
-    name:str
-    category_id:str
-    price:float
+    product_id: str = ""
+    name: str = ""
+    category_id: str = ""
+    price: float = 0.0
 
     def from_csv(self, csv_row):
         self.product_id = csv_row[0]

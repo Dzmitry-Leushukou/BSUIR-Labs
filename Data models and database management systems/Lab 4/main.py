@@ -5,7 +5,7 @@ from RedisService import RedisService
 def main():
     DATA_DIR = "Data_csv"
     files = {
-        "categories": os.path.join(DATA_DIR, "categoryid-name"),
+        "categories": os.path.join(DATA_DIR, "categoryid-name.csv"),
         "users": os.path.join(DATA_DIR, "userid-name-email-createdat.csv"),
         "products": os.path.join(DATA_DIR, "productid-name-categoryid-price.csv"),
         "orders": os.path.join(DATA_DIR, "orderid-userid-createdat-status.csv"),

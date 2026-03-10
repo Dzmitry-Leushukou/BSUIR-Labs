@@ -3,10 +3,10 @@ import datetime
 
 @dataclass
 class UserDTO:
-    user_id:str
-    name:str
-    email:str
-    created_at:datetime
+    user_id: str = ""
+    name: str = ""
+    email: str = ""
+    created_at: datetime = ""
 
     def from_csv(self, csv_row):
         self.user_id = csv_row[0]

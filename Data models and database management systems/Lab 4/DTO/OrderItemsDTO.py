@@ -3,11 +3,11 @@ import datetime
 
 @dataclass
 class OrderItemDTO:
-    order_items_id:str
-    order_id:str
-    product_id:str
-    quantity:int
-    price:float
+    order_items_id: str = ""
+    order_id: str = ""
+    product_id: str = ""
+    quantity: int = 0
+    price: float = 0.0
 
     def from_csv(self, csv_row):
         self.order_items_id = csv_row[0]

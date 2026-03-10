@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class CategoryDTO:
-    category_id:str
-    name:str
+    category_id: str = ""
+    name: str = ""
     
     def from_csv(self, csv_row):
         self.category_id = csv_row[0]
