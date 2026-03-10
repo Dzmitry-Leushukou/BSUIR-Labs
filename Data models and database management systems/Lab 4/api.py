@@ -53,6 +53,16 @@ def last_registered_users(limit: int = 5):
     users = redis_service.get_last_registered_users(limit)
     return {"users": users}
 
+@app.get("/products/top_by_sales/cached")
+def top_products_by_sales_cached(limit: int = 10):
+    products = redis_service.get_top_products_by_sales_cached(limit)
+    return {"products": products}
+
+@app.get("/users/top_by_revenue/cached")
+def top_users_by_revenue_cached(limit: int = 10):
+    users = redis_service.get_top_users_by_revenue_cached(limit)
+    return {"users": users}
+
 @app.on_event("shutdown")
 def shutdown():
     redis_service.close()

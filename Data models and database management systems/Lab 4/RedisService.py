@@ -4,6 +4,7 @@ from DTO import UserDTO, OrderDTO, CategoryDTO, ProductDTO, OrderItemDTO
 import datetime
 import time
 import csv
+import json
 
 class RedisService:
     def __init__(self):
@@ -217,3 +218,25 @@ class RedisService:
             user_data['registered_at'] = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
             result.append(user_data)
         return result
+    
+    def get_top_products_by_sales_cached(self, limit: int = 10, ttl: int = 60):
+        cache_key = f"cache:top_products:by_sales:{limit}"
+        cached = self.client.get(cache_key)
+        if cached:
+            return json.loads(cached)
+
+        # Вычисляем результат
+        products = self.get_top_products_by_sales(limit)
+        # Сохраняем в кэш
+        self.client.setex(cache_key, ttl, json.dumps(products))
+        return products
+
+    def get_top_users_by_revenue_cached(self, limit: int = 10, ttl: int = 60):
+        cache_key = f"cache:top_users:by_revenue:{limit}"
+        cached = self.client.get(cache_key)
+        if cached:
+            return json.loads(cached)
+
+        users = self.get_top_users_by_revenue(limit)
+        self.client.setex(cache_key, ttl, json.dumps(users))
+        return users
