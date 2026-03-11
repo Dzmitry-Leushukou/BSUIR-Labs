@@ -225,9 +225,7 @@ class RedisService:
         if cached:
             return json.loads(cached)
 
-        # Вычисляем результат
         products = self.get_top_products_by_sales(limit)
-        # Сохраняем в кэш
         self.client.setex(cache_key, ttl, json.dumps(products))
         return products
 
