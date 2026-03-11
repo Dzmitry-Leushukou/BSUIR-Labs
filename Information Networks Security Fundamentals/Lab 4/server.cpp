@@ -17,11 +17,11 @@
 
 const int PORT = 8080;
 const int MAX_EVENTS = 64;
-const int MAX_CONNECTIONS = 1024;          // Максимум одновременных соединений
-const int CONNECTION_TIMEOUT_SEC = 60;     // Общий таймаут соединения (сек)
-const int READ_TIMEOUT_SEC = 10;            // Таймаут на чтение данных (сек)
-const int MAX_REQUEST_SIZE = 4096;          // Максимальный размер запроса (байт)
-const int MAX_CONNECTIONS_PER_IP = 10;      // Максимум соединений с одного IP
+const int MAX_CONNECTIONS = 1024;          
+const int CONNECTION_TIMEOUT_SEC = 60;     
+const int READ_TIMEOUT_SEC = 10;           
+const int MAX_REQUEST_SIZE = 4096;        
+const int MAX_CONNECTIONS_PER_IP = 10;    
 
 struct Connection {
     int fd;
@@ -91,7 +91,6 @@ private:
         if (it == connections.end()) return;
         Connection* conn = it->second;
 
-        // Проверка таймаута чтения
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             now - conn->last_activity).count();
@@ -107,7 +106,6 @@ private:
             conn->last_activity = now;
             conn->buffer.append(buf, n);
 
-            // Защита от слишком большого запроса
             if (conn->buffer.size() > MAX_REQUEST_SIZE) {
                 std::string response = "ERROR: Request too large\n";
                 send(fd, response.c_str(), response.size(), 0);
@@ -115,7 +113,6 @@ private:
                 return;
             }
 
-            // Обработка полных строк (протокол: строки разделены \n)
             size_t pos;
             while ((pos = conn->buffer.find('\n')) != std::string::npos) {
                 std::string line = conn->buffer.substr(0, pos);
@@ -156,14 +153,12 @@ public:
     Server() : listen_fd(-1), epoll_fd(-1), running(false) {}
 
     bool init() {
-        // Игнорируем SIGPIPE, чтобы запись в закрытый сокет не убивала процесс
         signal(SIGPIPE, SIG_IGN);
 
-        // Ограничение числа открытых файловых дескрипторов
         struct rlimit rl;
         rl.rlim_cur = MAX_CONNECTIONS + 10;
         rl.rlim_max = MAX_CONNECTIONS + 10;
-        setrlimit(RLIMIT_NOFILE, &rl); // не критично, если не получится
+        setrlimit(RLIMIT_NOFILE, &rl); 
 
         listen_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
         if (listen_fd == -1) {
@@ -174,7 +169,6 @@ public:
         int opt = 1;
         setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-        // TCP_DEFER_ACCEPT – не создавать соединение до получения первых данных
         setsockopt(listen_fd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &opt, sizeof(opt));
 
         struct sockaddr_in addr;
@@ -188,7 +182,6 @@ public:
             return false;
         }
 
-        // Большой backlog для очереди соединений
         if (listen(listen_fd, SOMAXCONN) == -1) {
             perror("listen");
             close(listen_fd);
@@ -221,7 +214,7 @@ public:
 
         struct epoll_event events[MAX_EVENTS];
         while (running) {
-            int nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000); // таймаут 1 с для проверки таймаутов
+            int nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000); 
             if (nfds == -1) {
                 if (errno == EINTR) continue;
                 perror("epoll_wait");
@@ -231,7 +224,6 @@ public:
             for (int i = 0; i < nfds; ++i) {
                 int fd = events[i].data.fd;
                 if (fd == listen_fd) {
-                    // Принимаем все готовые соединения
                     while (true) {
                         struct sockaddr_in client_addr;
                         socklen_t client_len = sizeof(client_addr);
@@ -243,7 +235,6 @@ public:
                             break;
                         }
 
-                        // Проверка лимита общего числа соединений
                         if (connections.size() >= MAX_CONNECTIONS) {
                             std::cout << "Too many connections, rejecting.\n";
                             close(client_fd);
@@ -254,8 +245,7 @@ public:
                         inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
                         std::string client_ip(ip_str);
 
-                        // Проверка лимита соединений с одного IP
-                        int count = ip_connections[client_ip]; // 0, если ключа нет
+                        int count = ip_connections[client_ip]; 
                         if (count >= MAX_CONNECTIONS_PER_IP) {
                             std::cout << "Too many connections from IP " << client_ip << ", rejecting.\n";
                             close(client_fd);
