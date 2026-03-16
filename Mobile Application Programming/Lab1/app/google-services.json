@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1034718321371",
+    "project_id": "mobile-lab-d6af4",
+    "storage_bucket": "mobile-lab-d6af4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034718321371:android:87950827a21034fdd88afe",
+        "android_client_info": {
+          "package_name": "com.example.lab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAqTfVKm5ClVYJTExaCltBhvQ7xsZHPzE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

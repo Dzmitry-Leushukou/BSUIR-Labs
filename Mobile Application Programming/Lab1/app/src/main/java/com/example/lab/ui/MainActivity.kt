@@ -2,7 +2,9 @@ package com.example.lab.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -16,6 +18,11 @@ import com.example.lab.R
 import com.example.lab.data.Calculator
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import java.util.Locale
 import kotlin.math.abs
 
@@ -25,6 +32,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvResult: TextView
     private lateinit var gestureDetector: GestureDetector
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    
+    private val db = FirebaseFirestore.getInstance()
+    private val remoteConfig = FirebaseRemoteConfig.getInstance()
+    
+    private var cloudAccentColor = "#43A047"
+    private var isLightTheme = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -37,130 +50,163 @@ class MainActivity : AppCompatActivity() {
 
         setupButtons()
         setupGestures()
+        setupRemoteConfig()
+        loadSavedTheme()
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        ev?.let { gestureDetector.onTouchEvent(it) }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun loadSavedTheme() {
+        db.collection("settings").document("theme").get().addOnSuccessListener { doc ->
+            val mode = doc.getString("theme_mode")
+            isLightTheme = mode == "light"
+            applyThemeColors(cloudAccentColor, isLightTheme)
+        }
+    }
+
+    private fun toggleTheme() {
+        isLightTheme = !isLightTheme
+        applyThemeColors(cloudAccentColor, isLightTheme)
+        
+        val mode = if (isLightTheme) "light" else "dark"
+        db.collection("settings").document("theme").set(mapOf("theme_mode" to mode))
+        Toast.makeText(this, if (isLightTheme) "Light Mode" else "Dark Mode", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupRemoteConfig() {
+        val configSettings = FirebaseRemoteConfigSettings.Builder()
+            .setMinimumFetchIntervalInSeconds(0)
+            .build()
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        
+        remoteConfig.setDefaultsAsync(mapOf("button_accent_color" to "#43A047"))
+
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                cloudAccentColor = remoteConfig.getString("button_accent_color")
+                applyThemeColors(cloudAccentColor, isLightTheme)
+            }
+        }
+    }
+
+    private fun applyThemeColors(accentColorStr: String, isLight: Boolean) {
+        try {
+            val accentColor = Color.parseColor(accentColorStr)
+            window.statusBarColor = Color.BLACK
+            
+            val bgColor = if (isLight) Color.parseColor("#F5F5F5") else Color.BLACK
+            val textColor = if (isLight) Color.BLACK else Color.WHITE
+            
+            val btnColor = if (isLight) Color.parseColor("#E0E0E0") else Color.parseColor("#222222")
+            val controlBtnColor = if (isLight) Color.parseColor("#D1D1D1") else Color.parseColor("#222222")
+
+            findViewById<android.view.View>(R.id.main_layout)?.setBackgroundColor(bgColor)
+            tvResult.setTextColor(textColor)
+
+            val numbers = listOf(R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9)
+            numbers.forEach { id ->
+                findViewById<Button>(id)?.apply {
+                    setBackgroundColor(btnColor)
+                    setTextColor(textColor)
+                }
+            }
+
+            val accentButtons = listOf(
+                R.id.btnPlus, R.id.btnMinus, R.id.btnMultiply, R.id.btnDivide, 
+                R.id.btnTheme, R.id.btnHistory, R.id.btnClear, R.id.btnBackspace, R.id.btnDot
+            )
+            accentButtons.forEach { id ->
+                findViewById<Button>(id)?.apply {
+                    setTextColor(accentColor)
+                    setBackgroundColor(controlBtnColor)
+                }
+            }
+
+            findViewById<Button>(R.id.btnEquals)?.apply {
+                setBackgroundColor(accentColor)
+                setTextColor(Color.WHITE)
+            }
+
+        } catch (e: Exception) {}
+    }
+
+    private fun saveActionToCloud(fullExpression: String) {
+        db.collection("history").add(hashMapOf("full_expression" to fullExpression, "timestamp" to System.currentTimeMillis()))
+    }
+
+    private fun showHistoryDialog() {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(android.R.layout.simple_list_item_1, null)
+        val tv = view.findViewById<TextView>(android.R.id.text1)
+        tv.setPadding(40, 40, 40, 40)
+        
+        db.collection("history").orderBy("timestamp", Query.Direction.DESCENDING).limit(10).get().addOnSuccessListener { docs ->
+            val history = docs.joinToString("\n\n") { it.getString("full_expression") ?: "" }
+            tv.text = if (history.isEmpty()) "No history yet" else "Recent History:\n\n$history"
+        }
+        dialog.setContentView(view)
+        dialog.show()
     }
 
     private fun setupButtons() {
-        setNumberButton(R.id.btn0, "0")
-        setNumberButton(R.id.btn1, "1")
-        setNumberButton(R.id.btn2, "2")
-        setNumberButton(R.id.btn3, "3")
-        setNumberButton(R.id.btn4, "4")
-        setNumberButton(R.id.btn5, "5")
-        setNumberButton(R.id.btn6, "6")
-        setNumberButton(R.id.btn7, "7")
-        setNumberButton(R.id.btn8, "8")
-        setNumberButton(R.id.btn9, "9")
-        setNumberButton(R.id.btnDot, ".")
+        val numbers = listOf(R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9, R.id.btnDot)
+        numbers.forEach { id -> 
+            val btn = findViewById<Button>(id)
+            btn.setOnClickListener { tvResult.text = calculator.appendDigit(btn.text.toString(), tvResult.text.toString()) }
+        }
 
-        setOperationButton(R.id.btnPlus, "+")
-        setOperationButton(R.id.btnMinus, "-")
-        setOperationButton(R.id.btnMultiply, "*")
-        setOperationButton(R.id.btnDivide, "/")
+        val ops = mapOf(R.id.btnPlus to "+", R.id.btnMinus to "-", R.id.btnMultiply to "*", R.id.btnDivide to "/")
+        ops.forEach { (id, op) -> findViewById<Button>(id).setOnClickListener { calculator.setOperation(op, tvResult.text.toString()) } }
 
         findViewById<Button>(R.id.btnEquals).setOnClickListener {
-            val result = calculator.calculate(tvResult.text.toString())
+            val second = tvResult.text.toString()
+            val fullExpr = calculator.getFullExpressionForCloud(second)
+            val result = calculator.calculate(second)
             tvResult.text = result
+            saveActionToCloud("$fullExpr = $result")
         }
 
-        findViewById<Button>(R.id.btnClear).setOnClickListener {
-            tvResult.text = calculator.clear()
-        }
-
-        findViewById<Button>(R.id.btnBackspace).setOnClickListener {
-            tvResult.text = calculator.backspace(tvResult.text.toString())
-        }
-    }
-
-    private fun setNumberButton(buttonId: Int, digit: String) {
-        findViewById<Button>(buttonId).setOnClickListener {
-            val newText = calculator.appendDigit(digit, tvResult.text.toString())
-            tvResult.text = newText
-        }
-    }
-
-    private fun setOperationButton(buttonId: Int, op: String) {
-        findViewById<Button>(buttonId).setOnClickListener {
-            calculator.setOperation(op, tvResult.text.toString())
-        }
+        findViewById<Button>(R.id.btnClear).setOnClickListener { tvResult.text = calculator.clear() }
+        findViewById<Button>(R.id.btnBackspace).setOnClickListener { tvResult.text = calculator.backspace(tvResult.text.toString()) }
+        findViewById<Button>(R.id.btnHistory).setOnClickListener { showHistoryDialog() }
+        findViewById<Button>(R.id.btnTheme).setOnClickListener { toggleTheme() }
     }
 
     private fun setupGestures() {
         gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(
-                e1: MotionEvent?,
-                e2: MotionEvent,
-                velocityX: Float,
-                velocityY: Float
-            ): Boolean {
-                if (e1 == null) return false
-                val diffX = e2.x - e1.x
-                val diffY = e2.y - e1.y
-                if (abs(diffX) > abs(diffY)) {
-                    if (abs(diffX) > 100 && abs(velocityX) > 100) {
-                        if (diffX > 0) {
-                            onSwipeRight()
-                        }
-                    }
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, vx: Float, vy: Float): Boolean {
+                if (e1 != null && (e2.x - e1.x) > 100 && abs(vx) > 100) {
+                    onSwipeRight()
+                    return true
                 }
-                return super.onFling(e1, e2, velocityX, velocityY)
+                return false
             }
         })
-
-        findViewById<android.view.View>(android.R.id.content).setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-            true
-        }
     }
 
     private fun onSwipeRight() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1001
-            )
+        Toast.makeText(this, "Detecting location...", Toast.LENGTH_SHORT).show()
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1001)
             return
         }
-
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+            if (loc != null) {
                 val geocoder = Geocoder(this, Locale.getDefault())
                 try {
-                    val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                    if (addresses != null && addresses.isNotEmpty()) {
-                        val city = addresses[0].locality ?: "Unknown City"
-                        val country = addresses[0].countryName ?: "Unknown Country"
-                        val fullLocation = "$city, $country\nLat:${location.latitude} Lon:${location.longitude}"
-                        
-                        Toast.makeText(this, fullLocation, Toast.LENGTH_LONG).show()
-                        tvResult.text = fullLocation
-                    } else {
-                        val basicLoc = "Lat:${location.latitude} Lon:${location.longitude}"
-                        tvResult.text = basicLoc
-                    }
-                } catch (e: Exception) {
-                    val basicLoc = "Lat:${location.latitude} Lon:${location.longitude}"
-                    tvResult.text = basicLoc
-                    Toast.makeText(this, "Network error. Showing coords only.", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this, "Location not found. Enable GPS.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            onSwipeRight()
+                    val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
+                    val info = if (addresses != null && addresses.isNotEmpty()) "${addresses[0].locality}, ${addresses[0].countryName}" else "${loc.latitude}, ${loc.longitude}"
+                    tvResult.text = info
+                    Toast.makeText(this, "Location: $info", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) { Toast.makeText(this, "Service unavailable", Toast.LENGTH_SHORT).show() }
+            } else { Toast.makeText(this, "Turn on GPS", Toast.LENGTH_SHORT).show() }
         }
     }
 }
