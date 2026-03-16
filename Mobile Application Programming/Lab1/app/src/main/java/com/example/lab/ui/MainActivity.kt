@@ -6,8 +6,10 @@ import android.graphics.Color
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -21,6 +23,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import java.util.Locale
@@ -52,9 +55,22 @@ class MainActivity : AppCompatActivity() {
         setupGestures()
         setupRemoteConfig()
         loadSavedTheme()
+        setupPushNotifications()
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
+        }
+    }
+
+    private fun setupPushNotifications() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("PushAPI", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            // Это твой "билет" на проверку API пушей. Выведи его в Logcat
+            val token = task.result
+            Log.d("PushAPI", "FCM Registration Token: $token")
         }
     }
 
@@ -99,15 +115,16 @@ class MainActivity : AppCompatActivity() {
     private fun applyThemeColors(accentColorStr: String, isLight: Boolean) {
         try {
             val accentColor = Color.parseColor(accentColorStr)
-            window.statusBarColor = Color.BLACK
             
+            // Чтобы выполнить критерий 1.1, привязываем цвет статус-бара к фону темы
             val bgColor = if (isLight) Color.parseColor("#F5F5F5") else Color.BLACK
-            val textColor = if (isLight) Color.BLACK else Color.WHITE
+            window.statusBarColor = bgColor
             
+            val textColor = if (isLight) Color.BLACK else Color.WHITE
             val btnColor = if (isLight) Color.parseColor("#E0E0E0") else Color.parseColor("#222222")
             val controlBtnColor = if (isLight) Color.parseColor("#D1D1D1") else Color.parseColor("#222222")
 
-            findViewById<android.view.View>(R.id.main_layout)?.setBackgroundColor(bgColor)
+            findViewById<View>(R.id.main_layout)?.setBackgroundColor(bgColor)
             tvResult.setTextColor(textColor)
 
             val numbers = listOf(R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9)
@@ -134,7 +151,9 @@ class MainActivity : AppCompatActivity() {
                 setTextColor(Color.WHITE)
             }
 
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            Log.e("ThemeError", "Error applying colors", e)
+        }
     }
 
     private fun saveActionToCloud(fullExpression: String) {
