@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.lab.R
 import com.example.lab.data.Calculator
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -68,7 +69,6 @@ class MainActivity : AppCompatActivity() {
                 Log.w("PushAPI", "Fetching FCM registration token failed", task.exception)
                 return@addOnCompleteListener
             }
-            // Это твой "билет" на проверку API пушей. Выведи его в Logcat
             val token = task.result
             Log.d("PushAPI", "FCM Registration Token: $token")
         }
@@ -116,9 +116,10 @@ class MainActivity : AppCompatActivity() {
         try {
             val accentColor = Color.parseColor(accentColorStr)
             
-            // Чтобы выполнить критерий 1.1, привязываем цвет статус-бара к фону темы
             val bgColor = if (isLight) Color.parseColor("#F5F5F5") else Color.BLACK
             window.statusBarColor = bgColor
+            
+            WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
             
             val textColor = if (isLight) Color.BLACK else Color.WHITE
             val btnColor = if (isLight) Color.parseColor("#E0E0E0") else Color.parseColor("#222222")
