@@ -1,12 +1,31 @@
 from schemas import EmailTaskDTO, LogTaskDTO
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from RedisService import RedisService
 import uvicorn
-
+from fastapi.responses import JSONResponse
 
 app = FastAPI(title="Redis Service API")
 redis_service = RedisService()
 
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    client_ip = request.client.host
+    if request.url.path == "/task/email":
+        if not redis_service.check_simple_rate(client_ip):
+            return JSONResponse(
+                status_code=429, 
+                content={"detail": "Too many requests for email tasks"}
+            )
+    elif request.url.path == "/task/log":
+        if not redis_service.check_sliding_window_rate(client_ip):
+            return JSONResponse(
+                status_code=429, 
+                content={"detail": "Too many requests for log tasks"}
+            )
+    response = await call_next(request)
+    return response
 
 @app.get("/")
 def read_root():

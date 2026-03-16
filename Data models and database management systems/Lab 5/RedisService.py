@@ -3,6 +3,7 @@ import redis
 from DTO.TaskDTO import TaskDTO
 import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -27,6 +28,38 @@ class RedisService:
             task = TaskDTO.from_dict(json.loads(result[1]))
             logger.info(f"Task {task.task_id} retrieved from queue.")
             return task
+
+
+    def check_simple_rate(self,client_ip:str, limit:int = 100, window_seconds:int = 600) -> bool:
+        key = f"rate:simple:{client_ip}"
+        current = self.client.incr(key)
+        if current == 1:
+            self.client.expire(key, window_seconds)
+        return current <= limit
+
+
+    def check_sliding_window_rate(self, client_ip: str, limit: int = 100, window_seconds: int = 600) -> bool:
+        lua_script = """
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local limit = tonumber(ARGV[3])
+        
+        local window_start = now - window
+        redis.call('ZREMRANGEBYSCORE', key, 0, window_start)
+        
+        local current = redis.call('ZCARD', key)
+        if current < limit then
+            redis.call('ZADD', key, now, now)
+            redis.call('EXPIRE', key, window)
+            return 1
+        end
+        return 0
+        """
+        key = f"rate:sliding:{client_ip}"
+        now = time.time()
+        
+        return bool(self.client.eval(lua_script, 1, key, now, window_seconds, limit))
 
     def flush_db(self):
         self.client.flushdb()
