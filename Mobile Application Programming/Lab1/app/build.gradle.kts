@@ -45,6 +45,10 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.play.services.location)
     
+    // Security & Biometric
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.security.crypto)
+    
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)

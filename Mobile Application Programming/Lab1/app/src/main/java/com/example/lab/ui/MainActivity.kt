@@ -8,17 +8,21 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.lab.R
 import com.example.lab.data.Calculator
+import com.example.lab.data.SecurityManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -33,6 +37,7 @@ import kotlin.math.abs
 class MainActivity : AppCompatActivity() {
 
     private lateinit var calculator: Calculator
+    private lateinit var securityManager: SecurityManager
     private lateinit var tvResult: TextView
     private lateinit var gestureDetector: GestureDetector
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -42,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     
     private var cloudAccentColor = "#43A047"
     private var isLightTheme = false
+    private var isAuthenticated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -49,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         calculator = Calculator()
+        securityManager = SecurityManager(this)
         tvResult = findViewById(R.id.tvResult)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -58,23 +65,83 @@ class MainActivity : AppCompatActivity() {
         loadSavedTheme()
         setupPushNotifications()
         
+        // Step 4: Запуск авторизации
+        startAuthorizationFlow()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
         }
     }
 
+    private fun startAuthorizationFlow() {
+        if (!securityManager.isPassKeySet()) {
+            // Критерий 1: Инициализация Pass Key при первом запуске
+            showPasskeyDialog(isSetup = true)
+        } else {
+            // Критерий 3: Проверка Pass Key или биометрии
+            if (securityManager.canAuthenticate()) {
+                securityManager.showBiometricPrompt(this, 
+                    onSuccess = { unlockApp() },
+                    onError = { showPasskeyDialog(isSetup = false) }
+                )
+            } else {
+                showPasskeyDialog(isSetup = false)
+            }
+        }
+    }
+
+    private fun showPasskeyDialog(isSetup: Boolean) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_passkey, null)
+        val etPasskey = dialogView.findViewById<EditText>(R.id.etPasskey)
+        val btnAuth = dialogView.findViewById<Button>(R.id.btnAuth)
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvPasskeyTitle)
+
+        tvTitle.text = if (isSetup) "Set New Pass Key (4 digits)" else "Enter Pass Key"
+        btnAuth.text = if (isSetup) "Set Key" else "Authorize"
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        btnAuth.setOnClickListener {
+            val input = etPasskey.text.toString()
+            if (input.length == 4) {
+                if (isSetup) {
+                    securityManager.savePassKey(input)
+                    unlockApp()
+                    dialog.dismiss()
+                } else {
+                    if (securityManager.validatePassKey(input)) {
+                        unlockApp()
+                        dialog.dismiss()
+                    } else {
+                        // Критерий 2: Обработка неверного ключа
+                        Toast.makeText(this, "Incorrect Pass Key!", Toast.LENGTH_SHORT).show()
+                        etPasskey.text.clear()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Enter 4 digits", Toast.LENGTH_SHORT).show()
+            }
+        }
+        dialog.show()
+    }
+
+    private fun unlockApp() {
+        isAuthenticated = true
+        findViewById<View>(R.id.main_layout).visibility = View.VISIBLE
+        Toast.makeText(this, "Access Granted", Toast.LENGTH_SHORT).show()
+    }
+
     private fun setupPushNotifications() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("PushAPI", "Fetching FCM registration token failed", task.exception)
-                return@addOnCompleteListener
-            }
-            val token = task.result
-            Log.d("PushAPI", "FCM Registration Token: $token")
+            if (task.isSuccessful) Log.d("PushAPI", "Token: ${task.result}")
         }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (!isAuthenticated) return false // Блокируем касания до авторизации
         ev?.let { gestureDetector.onTouchEvent(it) }
         return super.dispatchTouchEvent(ev)
     }
@@ -90,20 +157,14 @@ class MainActivity : AppCompatActivity() {
     private fun toggleTheme() {
         isLightTheme = !isLightTheme
         applyThemeColors(cloudAccentColor, isLightTheme)
-        
         val mode = if (isLightTheme) "light" else "dark"
         db.collection("settings").document("theme").set(mapOf("theme_mode" to mode))
-        Toast.makeText(this, if (isLightTheme) "Light Mode" else "Dark Mode", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupRemoteConfig() {
-        val configSettings = FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(0)
-            .build()
+        val configSettings = FirebaseRemoteConfigSettings.Builder().setMinimumFetchIntervalInSeconds(0).build()
         remoteConfig.setConfigSettingsAsync(configSettings)
-        
         remoteConfig.setDefaultsAsync(mapOf("button_accent_color" to "#43A047"))
-
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 cloudAccentColor = remoteConfig.getString("button_accent_color")
@@ -115,10 +176,8 @@ class MainActivity : AppCompatActivity() {
     private fun applyThemeColors(accentColorStr: String, isLight: Boolean) {
         try {
             val accentColor = Color.parseColor(accentColorStr)
-            
             val bgColor = if (isLight) Color.parseColor("#F5F5F5") else Color.BLACK
             window.statusBarColor = bgColor
-            
             WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
             
             val textColor = if (isLight) Color.BLACK else Color.WHITE
@@ -136,10 +195,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            val accentButtons = listOf(
-                R.id.btnPlus, R.id.btnMinus, R.id.btnMultiply, R.id.btnDivide, 
-                R.id.btnTheme, R.id.btnHistory, R.id.btnClear, R.id.btnBackspace, R.id.btnDot
-            )
+            val accentButtons = listOf(R.id.btnPlus, R.id.btnMinus, R.id.btnMultiply, R.id.btnDivide, R.id.btnTheme, R.id.btnHistory, R.id.btnClear, R.id.btnBackspace, R.id.btnDot)
             accentButtons.forEach { id ->
                 findViewById<Button>(id)?.apply {
                     setTextColor(accentColor)
@@ -151,28 +207,7 @@ class MainActivity : AppCompatActivity() {
                 setBackgroundColor(accentColor)
                 setTextColor(Color.WHITE)
             }
-
-        } catch (e: Exception) {
-            Log.e("ThemeError", "Error applying colors", e)
-        }
-    }
-
-    private fun saveActionToCloud(fullExpression: String) {
-        db.collection("history").add(hashMapOf("full_expression" to fullExpression, "timestamp" to System.currentTimeMillis()))
-    }
-
-    private fun showHistoryDialog() {
-        val dialog = BottomSheetDialog(this)
-        val view = layoutInflater.inflate(android.R.layout.simple_list_item_1, null)
-        val tv = view.findViewById<TextView>(android.R.id.text1)
-        tv.setPadding(40, 40, 40, 40)
-        
-        db.collection("history").orderBy("timestamp", Query.Direction.DESCENDING).limit(10).get().addOnSuccessListener { docs ->
-            val history = docs.joinToString("\n\n") { it.getString("full_expression") ?: "" }
-            tv.text = if (history.isEmpty()) "No history yet" else "Recent History:\n\n$history"
-        }
-        dialog.setContentView(view)
-        dialog.show()
+        } catch (e: Exception) {}
     }
 
     private fun setupButtons() {
@@ -187,16 +222,30 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnEquals).setOnClickListener {
             val second = tvResult.text.toString()
-            val fullExpr = calculator.getFullExpressionForCloud(second)
             val result = calculator.calculate(second)
             tvResult.text = result
-            saveActionToCloud("$fullExpr = $result")
+            db.collection("history").add(hashMapOf("full_expression" to "$result", "timestamp" to System.currentTimeMillis()))
         }
 
         findViewById<Button>(R.id.btnClear).setOnClickListener { tvResult.text = calculator.clear() }
         findViewById<Button>(R.id.btnBackspace).setOnClickListener { tvResult.text = calculator.backspace(tvResult.text.toString()) }
-        findViewById<Button>(R.id.btnHistory).setOnClickListener { showHistoryDialog() }
+        findViewById<Button>(R.id.btnHistory).setOnClickListener {
+            val dialog = BottomSheetDialog(this)
+            val view = layoutInflater.inflate(android.R.layout.simple_list_item_1, null)
+            val tv = view.findViewById<TextView>(android.R.id.text1)
+            db.collection("history").orderBy("timestamp", Query.Direction.DESCENDING).limit(10).get().addOnSuccessListener { docs ->
+                tv.text = docs.joinToString("\n\n") { it.getString("full_expression") ?: "" }
+            }
+            dialog.setContentView(view)
+            dialog.show()
+        }
         findViewById<Button>(R.id.btnTheme).setOnClickListener { toggleTheme() }
+        
+        // Критерий 4: Опция смены Pass Key (по долгому нажатию на кнопку темы, например)
+        findViewById<Button>(R.id.btnTheme).setOnLongClickListener {
+            showPasskeyDialog(isSetup = true)
+            true
+        }
     }
 
     private fun setupGestures() {
@@ -212,7 +261,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onSwipeRight() {
-        Toast.makeText(this, "Detecting location...", Toast.LENGTH_SHORT).show()
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1001)
             return
@@ -220,13 +268,9 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             if (loc != null) {
                 val geocoder = Geocoder(this, Locale.getDefault())
-                try {
-                    val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
-                    val info = if (addresses != null && addresses.isNotEmpty()) "${addresses[0].locality}, ${addresses[0].countryName}" else "${loc.latitude}, ${loc.longitude}"
-                    tvResult.text = info
-                    Toast.makeText(this, "Location: $info", Toast.LENGTH_LONG).show()
-                } catch (e: Exception) { Toast.makeText(this, "Service unavailable", Toast.LENGTH_SHORT).show() }
-            } else { Toast.makeText(this, "Turn on GPS", Toast.LENGTH_SHORT).show() }
+                val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
+                tvResult.text = addresses?.get(0)?.locality ?: "Unknown"
+            }
         }
     }
 }
