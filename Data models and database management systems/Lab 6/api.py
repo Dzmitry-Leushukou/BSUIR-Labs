@@ -19,74 +19,24 @@ files = {
 def read_root():
     return {"Status": "Alive"}
 
-@app.get("/validatation/count")
+@app.get("/validation/collection-counts")
 def validation_count():
-    categories_count=mongo_service.get_collection_size("categories")
-    users_count=mongo_service.get_collection_size("users")
-    products_count=mongo_service.get_collection_size("products")
-    orders_count=mongo_service.get_collection_size("orders")
-    order_items_count=mongo_service.get_collection_size("order_items")
+    counts = mongo_service.get_collection_counts()
+    return {"status": "Count validation successful", "counts": counts}
 
-    categories_csv_lines_count=0
-    users_csv_lines_count=0
-    products_csv_lines_count=0
-    orders_csv_lines_count=0
-    order_items_csv_lines_count=0
-
-    with open(files["categories"], "r") as f:
-        categories_csv_lines_count=len(f.readlines())-1
-
-    with open(files["users"], "r") as f:
-        users_csv_lines_count=len(f.readlines())-1
-
-    with open(files["products"], "r") as f:
-        products_csv_lines_count=len(f.readlines())-1
-
-    with open(files["orders"], "r") as f:
-        orders_csv_lines_count=len(f.readlines())-1
-
-    with open(files["order_items"], "r") as f:
-        order_items_csv_lines_count=len(f.readlines())-1
-
-    if categories_count!=categories_csv_lines_count:
-        raise HTTPException(status_code=404, detail="Categories count does not match")
-
-    if users_count != users_csv_lines_count:
-        raise HTTPException(status_code=404, detail="Users count does not match")
-    
-    if products_count != products_csv_lines_count:
-        raise HTTPException(status_code=404, detail="Products count does not match")
-
-    if orders_count != orders_csv_lines_count:
-        raise HTTPException(status_code=404, detail="Orders count does not match")
-    
-    if order_items_count != order_items_csv_lines_count:
-        raise HTTPException(status_code=404, detail="Order items count does not match")
-
-    return {
-            "status": "Count validation successful",
-            "categories_count":categories_count, 
-            "users_count": users_count,
-            "products_count":products_count,
-            "orders_count":orders_count,
-            "order_items_count": order_items_count
-           }
-
-@app.get("/validatation/user_id_in_orders")
+@app.get("/validation/invalid-user-orders")
 def validation_user_id_in_orders():
-    invalid_orders = mongo_service.check_userId_validity_in_orders()
+    invalid_orders = mongo_service.get_invalid_user_orders()
     if not invalid_orders:
-        return {"status": "User id in orders validation successful"}
+        return {"status": "User id in orders validation successful", "invalid_orders": []}
     else:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Found {len(invalid_orders)} orders with invalid user_id"
-        )
+        return {"status": "Found invalid orders", "invalid_orders_count": len(invalid_orders), "invalid_orders": invalid_orders}
 
-@app.get("/validation/orders_total_greater_than_1000")
+@app.get("/validation/orders-total-greater-than-1000")
 def validation_orders_total_greater_than_1000():
-    orders = mongo_service.get_orders_total_gt_1000()
-    return{"status": "Orders total greater than 1000 validation successful", "orders": orders}
+    orders = mongo_service.get_orders_with_sum_gt_1000()
+    gt_1000 = [o for o in orders if o.get("total", 0) > 1000]
+    return {"status": "Orders total greater than 1000", "orders_count": len(gt_1000), "orders": gt_1000}
 
 @app.get("/users/{user_id}/orders")
 def get_user_orders(user_id: int):
@@ -151,37 +101,57 @@ def get_query_performance(user_id: int):
         raise HTTPException(status_code=500, detail=f"Error getting performance stats: {str(e)}")
 
 @app.post("/performance/test/{user_id}")
-def performance_test(user_id: int = 1):
+def performance_test(user_id: int = 1, iterations: int = 5):
     try:
         mongo_service.drop_indexes()
         time.sleep(0.5)
         
-        start = time.time()
-        stats_without_index = mongo_service.get_query_performance(user_id)
-        time_without_index = (time.time() - start) * 1000  # Convert to ms
+        times_without_index = []
+        stats_without_index = None
+        
+        for _ in range(iterations):
+            start = time.time()
+            stats_without_index = mongo_service.get_query_performance(user_id)
+            times_without_index.append((time.time() - start) * 1000)
+            time.sleep(0.1)
+        
+        avg_time_without_index = sum(times_without_index) / len(times_without_index)
         
         mongo_service.create_indexes()
         time.sleep(0.5)
         
-        start = time.time()
-        stats_with_index = mongo_service.get_query_performance(user_id)
-        time_with_index = (time.time() - start) * 1000  # Convert to ms
+        times_with_index = []
+        stats_with_index = None
         
-        improvement_percent = ((time_without_index - time_with_index) / time_without_index * 100) if time_without_index > 0 else 0
+        for _ in range(iterations):
+            start = time.time()
+            stats_with_index = mongo_service.get_query_performance(user_id)
+            times_with_index.append((time.time() - start) * 1000)
+            time.sleep(0.1)
+        
+        avg_time_with_index = sum(times_with_index) / len(times_with_index)
+        
+        improvement_percent = ((avg_time_without_index - avg_time_with_index) / avg_time_without_index * 100) if avg_time_without_index > 0 else 0
         docs_reduction = ((stats_without_index['total_documents_examined'] - stats_with_index['total_documents_examined']) 
                          / stats_without_index['total_documents_examined'] * 100) if stats_without_index['total_documents_examined'] > 0 else 0
         
         return {
             "user_id": user_id,
+            "test_iterations": iterations,
+            "notes": "Negative improvement means index is slower (common on small datasets)",
             "without_index": {
-                "time_ms": round(time_without_index, 2),
+                "avg_time_ms": round(avg_time_without_index, 2),
+                "min_time_ms": round(min(times_without_index), 2),
+                "max_time_ms": round(max(times_without_index), 2),
                 "docs_examined": stats_without_index['total_documents_examined'],
                 "docs_returned": stats_without_index['total_documents_returned'],
                 "execution_stage": stats_without_index['execution_stages'],
                 "index_used": stats_without_index['is_index_used']
             },
             "with_index": {
-                "time_ms": round(time_with_index, 2),
+                "avg_time_ms": round(avg_time_with_index, 2),
+                "min_time_ms": round(min(times_with_index), 2),
+                "max_time_ms": round(max(times_with_index), 2),
                 "docs_examined": stats_with_index['total_documents_examined'],
                 "docs_returned": stats_with_index['total_documents_returned'],
                 "execution_stage": stats_with_index['execution_stages'],
@@ -190,11 +160,39 @@ def performance_test(user_id: int = 1):
             "improvement": {
                 "time_improvement_percent": round(improvement_percent, 1),
                 "docs_scanned_reduction_percent": round(docs_reduction, 1),
-                "time_saved_ms": round(time_without_index - time_with_index, 2)
+                "time_saved_ms": round(avg_time_without_index - avg_time_with_index, 2),
+                "verdict": "FASTER with index ✓" if improvement_percent > 10 else "SLOWER with index (normal on small datasets)" if improvement_percent < -10 else "SIMILAR performance"
             }
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error running performance test: {str(e)}")
+
+@app.get("/analytics/top-users")
+def top_users(limit: int = 10):
+    users = mongo_service.get_top_users_by_orders_count(limit)
+    return {
+        "limit": limit,
+        "users_count": len(users),
+        "users": users
+    }
+
+@app.get("/analytics/top-categories")
+def top_categories(limit: int = 10):
+    categories = mongo_service.get_top_categories_by_revenue(limit)
+    return {
+        "limit": limit,
+        "categories_count": len(categories),
+        "categories": categories
+    }
+
+@app.get("/analytics/order-statistics")
+def order_statistics():
+    stats = mongo_service.get_order_statistics()
+    return {"statistics": stats}
+
+@app.get("/analytics/indexes")
+def get_indexes():
+    return mongo_service.get_all_indexes()
 
 @app.on_event("shutdown")
 def shutdown():

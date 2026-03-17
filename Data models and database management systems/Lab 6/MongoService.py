@@ -140,114 +140,127 @@ class MongoService:
         self.load_orders_from_csv(orders_csv)
         self.load_order_items_from_csv(order_items_csv)
 
-    def get_collection_size(self, collection_name):
-        collection = self.db[collection_name]
-        return collection.count_documents({})
+    def get_collection_counts(self):
+        return {
+            "categories": self.db.categories.count_documents({}),
+            "users": self.db.users.count_documents({}),
+            "products": self.db.products.count_documents({}),
+            "orders": self.db.orders.count_documents({}),
+            "order_items": self.db.order_items.count_documents({})
+        }
 
-    def check_userId_validity_in_orders(self):
+    def get_invalid_user_orders(self):
         pipeline = [
             {
                 "$lookup": {
                     "from": "users",
                     "localField": "user_id",
-                    "foreignField": "user_id", 
+                    "foreignField": "user_id",
                     "as": "user"
                 }
             },
-            { "$match": { "user": [] } } 
+            { "$match": { "user": [] } }
         ]
         result = list(self.db.orders.aggregate(pipeline))
         return [self._convert_objectid(doc) for doc in result]
-        
-    def get_orders_total_gt_1000(self):
+
+    def get_orders_with_sum_gt_1000(self):
         pipeline = [
             {
                 "$group": {
-                    "_id": "$order_id",  
-                    "total": {
-                        "$sum": { "$multiply": [ "$quantity", "$price" ] }  
-                    }
+                    "_id": "$order_id",
+                    "total": { "$sum": { "$multiply": ["$quantity", "$price"] } }
                 }
             },
             { "$match": { "total": { "$gt": 1000 } } },
-            { "$sort": { "total": -1 } } 
+            {
+                "$lookup": {
+                    "from": "orders",
+                    "localField": "_id",
+                    "foreignField": "order_id",
+                    "as": "order_info"
+                }
+            },
+            { "$unwind": "$order_info" },
+            {
+                "$project": {
+                    "_id": 0,
+                    "order_id": "$_id",
+                    "total": 1,
+                    "user_id": "$order_info.user_id",
+                    "created_at": "$order_info.created_at",
+                    "status": "$order_info.status"
+                }
+            },
+            { "$sort": { "total": -1 } }
         ]
         result = list(self.db.order_items.aggregate(pipeline))
         return [self._convert_objectid(doc) for doc in result]
 
-    def get_user_orders(self, user_id):
-        result = list(self.db.orders.find({"user_id": user_id}))
-        return [self._convert_objectid(doc) for doc in result]
-
-    def get_order_with_details(self, order_id):
+    def get_top_users_by_orders_count(self, limit=10):
         pipeline = [
-            { "$match": { "order_id": order_id } },
             {
-                "$lookup": {
-                    "from": "order_items",
-                    "localField": "order_id",
-                    "foreignField": "order_id",
-                    "as": "items"
+                "$group": {
+                    "_id": "$user_id",
+                    "order_count": { "$sum": 1 }
                 }
             },
-            {
-                "$unwind": "$items"
-            },
+            { "$sort": { "order_count": -1 } },
+            { "$limit": limit },
             {
                 "$lookup": {
-                    "from": "products",
-                    "localField": "items.product_id",
-                    "foreignField": "product_id",
-                    "as": "product"
+                    "from": "users",
+                    "localField": "_id",
+                    "foreignField": "user_id",
+                    "as": "user_info"
                 }
             },
-            {
-                "$unwind": "$product"
-            },
+            { "$unwind": "$user_info" },
             {
                 "$project": {
-                    "order_id": 1,
-                    "user_id": 1,
-                    "created_at": 1,
-                    "status": 1,
-                    "product_id": "$items.product_id",
-                    "product_name": "$product.name",
-                    "quantity": "$items.quantity",
-                    "price": "$items.price",
-                    "total_price": { "$multiply": ["$items.quantity", "$items.price"] }
+                    "_id": 0,
+                    "user_id": "$_id",
+                    "user_name": "$user_info.name",
+                    "user_email": "$user_info.email",
+                    "order_count": 1
                 }
             }
         ]
         result = list(self.db.orders.aggregate(pipeline))
         return [self._convert_objectid(doc) for doc in result]
 
-    def get_top_products_by_revenue(self, limit=10):
+    def get_top_categories_by_revenue(self, limit=10):
         pipeline = [
             {
+                "$lookup": {
+                    "from": "products",
+                    "localField": "product_id",
+                    "foreignField": "product_id",
+                    "as": "product"
+                }
+            },
+            { "$unwind": "$product" },
+            {
                 "$group": {
-                    "_id": "$product_id",
-                    "revenue": {
-                        "$sum": { "$multiply": ["$quantity", "$price"] }
-                    },
+                    "_id": "$product.category_id",
+                    "revenue": { "$sum": { "$multiply": ["$quantity", "$price"] } },
                     "total_quantity": { "$sum": "$quantity" }
                 }
             },
             {
                 "$lookup": {
-                    "from": "products",
+                    "from": "categories",
                     "localField": "_id",
-                    "foreignField": "product_id",
-                    "as": "product"
+                    "foreignField": "category_id",
+                    "as": "category_info"
                 }
             },
-            {
-                "$unwind": "$product"
-            },
+            { "$unwind": "$category_info" },
             {
                 "$project": {
                     "_id": 0,
-                    "product_id": "$_id",
-                    "product_name": "$product.name",
+                    "category_id": "$_id",
+                    "category_name": "$category_info.name",
                     "revenue": 1,
                     "total_quantity": 1
                 }
@@ -257,6 +270,45 @@ class MongoService:
         ]
         result = list(self.db.order_items.aggregate(pipeline))
         return [self._convert_objectid(doc) for doc in result]
+
+    def get_order_statistics(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$order_id",
+                    "total": { "$sum": { "$multiply": ["$quantity", "$price"] } }
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "avg_order_total": { "$avg": "$total" },
+                    "min_order_total": { "$min": "$total" },
+                    "max_order_total": { "$max": "$total" },
+                    "order_count": { "$sum": 1 }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "avg_order_total": 1,
+                    "min_order_total": 1,
+                    "max_order_total": 1,
+                    "order_count": 1
+                }
+            }
+        ]
+        result = list(self.db.order_items.aggregate(pipeline))
+        if result:
+            return self._convert_objectid(result[0])
+        return {}
+
+    def get_all_indexes(self):
+        indexes = {}
+        for collection_name in ["categories", "users", "products", "orders", "order_items"]:
+            collection = self.db[collection_name]
+            indexes[collection_name] = list(collection.list_indexes())
+        return indexes
 
     def create_indexes(self):
         try:
