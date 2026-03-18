@@ -288,26 +288,27 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
             detail="Пользователь заблокирован администратором"
         )
 
-    # Log successful login
-    from crud.action_logs_crud import create_action_log
-    from schemas import ActionLogCreate
+    # Log successful login to MongoDB
+    from crud.mongo_logs_crud import create_action_log_mongo
 
     user_agent = request.headers.get('User-Agent', 'Unknown')
-
-    log_entry = ActionLogCreate(
-        actor_user_id=user['id'],
-        action_type='user_login',
-        target_user_id=user['id'],
-        description='Успешный вход пользователя',
-        old_values=None,
-        new_values=None,
-        user_agent=user_agent
-    )
+    ip_address = request.client.host if request.client else None
 
     try:
-        create_action_log(log_entry)
+        create_action_log_mongo(
+            actor_user_id=user['id'],
+            actor_email=user['email'],
+            action_type='user_login',
+            target_user_id=user['id'],
+            target_user_email=user['email'],
+            description='Успешный вход пользователя',
+            old_values=None,
+            new_values=None,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
     except Exception as e:
-        print(f"Failed to log user login: {str(e)}")
+        print(f"Failed to log user login to MongoDB: {str(e)}")
 
     # Create JWT token
     access_token = create_access_token(
@@ -327,8 +328,8 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
         "cashback": float(user['cashback']) if user['cashback'] else 0,
         "role_id": user['role_id'],
         "status": user['status'],
-        "created_at": user['created_at'].isoformat() if user['created_at'] else None,
-        "updated_at": user['updated_at'].isoformat() if user['updated_at'] else None
+        "created_at": user['created_at'].isoformat() if hasattr(user['created_at'], 'isoformat') else str(user['created_at']) if user['created_at'] else None,
+        "updated_at": user['updated_at'].isoformat() if hasattr(user['updated_at'], 'isoformat') else str(user['updated_at']) if user['updated_at'] else None
     }
 
     # Return token and user data
@@ -371,30 +372,32 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
             print(f"Other error occurred: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Ошибка при создании пользователя: {str(e)}")
 
-    from crud.action_logs_crud import create_action_log
-    from schemas import ActionLogCreate
+    # Log successful registration to MongoDB
+    from crud.mongo_logs_crud import create_action_log_mongo
 
     user_agent = request.headers.get('User-Agent', 'Unknown')
-
-    log_entry = ActionLogCreate(
-        actor_user_id=created_user['id'],
-        action_type='user_registration',
-        target_user_id=created_user['id'],
-        description='Успешная регистрация пользователя',
-        old_values=None,
-        new_values={
-            'email': created_user['email'],
-            'name': created_user['name'],
-            'surname': created_user['surname'],
-            'role_id': created_user['role_id']
-        },
-        user_agent=user_agent
-    )
+    ip_address = request.client.host if request.client else None
 
     try:
-        create_action_log(log_entry)
+        create_action_log_mongo(
+            actor_user_id=created_user['id'],
+            actor_email=created_user['email'],
+            action_type='user_registration',
+            target_user_id=created_user['id'],
+            target_user_email=created_user['email'],
+            description='Успешная регистрация пользователя',
+            old_values=None,
+            new_values={
+                'email': created_user['email'],
+                'name': created_user['name'],
+                'surname': created_user['surname'],
+                'role_id': created_user['role_id']
+            },
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
     except Exception as e:
-        print(f"Failed to log user registration: {str(e)}")
+        print(f"Failed to log user registration to MongoDB: {str(e)}")
 
     user_response = dict(created_user)
     if 'hashed_password' in user_response:
@@ -406,25 +409,27 @@ async def register_user_endpoint(request: Request, user: UserRegistration):
 
 @router.post("/logout")
 def logout_user_endpoint(request: Request, current_user: dict = Depends(get_current_user)):
-    from crud.action_logs_crud import create_action_log
-    from schemas import ActionLogCreate
+    # Log logout to MongoDB
+    from crud.mongo_logs_crud import create_action_log_mongo
 
     user_agent = request.headers.get('User-Agent', 'Unknown')
-
-    log_entry = ActionLogCreate(
-        actor_user_id=current_user['id'],
-        action_type='user_logout',
-        target_user_id=current_user['id'],
-        description='Успешный выход пользователя',
-        old_values=None,
-        new_values=None,
-        user_agent=user_agent
-    )
+    ip_address = request.client.host if request.client else None
 
     try:
-        create_action_log(log_entry)
+        create_action_log_mongo(
+            actor_user_id=current_user['id'],
+            actor_email=current_user['email'],
+            action_type='user_logout',
+            target_user_id=current_user['id'],
+            target_user_email=current_user['email'],
+            description='Успешный выход пользователя',
+            old_values=None,
+            new_values=None,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
     except Exception as e:
-        print(f"Failed to log user logout: {str(e)}")
+        print(f"Failed to log user logout to MongoDB: {str(e)}")
 
     return {"message": "Выход из системы выполнен успешно"}
 

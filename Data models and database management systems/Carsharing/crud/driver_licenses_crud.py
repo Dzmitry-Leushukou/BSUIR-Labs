@@ -52,16 +52,40 @@ def create_driver_license(license: DriverLicenseCreate, driver_id: int):
     conn.commit()
     cur.close()
     conn.close()
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        create_action_log_mongo(
+            actor_user_id=driver_id,
+            action_type='driver_license_upload',
+            description='Загрузка водительских прав',
+            target_user_id=driver_id,
+            new_values={
+                'license_number': license.license_number,
+                'issued_by': license.issued_by,
+                'expiration_date': license.expiration_date.isoformat() if license.expiration_date else None,
+                'status': license.status
+            }
+        )
+    except Exception as e:
+        print(f"Failed to log driver license creation to MongoDB: {str(e)}")
+    
     return new_license
 
 def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
+    # Get current license for logging
+    cur.execute("SELECT * FROM driver_licenses WHERE driver_id = %s", (driver_id,))
+    current_license = cur.fetchone()
+    old_status = current_license['status'] if current_license else None
+
     # Build dynamic update query
     update_fields = []
     values = []
-    
+
     if license.issued_by is not None:
         update_fields.append("issued_by = %s")
         values.append(license.issued_by)
@@ -77,13 +101,13 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     if license.status is not None:
         update_fields.append("status = %s")
         values.append(license.status)
-    
+
     if not update_fields:
         raise HTTPException(status_code=400, detail="Нет полей для обновления")
-    
+
     query = f"UPDATE driver_licenses SET {', '.join(update_fields)} WHERE driver_id = %s RETURNING *"
     values.append(driver_id)
-    
+
     cur.execute(query, values)
     updated_license = cur.fetchone()
     conn.commit()
@@ -91,6 +115,35 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     conn.close()
     if not updated_license:
         raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        
+        if license.status and license.status != old_status:
+            action_type = {
+                'approved': 'driver_license_approved',
+                'rejected': 'driver_license_rejected'
+            }.get(license.status, 'driver_license_update')
+            
+            description = {
+                'approved': 'Водительские права одобрены',
+                'rejected': 'Водительские права отклонены'
+            }.get(license.status, 'Обновление водительских прав')
+            
+            # Get admin user ID from context if available
+            actor_user_id = driver_id  # Default to the license owner
+            create_action_log_mongo(
+                actor_user_id=actor_user_id,
+                action_type=action_type,
+                description=description,
+                target_user_id=driver_id,
+                old_values={'status': old_status},
+                new_values={'status': license.status}
+            )
+    except Exception as e:
+        print(f"Failed to log driver license update to MongoDB: {str(e)}")
+    
     return updated_license
 
 def delete_driver_license(driver_id: int):

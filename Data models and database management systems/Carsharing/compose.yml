@@ -18,6 +18,22 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:7
+    container_name: carsharing_mongodb
+    environment:
+      MONGO_INITDB_DATABASE: carsharing_logs
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     container_name: carsharing_redis
@@ -43,13 +59,21 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_PORT=5432
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DB=carsharing_logs
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - JWT_SECRET_KEY=your-secret-key-change-in-production
       - JWT_ALGORITHM=HS256
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ACTION_LOGS_TTL_DAYS=90
+      - DB_QUERY_LOGS_TTL_DAYS=30
+      - ERROR_LOGS_TTL_DAYS=60
     depends_on:
       postgres:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -61,4 +85,5 @@ services:
 
 volumes:
   postgres_data:
+  mongodb_data:
   redis_data:

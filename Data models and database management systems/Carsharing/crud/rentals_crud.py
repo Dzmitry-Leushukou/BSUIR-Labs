@@ -52,56 +52,77 @@ def get_rental(rental_id: int):
 def create_rental(rental: RentalCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     # Проверяем, есть ли у пользователя уже активная аренда
     cur.execute(
         "SELECT id FROM rentals WHERE user_id = %s AND status = 'active'",
         (rental.user_id,)
     )
     active_rental = cur.fetchone()
-    
+
     if active_rental:
         conn.close()
         raise HTTPException(status_code=400, detail="Пользователь уже имеет активную аренду")
-    
+
     # Если started_at не предоставлен, используем текущее время сервера в UTC+3
     utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
     started_at = rental.started_at if rental.started_at is not None else datetime.now(utc_plus_3)
-    
+
     cur.execute(
         """INSERT INTO rentals (user_id, car_id, started_at, price, status)
            VALUES (%s, %s, %s, %s, %s) RETURNING *""",
         (rental.user_id, rental.car_id, started_at, rental.price, rental.status)
     )
     new_rental = cur.fetchone()
-    
+
     # Обновляем статус машины на "rented"
     cur.execute(
         "UPDATE cars SET status = 'rented' WHERE id = %s",
         (rental.car_id,)
     )
-    
+
     conn.commit()
     cur.close()
     conn.close()
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        create_action_log_mongo(
+            actor_user_id=rental.user_id,
+            action_type='car_rental_start',
+            description='Начало аренды автомобиля',
+            target_car_id=rental.car_id,
+            target_rental_id=new_rental['id'],
+            new_values={
+                'started_at': started_at.isoformat(),
+                'price': rental.price,
+                'status': rental.status
+            }
+        )
+    except Exception as e:
+        print(f"Failed to log rental creation to MongoDB: {str(e)}")
+    
     return new_rental
 
 def update_rental(rental_id: int, rental: RentalUpdate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     # Сначала получаем текущую запись, чтобы знать начальное состояние
-    cur.execute("SELECT ended_at, status, car_id FROM rentals WHERE id = %s", (rental_id,))
+    cur.execute("SELECT ended_at, status, car_id, user_id FROM rentals WHERE id = %s", (rental_id,))
     current_rental = cur.fetchone()
     if not current_rental:
         cur.close()
         conn.close()
         raise HTTPException(status_code=404, detail="Аренда не найдена")
+
+    old_status = current_rental['status']
     
     # Build dynamic update query
     update_fields = []
     values = []
-    
+
     if rental.ended_at is not None:
         # Ensure ended_at is in UTC+3 timezone
         utc_plus_3 = pytz.timezone('Europe/Moscow')  # Using Europe/Moscow as it's in the same timezone as Minsk
@@ -119,16 +140,16 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     if rental.price is not None:
         update_fields.append("price = %s")
         values.append(rental.price)
-    
+
     if not update_fields:
         raise HTTPException(status_code=400, detail="Нет полей для обновления")
-    
+
     query = f"UPDATE rentals SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(rental_id)
-    
+
     cur.execute(query, values)
     updated_rental = cur.fetchone()
-    
+
     # Если статус аренды изменяется на "completed", обновляем статус машины на "available"
     # и устанавливаем ended_at, если он еще не был установлен до обновления
     if rental.status == "completed":
@@ -145,14 +166,43 @@ def update_rental(rental_id: int, rental: RentalUpdate):
             "UPDATE cars SET status = 'pending_completion' WHERE id = %s",
             (car_id,)
         )
-    
+
     conn.commit()
     cur.close()
     conn.close()
-    
+
     # Проверяем, что обновленная аренда существует
     if not updated_rental:
         raise HTTPException(status_code=404, detail="Аренда не найдена после обновления")
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        
+        if rental.status and rental.status != old_status:
+            action_type = {
+                'completed': 'car_rental_end',
+                'cancelled': 'car_rental_cancel',
+                'pending_completion': 'car_rental_pending_completion'
+            }.get(rental.status, 'car_rental_update')
+            
+            description = {
+                'completed': 'Завершение аренды автомобиля',
+                'cancelled': 'Отмена аренды автомобиля',
+                'pending_completion': 'Ожидание завершения аренды'
+            }.get(rental.status, 'Обновление статуса аренды')
+            
+            create_action_log_mongo(
+                actor_user_id=current_rental['user_id'],
+                action_type=action_type,
+                description=description,
+                target_car_id=updated_rental['car_id'],
+                target_rental_id=rental_id,
+                old_values={'status': old_status},
+                new_values={'status': rental.status, 'ended_at': rental.ended_at.isoformat() if rental.ended_at else None}
+            )
+    except Exception as e:
+        print(f"Failed to log rental update to MongoDB: {str(e)}")
     
     return updated_rental
 

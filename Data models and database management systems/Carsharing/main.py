@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from routers.roles_router import router as roles_router
 from routers.users_router import router as users_router
 from routers.cars_router import router as cars_router
@@ -13,27 +13,13 @@ from routers.logs_router import router as logs_router
 from routers.action_logs_router import router as action_logs_router
 from routers.trip_completions_router import router as trip_completions_router
 
-from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from routers.roles_router import router as roles_router
-from routers.users_router import router as users_router
-from routers.cars_router import router as cars_router
-from routers.photos_router import router as photos_router
-from routers.driver_licenses_router import router as driver_licenses_router
-from routers.sessions_router import router as sessions_router
-from routers.car_states_router import router as car_states_router
-from routers.rentals_router import router as rentals_router
-from routers.maintenance_requests_router import router as maintenance_requests_router
-from routers.payment_logs_router import router as payment_logs_router
-from routers.logs_router import router as logs_router
-from routers.action_logs_router import router as action_logs_router
+from starlette.responses import FileResponse
+from middleware.mongo_logging import MongoDBLoggingMiddleware, DatabaseQueryLoggingMiddleware, setup_mongodb_logging
+import os
 
 app = FastAPI(title="Carsharing API", description="API for carsharing application", version="1.0.0")
-
-from starlette.staticfiles import StaticFiles
-from starlette.responses import FileResponse
-import os
 
 # Custom StaticFiles class to add cache control headers
 class NoCacheStaticFiles(StaticFiles):
@@ -50,6 +36,9 @@ class NoCacheStaticFiles(StaticFiles):
 app.mount("/static", NoCacheStaticFiles(directory="frontend"), name="static")
 app.mount("/uploads", NoCacheStaticFiles(directory="frontend/uploads"), name="uploads")
 
+# Add MongoDB error logging middleware
+app.add_middleware(MongoDBLoggingMiddleware)
+
 # Include routers
 app.include_router(roles_router)
 app.include_router(users_router)
@@ -64,6 +53,33 @@ app.include_router(payment_logs_router)
 app.include_router(logs_router)
 app.include_router(action_logs_router)
 app.include_router(trip_completions_router)
+
+
+@app.middleware("http")
+async def set_request_context(request: Request, call_next):
+    """Set request context for query logging."""
+    # Extract user info from request state if available
+    endpoint = request.url.path
+    user_id = None
+    
+    # User info will be set by authentication middleware later
+    # For now, we just set the endpoint
+    DatabaseQueryLoggingMiddleware.set_context(endpoint=endpoint, user_id=user_id)
+    
+    try:
+        response = await call_next(request)
+        
+        # Update context with user info if available after authentication
+        if hasattr(request.state, "current_user"):
+            DatabaseQueryLoggingMiddleware.set_context(
+                endpoint=endpoint,
+                user_id=request.state.current_user.get("id")
+            )
+        
+        return response
+    finally:
+        DatabaseQueryLoggingMiddleware.clear_context()
+
 
 # Маршрут для главной страницы
 @app.get("/")
@@ -130,6 +146,21 @@ async def read_admin_users():
 async def read_admin_trip_completions():
     with open("frontend/admin_trip_completions.html", "r", encoding="utf-8") as file:
         return HTMLResponse(content=file.read())
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize MongoDB logging on startup."""
+    try:
+        # Check if MongoDB logging is enabled
+        if os.getenv("MONGODB_HOST"):
+            setup_mongodb_logging()
+            print("MongoDB logging initialized successfully")
+        else:
+            print("MongoDB logging not configured (MONGODB_HOST not set)")
+    except Exception as e:
+        print(f"Warning: Could not initialize MongoDB logging: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -12,8 +12,57 @@
             <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
             <h1>Таблица логов действий</h1>
         </div>
-        
+
         <div class="admin-content">
+            <!-- Time range filters -->
+            <div class="filter-section">
+                <h3>Фильтры по времени</h3>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="start-date">Дата начала:</label>
+                        <input type="datetime-local" id="start-date" class="filter-date-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="end-date">Дата окончания:</label>
+                        <input type="datetime-local" id="end-date" class="filter-date-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="action-type-filter">Тип действия:</label>
+                        <select id="action-type-filter" class="filter-select">
+                            <option value="">Все типы</option>
+                            <option value="user_login">Вход пользователя</option>
+                            <option value="user_logout">Выход пользователя</option>
+                            <option value="user_registration">Регистрация</option>
+                            <option value="profile_update">Обновление профиля</option>
+                            <option value="car_create">Создание автомобиля</option>
+                            <option value="car_update">Обновление автомобиля</option>
+                            <option value="car_delete">Удаление автомобиля</option>
+                            <option value="car_rental_start">Начало аренды</option>
+                            <option value="car_rental_end">Завершение аренды</option>
+                            <option value="car_rental_cancel">Отмена аренды</option>
+                            <option value="car_rental_pending_completion">Ожидание завершения</option>
+                            <option value="driver_license_upload">Загрузка прав</option>
+                            <option value="driver_license_approved">Одобрение прав</option>
+                            <option value="driver_license_rejected">Отклонение прав</option>
+                            <option value="trip_completion_create">Создание завершения поездки</option>
+                            <option value="trip_completion_approved">Поездка одобрена</option>
+                            <option value="trip_completion_rejected">Поездка отклонена</option>
+                            <option value="user_ban">Блокировка пользователя</option>
+                            <option value="user_unban">Разблокировка пользователя</option>
+                            <option value="payment_success">Успешный платеж</option>
+                            <option value="payment_failed">Неудачный платеж</option>
+                            <option value="maintenance_request">Запрос на обслуживание</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="user-id-filter">ID пользователя:</label>
+                        <input type="number" id="user-id-filter" class="filter-number-input" placeholder="Например, 1">
+                    </div>
+                    <button class="btn apply-filters-btn" onclick="applyFilters()">Применить</button>
+                    <button class="btn reset-filters-btn" onclick="resetFilters()">Сбросить</button>
+                </div>
+            </div>
+
             <div class="table-container">
                 <table class="admin-table">
                     <thead>
@@ -21,7 +70,7 @@
                             <th>
                                 <div class="filter-header">
                                     <span>Email пользователя</span>
-                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="actor_user_id">
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="actor_email">
                                 </div>
                             </th>
                             <th>
@@ -33,7 +82,7 @@
                             <th>
                                 <div class="filter-header">
                                     <span>Email целевого пользователя</span>
-                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="target_user_id">
+                                    <input type="text" class="filter-input" placeholder="Фильтр..." data-column="target_user_email">
                                 </div>
                             </th>
                             <th>
@@ -80,7 +129,7 @@
                 </table>
             </div>
         </div>
-    
+
     <script src="/static/auth.js"></script>
     <script src="/static/admin_common.js"></script>
     <script src="/static/admin_action_logs_translations.js"></script>

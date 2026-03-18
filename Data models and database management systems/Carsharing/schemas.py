@@ -476,3 +476,79 @@ class ActionLogWithEmails(ActionLog):
     actor_email: Optional[str] = None
     target_user_email: Optional[str] = None
     target_car_vin: Optional[str] = None
+
+
+# =============================================================================
+# MongoDB Log schemas (for action logs, DB query logs, error logs)
+# =============================================================================
+
+class ActionLogMongo(BaseModel):
+    """Schema for action logs stored in MongoDB."""
+    id: Optional[str] = None  # MongoDB ObjectId
+    actor_user_id: int
+    actor_email: Optional[str] = None
+    action_type: str
+    target_user_id: Optional[int] = None
+    target_user_email: Optional[str] = None
+    target_car_id: Optional[int] = None
+    target_car_vin: Optional[str] = None
+    target_rental_id: Optional[int] = None
+    description: Optional[str] = None
+    old_values: Optional[dict] = None
+    new_values: Optional[dict] = None
+    user_agent: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DbQueryLogMongo(BaseModel):
+    """Schema for database query logs stored in MongoDB."""
+    id: Optional[str] = None  # MongoDB ObjectId
+    query: str
+    query_type: str  # SELECT, INSERT, UPDATE, DELETE
+    table_name: Optional[str] = None
+    execution_time_ms: Optional[float] = None
+    rows_affected: Optional[int] = None
+    user_id: Optional[int] = None
+    endpoint: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ErrorLogMongo(BaseModel):
+    """Schema for error logs stored in MongoDB."""
+    id: Optional[str] = None  # MongoDB ObjectId
+    error_type: str  # Exception class name
+    error_message: str
+    stack_trace: Optional[str] = None
+    endpoint: Optional[str] = None
+    user_id: Optional[int] = None
+    user_email: Optional[str] = None
+    request_method: Optional[str] = None
+    request_url: Optional[str] = None
+    request_body: Optional[dict] = None
+    ip_address: Optional[str] = None
+    severity: str = "ERROR"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LogFilter(BaseModel):
+    """Schema for filtering logs."""
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    user_id: Optional[int] = None
+    user_email: Optional[str] = None
+    action_type: Optional[str] = None
+    event_type: Optional[str] = None  # For error logs
+    severity: Optional[str] = None  # For error logs
+    endpoint: Optional[str] = None
+    table_name: Optional[str] = None  # For DB query logs

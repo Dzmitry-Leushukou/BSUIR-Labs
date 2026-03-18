@@ -121,7 +121,7 @@ def get_trip_completion_by_rental_id(rental_id: int):
 def create_trip_completion(completion: TripCompletionCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     # Insert the trip completion record
     cur.execute(
         """INSERT INTO trip_completions (rental_id, admin_approved, admin_comment, admin_reviewed_by)
@@ -129,7 +129,7 @@ def create_trip_completion(completion: TripCompletionCreate):
         (completion.rental_id, completion.admin_approved, completion.admin_comment, completion.admin_reviewed_by)
     )
     new_completion = cur.fetchone()
-    
+
     # If photo IDs were provided, link them to the trip completion
     if completion.completion_photo_ids:
         for i, photo_id in enumerate(completion.completion_photo_ids):
@@ -140,20 +140,43 @@ def create_trip_completion(completion: TripCompletionCreate):
                    VALUES (%s, %s, %s)""",
                 (new_completion['id'], photo_id, is_primary)
             )
-    
+
     conn.commit()
     cur.close()
     conn.close()
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        create_action_log_mongo(
+            actor_user_id=completion.admin_reviewed_by if completion.admin_reviewed_by else 1,
+            action_type='trip_completion_create',
+            description='Создание завершения поездки',
+            target_rental_id=completion.rental_id,
+            new_values={
+                'rental_id': completion.rental_id,
+                'admin_approved': completion.admin_approved,
+                'admin_comment': completion.admin_comment
+            }
+        )
+    except Exception as e:
+        print(f"Failed to log trip completion creation to MongoDB: {str(e)}")
+    
     return new_completion
 
 def update_trip_completion(completion_id: int, completion: TripCompletionUpdate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
+    # Get current completion for logging
+    cur.execute("SELECT * FROM trip_completions WHERE id = %s", (completion_id,))
+    current_completion = cur.fetchone()
+    old_approved = current_completion['admin_approved'] if current_completion else None
+
     # Build dynamic update query
     update_fields = []
     values = []
-    
+
     if completion.admin_approved is not None:
         update_fields.append("admin_approved = %s")
         values.append(completion.admin_approved)
@@ -174,16 +197,16 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
             admin_reviewed_at = completion.admin_reviewed_at.astimezone(utc_plus_3)
         update_fields.append("admin_reviewed_at = %s")
         values.append(admin_reviewed_at)
-    
+
     if not update_fields:
         raise HTTPException(status_code=400, detail="Нет полей для обновления")
-    
+
     query = f"UPDATE trip_completions SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
     values.append(completion_id)
-    
+
     cur.execute(query, values)
     updated_completion = cur.fetchone()
-    
+
     # Get the associated photo IDs after update
     cur.execute("""
         SELECT ARRAY_AGG(tcp.photo_id) AS completion_photo_ids
@@ -193,7 +216,7 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
         GROUP BY tc.id
     """, (completion_id,))
     photo_result = cur.fetchone()
-    
+
     if photo_result:
         # Process the photo IDs array
         if photo_result['completion_photo_ids'] is None or (isinstance(photo_result['completion_photo_ids'], list) and photo_result['completion_photo_ids'] == [None]):
@@ -203,12 +226,32 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
             updated_completion['completion_photo_ids'] = [pid for pid in photo_result['completion_photo_ids'] if pid is not None]
     else:
         updated_completion['completion_photo_ids'] = []
-    
+
     conn.commit()
     cur.close()
     conn.close()
     if not updated_completion:
         raise HTTPException(status_code=404, detail="Завершение поездки не найдено")
+    
+    # Log to MongoDB
+    try:
+        from crud.mongo_logs_crud import create_action_log_mongo
+        
+        if completion.admin_approved is not None and completion.admin_approved != old_approved:
+            action_type = 'trip_completion_approved' if completion.admin_approved else 'trip_completion_rejected'
+            description = 'Поездка одобрена' if completion.admin_approved else 'Поездка отклонена'
+            
+            create_action_log_mongo(
+                actor_user_id=completion.admin_reviewed_by if completion.admin_reviewed_by else current_completion.get('admin_reviewed_by'),
+                action_type=action_type,
+                description=description,
+                target_rental_id=current_completion['rental_id'],
+                old_values={'admin_approved': old_approved},
+                new_values={'admin_approved': completion.admin_approved, 'admin_comment': completion.admin_comment}
+            )
+    except Exception as e:
+        print(f"Failed to log trip completion update to MongoDB: {str(e)}")
+    
     return updated_completion
 
 def delete_trip_completion(completion_id: int):
