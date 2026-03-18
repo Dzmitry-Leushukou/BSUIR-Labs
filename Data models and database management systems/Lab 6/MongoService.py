@@ -32,7 +32,6 @@ class MongoService:
             raise
 
     def _convert_objectid(self, doc: Dict[str, Any]) -> Dict[str, Any]:
-        """Convert ObjectId to string for JSON serialization"""
         if doc is None:
             return None
         if isinstance(doc, list):
