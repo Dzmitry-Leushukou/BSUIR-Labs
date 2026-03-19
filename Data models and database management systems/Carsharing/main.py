@@ -12,6 +12,7 @@ from routers.payment_logs_router import router as payment_logs_router
 from routers.logs_router import router as logs_router
 from routers.action_logs_router import router as action_logs_router
 from routers.trip_completions_router import router as trip_completions_router
+from routers.analytics_router import router as analytics_router
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -53,6 +54,7 @@ app.include_router(payment_logs_router)
 app.include_router(logs_router)
 app.include_router(action_logs_router)
 app.include_router(trip_completions_router)
+app.include_router(analytics_router)
 
 
 @app.middleware("http")
@@ -145,6 +147,13 @@ async def read_admin_users():
 @app.get("/admin/trip_completions")
 async def read_admin_trip_completions():
     with open("frontend/admin_trip_completions.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
+
+
+# Маршрут для страницы аналитики
+@app.get("/admin/analytics")
+async def read_admin_analytics():
+    with open("frontend/admin_analytics.html", "r", encoding="utf-8") as file:
         return HTMLResponse(content=file.read())
 
 

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - Админ панель</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-dashboard {
+            padding: 20px;
+        }
+
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .analytics-filters {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-export {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background-color: #218838;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .change {
+            font-size: 12px;
+            color: #28a745;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .chart-container h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .top-users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .top-users-table th,
+        .top-users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .top-users-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .top-users-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .anomaly-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+
+        .anomaly-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .anomaly-diverse {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <button class="btn back-btn" onclick="goToAdminPanel()">&larr; Назад</button>
+            <h1>Аналитика и статистика</h1>
+            <div>
+                <button class="btn btn-export" onclick="exportAllReports()">📥 Экспорт всех отчётов</button>
+            </div>
+        </div>
+
+        <div class="analytics-dashboard">
+            <!-- Filters -->
+            <div class="analytics-filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="period-select">Период:</label>
+                        <select id="period-select">
+                            <option value="day">День</option>
+                            <option value="week">Неделя</option>
+                            <option value="month">Месяц</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="start-date">Дата начала:</label>
+                        <input type="date" id="start-date">
+                    </div>
+                    <div class="filter-group">
+                        <label for="end-date">Дата окончания:</label>
+                        <input type="date" id="end-date">
+                    </div>
+                    <div class="filter-group">
+                        <label for="time-period">Временной тренд:</label>
+                        <select id="time-period">
+                            <option value="hour">По часам</option>
+                            <option value="day_of_week">По дням недели</option>
+                            <option value="hour_of_day">По часам суток</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadAnalytics()">Применить</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Сбросить</button>
+                </div>
+            </div>
+
+            <!-- Error message container -->
+            <div id="error-container"></div>
+
+            <!-- Summary Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Всего операций</h3>
+                    <div class="value" id="total-operations">-</div>
+                    <div class="change" id="operations-change"></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Активных пользователей</h3>
+                    <div class="value" id="active-users">-</div>
+                    <div class="change" id="users-change"></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Среднее действий/пользователь</h3>
+                    <div class="value" id="avg-actions">-</div>
+                    <div class="change" id="avg-change"></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Аномалий обнаружено</h3>
+                    <div class="value" id="anomalies-count">-</div>
+                    <div class="change" id="anomalies-change"></div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="two-columns">
+                <div class="chart-container">
+                    <h3>📊 Активность по периодам</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>📈 Распределение CRUD операций</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="crudChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="two-columns">
+                <div class="chart-container">
+                    <h3>⏰ Временные тренды</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>👥 ТОП-10 пользователей</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="topUsersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Users Table -->
+            <div class="chart-container">
+                <h3>🏆 ТОП-10 самых активных пользователей</h3>
+                <table class="top-users-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Всего действий</th>
+                            <th>Первое действие</th>
+                            <th>Последнее действие</th>
+                            <th>Активность по типам</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-users-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Anomalies Table -->
+            <div class="chart-container">
+                <h3>⚠️ Аномалии в поведении пользователей</h3>
+                <table class="top-users-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Действий</th>
+                            <th>Уникальных типов</th>
+                            <th>Отклонение</th>
+                            <th>Типы аномалий</th>
+                        </tr>
+                    </thead>
+                    <tbody id="anomalies-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+        <script src="/static/auth.js"></script>
+        <script src="/static/admin_action_logs_translations.js"></script>
+        <script>
+            // Гарантируем, что глобальные функции переводов доступны для всех скриптов
+            window.translateActionType = window.translateActionType || function(x) { return x; };
+            window.translateDescription = window.translateDescription || function(x) { return x; };
+        </script>
+        <script src="/static/admin_common.js"></script>
+        <script src="/static/admin_analytics.js"></script>
+</body>
+</html>

@@ -49,10 +49,28 @@ function translateDescription(description) {
         'Rental status changed': 'Статус аренды изменен',
         'Payment completed successfully': 'Платеж успешно завершен'
     };
-    
+
     return descriptionTranslations[description] || description;
+}
+
+// Перевод заголовков колонок
+const columnHeaderTranslations = {
+    'actor_email': 'Email пользователя',
+    'action_type': 'Тип действия',
+    'target_user_email': 'Email целевого пользователя',
+    'target_car_vin': 'VIN целевого автомобиля',
+    'target_rental_id': 'Номер целевой аренды',
+    'description': 'Описание',
+    'old_values': 'Старые значения',
+    'new_values': 'Новые значения',
+    'created_at': 'Создан'
+};
+
+function translateColumnHeader(columnKey) {
+    return columnHeaderTranslations[columnKey] || columnKey;
 }
 
 // Экспортируем функции для использования в других скриптах
 window.translateActionType = translateActionType;
 window.translateDescription = translateDescription;
+window.translateColumnHeader = translateColumnHeader;

@@ -30,6 +30,9 @@ function showTable(tableName) {
         case 'trip_completions':
             showTripCompletionsTable();
             break;
+        case 'analytics':
+            showAnalyticsPage();
+            break;
         default:
             console.error('Неизвестная таблица:', tableName);
     }
@@ -74,4 +77,9 @@ function showUsersTable() {
 // Функция для отображения таблицы подтверждения завершения поездок
 function showTripCompletionsTable() {
     window.location.href = '/admin/trip_completions';
+}
+
+// Функция для отображения страницы аналитики
+function showAnalyticsPage() {
+    window.location.href = '/admin/analytics';
 }

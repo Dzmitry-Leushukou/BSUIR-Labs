@@ -6,7 +6,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    overflow: hidden;
+    /* overflow: hidden; */
+    /* Разрешаем вертикальную прокрутку по умолчанию */
 }
 
 #map {
@@ -462,6 +463,15 @@ body {
 
 .admin-table-btn:hover {
     background: #0056b3;
+}
+
+/* Analytics button special styling */
+.analytics-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+}
+
+.analytics-btn:hover {
+    background: linear-gradient(135deg, #0e7c72 0%, #2ecc71 100%) !important;
 }
 
 .table-container {

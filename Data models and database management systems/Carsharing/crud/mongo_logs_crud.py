@@ -136,6 +136,41 @@ def create_action_log_mongo(
     target_car_vin: Optional[str] = None,
 ) -> ActionLogMongo:
     """Create a new action log entry in MongoDB."""
+    
+    # Автоматически добавляем email актера/цели, если они не были переданы
+    # (чтобы логи всегда содержали email и не зависели от вызова).
+    if not actor_email and actor_user_id:
+        try:
+            # Импорт внутри функции, чтобы избежать циклических импортов.
+            from crud.users_crud import get_user
+
+            user = get_user(actor_user_id)
+            if user:
+                actor_email = user.get('email')
+        except Exception:
+            pass
+
+    if not target_user_email and target_user_id:
+        try:
+            from crud.users_crud import get_user
+
+            user = get_user(target_user_id)
+            if user:
+                target_user_email = user.get('email')
+        except Exception:
+            pass
+
+    # Подставляем VIN автомобиля по car_id, если он не передан
+    if not target_car_vin and target_car_id:
+        try:
+            from crud.cars_crud import get_car
+
+            car = get_car(target_car_id)
+            if car:
+                target_car_vin = car.get('vin')
+        except Exception:
+            pass
+
     collection = get_collection(ACTION_LOGS_COLLECTION)
     
     log_data = {
@@ -197,12 +232,53 @@ def get_action_logs_mongo(
     # Execute query with sorting and pagination
     cursor = collection.find(query).sort("created_at", DESCENDING).skip(offset).limit(limit)
     
+    # Получаем коллекцию пользователей в MongoDB (если есть)
+    db = get_mongo_db()
+    users_collection = db['users']
+
     logs = []
     for doc in cursor:
         doc["id"] = str(doc["_id"])
         del doc["_id"]
+
+        # Подставить actor_email, если отсутствует
+        if (not doc.get('actor_email')) and doc.get('actor_user_id'):
+            # Сначала пробуем взять из MongoDB users (если такая коллекция есть)
+            try:
+                user_doc = users_collection.find_one({'_id': doc['actor_user_id']})
+                if user_doc and user_doc.get('email'):
+                    doc['actor_email'] = user_doc['email']
+                else:
+                    raise Exception('user not found in mongo')
+            except Exception:
+                # Если нет коллекции users или нет пользователя, попробуем получить из Postgres
+                try:
+                    from crud.users_crud import get_user
+                    user = get_user(doc['actor_user_id'])
+                    if user and user.get('email'):
+                        doc['actor_email'] = user.get('email')
+                except Exception:
+                    pass
+
+        # Подставить target_user_email, если отсутствует
+        if (not doc.get('target_user_email')) and doc.get('target_user_id'):
+            try:
+                user_doc = users_collection.find_one({'_id': doc['target_user_id']})
+                if user_doc and user_doc.get('email'):
+                    doc['target_user_email'] = user_doc['email']
+                else:
+                    raise Exception('user not found in mongo')
+            except Exception:
+                try:
+                    from crud.users_crud import get_user
+                    user = get_user(doc['target_user_id'])
+                    if user and user.get('email'):
+                        doc['target_user_email'] = user.get('email')
+                except Exception:
+                    pass
+
         logs.append(ActionLogMongo(**doc))
-    
+
     return logs
 
 

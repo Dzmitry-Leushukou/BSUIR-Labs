@@ -313,8 +313,18 @@ function filterActionLogs() {
     });
 }
 
+// Функция для применения переводов к заголовкам колонок
+function applyColumnTranslations() {
+    const spans = document.querySelectorAll('span[data-i18n]');
+    spans.forEach(span => {
+        const key = span.getAttribute('data-i18n');
+        span.textContent = translateColumnHeader(key);
+    });
+}
+
 // Добавляем обработчики событий для фильтров
 document.addEventListener('DOMContentLoaded', () => {
+    applyColumnTranslations();  // Применяем переводы к заголовкам колонок
     loadActionLogs(0);  // Загружаем первую страницу
 
     // Устанавливаем обработчики для фильтров
@@ -370,7 +380,14 @@ function translateFieldNames(jsonString) {
         'actor_user_id': 'ID пользователя-актера',
         'old_values': 'Старые значения',
         'new_values': 'Новые значения',
-        'user_agent': 'User Agent'
+        'user_agent': 'User Agent',
+        // Поля для старых/новых значений
+        'license_number': 'Номер удостоверения',
+        'issued_by': 'Выдано',
+        'expiration_date': 'Срок действия',
+        'status': 'Статус',
+        'admin_approved': 'Админ одобрил',
+        'admin_comment': 'Комментарий администратора'
     };
 
     // Определяем переводы для enum значений
@@ -400,6 +417,8 @@ function translateFieldNames(jsonString) {
         'pending': 'Ожидает проверки',
         'approved': 'Одобрен',
         'rejected': 'Отклонен',
+        // Статусы аренды
+        'pending_completion': 'Ожидает завершения',
 
         // Типы платежей
         'rental_fee': 'Оплата аренды',

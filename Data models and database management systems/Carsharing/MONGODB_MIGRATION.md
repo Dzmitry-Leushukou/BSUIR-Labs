@@ -66,7 +66,7 @@
 
 ### 4. API endpoints
 
-#### Action Logs
+### Action Logs
 ```
 GET    /action_logs/              # Список логов с фильтрацией
 GET    /action_logs/count         # Количество логов
@@ -81,6 +81,80 @@ DELETE /action_logs/{log_id}      # Удалить лог
 - `action_type`: Тип действия
 - `target_user_id` / `target_car_id`: Целевой объект
 - `offset` / `limit`: Пагинация
+
+### Analytics Reports (MongoDB Aggregation)
+
+#### Статистика активности по периодам
+```
+GET /analytics/user-activity?period=day|week|month&start_date=...&end_date=...
+```
+
+Возвращает:
+- `period`: Период (дата/неделя/месяц)
+- `total_actions`: Общее количество действий
+- `unique_users_count`: Количество уникальных пользователей
+- `actions_by_type`: Распределение по типам действий
+
+#### ТОП-10 самых активных пользователей
+```
+GET /analytics/top-users?limit=10&start_date=...&end_date=...
+```
+
+Возвращает:
+- `user_id`: ID пользователя
+- `email`: Email пользователя
+- `total_actions`: Общее количество действий
+- `actions_by_type`: Распределение по типам действий
+- `last_action`: Время последнего действия
+- `first_action`: Время первого действия
+
+#### Распределение операций по типам (CRUD)
+```
+GET /analytics/operations-distribution?start_date=...&end_date=...
+```
+
+Возвращает:
+- `total_operations`: Общее количество операций
+- `by_type`: Распределение по типам действий (с процентами)
+- `crud_distribution`: Распределение по CRUD операциям
+
+#### Временные тренды (Time Series Analysis)
+```
+GET /analytics/time-series?period=hour|day_of_week|hour_of_day&start_date=...&end_date=...
+```
+
+Возвращает:
+- `total_periods`: Количество периодов
+- `avg_actions`: Среднее количество действий за период
+- `max_actions`: Максимальное количество действий
+- `min_actions`: Минимальное количество действий
+- `trend_data`: Детальные данные по периодам
+
+#### Аномалии в поведении пользователей
+```
+GET /analytics/anomalies?std_threshold=2.0&start_date=...&end_date=...
+```
+
+Возвращает:
+- `anomalies`: Список аномалий с деталями
+  - `user_id`, `email`: Данные пользователя
+  - `action_count`: Количество действий
+  - `anomaly_types`: Типы аномалий (high_activity, low_activity, diverse_actions)
+  - `deviation`: Отклонение от среднего
+- `statistics`: Статистика анализа
+
+#### Экспорт отчётов
+```
+# JSON экспорт
+GET /analytics/export/user-activity/json?period=day
+GET /analytics/export/top-users/json?limit=10
+
+# CSV экспорт
+GET /analytics/export/user-activity/csv?period=day
+GET /analytics/export/top-users/csv?limit=10
+GET /analytics/export/operations-distribution/json
+GET /analytics/export/anomalies/json
+```
 
 #### DB Query Logs
 ```
@@ -110,6 +184,7 @@ GET /logs/errors/count # Количество ошибок
 
 ### 5. Frontend
 
+#### Action Logs
 Обновлена страница просмотра action logs (`/admin/action_logs`):
 
 - Фильтры по временному интервалу (дата начала/окончания)
@@ -117,6 +192,25 @@ GET /logs/errors/count # Количество ошибок
 - Фильтр по ID пользователя
 - Текстовые фильтры по полям таблицы
 - Пагинация
+
+#### Analytics Dashboard
+Добавлена новая страница аналитики (`/admin/analytics`):
+
+**Визуализация данных (Chart.js):**
+- 📊 Активность по периодам (бар-чарт)
+- 📈 Распределение CRUD операций (doughnut-чарт)
+- ⏰ Временные тренды (line-чарт)
+- 👥 ТОП-10 пользователей (horizontal bar-чарт)
+
+**Таблицы:**
+- ТОП-10 самых активных пользователей
+- Аномалии в поведении пользователей
+
+**Функционал:**
+- Фильтры по датам и периодам
+- Кнопка экспорта всех отчётов (JSON)
+- Автоматическая загрузка при открытии
+- Responsive дизайн
 
 ### 6. Middleware
 
