@@ -4,6 +4,8 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <functional>
 #include <cstring>
 #include <cerrno>
 #include <clocale>
@@ -107,12 +109,13 @@ private:
     int selectedIndex;
     int scrollOffset;
     bool treeMode;
-    std::string currentPath;                  
+    std::string currentPath;
     std::vector<FileEntry> flatEntries;
     WINDOW* listWin;
     WINDOW* statusWin;
     int maxY, maxX;
     std::wstring statusMsg;
+    std::set<std::string> expandedPaths;
 
     void buildFlatListFromTree(TreeNode* node, int depth) {
         if (!node) return;
@@ -127,6 +130,32 @@ private:
         flatList.clear();
         if (treeMode && root)
             buildFlatListFromTree(root.get(), 0);
+    }
+
+    void saveExpandedState() {
+        expandedPaths.clear();
+        if (!root) return;
+        std::function<void(TreeNode*)> traverse = [&](TreeNode* node) {
+            if (node->expanded)
+                expandedPaths.insert(node->fullPath);
+            for (auto& child : node->children)
+                traverse(child.get());
+        };
+        traverse(root.get());
+    }
+
+    void restoreExpandedState() {
+        if (!root) return;
+        std::function<void(TreeNode*)> traverse = [&](TreeNode* node) {
+            if (expandedPaths.count(node->fullPath)) {
+                node->expanded = true;
+                node->loadChildren();
+            }
+            for (auto& child : node->children)
+                traverse(child.get());
+        };
+        traverse(root.get());
+        updateFlatList();
     }
 
     void loadTree(const std::string& startPath) {
@@ -184,6 +213,7 @@ private:
     void displayList() {
         werase(listWin);
         int visibleRows = maxY - 3;
+        if (visibleRows < 1) visibleRows = 1;
         int startIdx = scrollOffset;
         int endIdx;
 
@@ -241,9 +271,11 @@ private:
         line1 = L"Status: " + statusMsg;
         line2 = L"Commands: ↑↓ - navigate, Enter - open/expand, Backspace - parent, c - copy, m - move, d - delete, n - new, t - toggle tree/flat, q - quit";
 
-        if ((int)line0.length() > maxX) line0.resize(maxX);
-        if ((int)line1.length() > maxX) line1.resize(maxX);
-        if ((int)line2.length() > maxX) line2.resize(maxX);
+        int availWidth = maxX;
+        if (availWidth < 1) availWidth = 1;
+        if ((int)line0.length() > availWidth) line0.resize(availWidth);
+        if ((int)line1.length() > availWidth) line1.resize(availWidth);
+        if ((int)line2.length() > availWidth) line2.resize(availWidth);
 
         mvwaddwstr(statusWin, 0, 0, line0.c_str());
         mvwaddwstr(statusWin, 1, 0, line1.c_str());
@@ -253,6 +285,7 @@ private:
 
     void adjustScroll() {
         int visibleRows = maxY - 3;
+        if (visibleRows < 1) visibleRows = 1;
         if (selectedIndex < scrollOffset)
             scrollOffset = selectedIndex;
         else if (selectedIndex >= scrollOffset + visibleRows)
@@ -327,7 +360,10 @@ private:
         echo();
         curs_set(1);
         int height = 3, width = maxX - 4;
-        int startY = maxY / 2 - 1, startX = 2;
+        if (width < 10) width = 10;
+        int startY = maxY / 2 - 1;
+        if (startY < 0) startY = 0;
+        int startX = 2;
         WINDOW* inputWin = newwin(height, width, startY, startX);
         box(inputWin, 0, 0);
         mvwaddwstr(inputWin, 1, 1, (prompt + L": ").c_str());
@@ -359,7 +395,7 @@ private:
                     if (curPos < (int)current.length())
                         current.erase(curPos, 1);
                     break;
-                case 21: // Ctrl-U
+                case 21:
                     current.clear();
                     curPos = 0;
                     break;
@@ -507,6 +543,8 @@ private:
 
     void refreshAfterResize() {
         getmaxyx(stdscr, maxY, maxX);
+        if (maxY < 4) maxY = 4;
+        if (maxX < 10) maxX = 10;
         if (listWin) delwin(listWin);
         if (statusWin) delwin(statusWin);
         listWin = newwin(maxY-3, maxX, 0, 0);
@@ -515,6 +553,13 @@ private:
         adjustScroll();
         displayList();
         displayStatus();
+    }
+
+    void updateTreeAfterOperation() {
+        if (!treeMode) return;
+        saveExpandedState();
+        loadTree(currentPath);
+        restoreExpandedState();
     }
 
 public:
@@ -535,6 +580,8 @@ public:
         keypad(stdscr, TRUE);
         curs_set(0);
         getmaxyx(stdscr, maxY, maxX);
+        if (maxY < 4) maxY = 4;
+        if (maxX < 10) maxX = 10;
         clear();
         refresh();
 
@@ -662,8 +709,7 @@ public:
                         if (ok) {
                             statusMsg = L"Copied successfully";
                             if (treeMode) {
-                                loadTree(currentPath);
-                                updateFlatList();
+                                updateTreeAfterOperation();
                             } else {
                                 loadFlatDirectory();
                             }
@@ -691,8 +737,7 @@ public:
                         statusMsg = L"Moved successfully";
                         log("Moved " + src + " -> " + dst);
                         if (treeMode) {
-                            loadTree(currentPath);
-                            updateFlatList();
+                            updateTreeAfterOperation();
                         } else {
                             loadFlatDirectory();
                         }
@@ -712,8 +757,7 @@ public:
                             statusMsg = L"Deleted successfully";
                             log("Deleted " + target);
                             if (treeMode) {
-                                loadTree(currentPath);
-                                updateFlatList();
+                                updateTreeAfterOperation();
                             } else {
                                 loadFlatDirectory();
                             }
@@ -742,8 +786,7 @@ public:
                                 statusMsg = L"File created";
                                 log("Created file " + fullPath);
                                 if (treeMode) {
-                                    loadTree(currentPath);
-                                    updateFlatList();
+                                    updateTreeAfterOperation();
                                 } else {
                                     loadFlatDirectory();
                                 }
@@ -760,8 +803,7 @@ public:
                                 statusMsg = L"Directory created";
                                 log("Created directory " + fullPath);
                                 if (treeMode) {
-                                    loadTree(currentPath);
-                                    updateFlatList();
+                                    updateTreeAfterOperation();
                                 } else {
                                     loadFlatDirectory();
                                 }
