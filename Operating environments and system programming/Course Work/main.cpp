@@ -38,6 +38,13 @@ std::string wstring_to_utf8(const std::wstring& wstr) {
     return std::string(buf.data());
 }
 
+std::wstring truncateWithEllipsis(const std::wstring& str, int maxLen) {
+    if (maxLen <= 0) return L"";
+    if ((int)str.length() <= maxLen) return str;
+    if (maxLen < 4) return str.substr(0, maxLen);
+    return str.substr(0, maxLen - 3) + L"...";
+}
+
 std::ofstream logFile;
 void log(const std::string& msg) {
     if (logFile.is_open()) {
@@ -227,7 +234,9 @@ private:
                 std::wstring indent(depth * 2, L' ');
                 std::wstring prefix = node->isDirectory ? (node->expanded ? L"[-] " : L"[+] ") : L"    ";
                 std::wstring line = indent + prefix + node->name;
-                if ((int)line.length() > maxX - 1) line.resize(maxX - 1);
+                int maxLineWidth = maxX - 1;
+                if (maxLineWidth < 1) maxLineWidth = 1;
+                line = truncateWithEllipsis(line, maxLineWidth);
                 int row = i - startIdx;
                 if (i == selectedIndex) {
                     wattron(listWin, A_REVERSE);
@@ -243,7 +252,9 @@ private:
                 const auto& e = flatEntries[i];
                 std::wstring prefix = e.isDirectory ? L"[DIR]  " : L"[FILE] ";
                 std::wstring line = prefix + e.name;
-                if ((int)line.length() > maxX - 1) line.resize(maxX - 1);
+                int maxLineWidth = maxX - 1;
+                if (maxLineWidth < 1) maxLineWidth = 1;
+                line = truncateWithEllipsis(line, maxLineWidth);
                 int row = i - startIdx;
                 if (i == selectedIndex) {
                     wattron(listWin, A_REVERSE);
@@ -271,11 +282,9 @@ private:
         line1 = L"Status: " + statusMsg;
         line2 = L"Commands: ↑↓ - navigate, Enter - open/expand, Backspace - parent, c - copy, m - move, d - delete, n - new, t - toggle tree/flat, q - quit";
 
-        int availWidth = maxX;
-        if (availWidth < 1) availWidth = 1;
-        if ((int)line0.length() > availWidth) line0.resize(availWidth);
-        if ((int)line1.length() > availWidth) line1.resize(availWidth);
-        if ((int)line2.length() > availWidth) line2.resize(availWidth);
+        line0 = truncateWithEllipsis(line0, maxX);
+        line1 = truncateWithEllipsis(line1, maxX);
+        line2 = truncateWithEllipsis(line2, maxX);
 
         mvwaddwstr(statusWin, 0, 0, line0.c_str());
         mvwaddwstr(statusWin, 1, 0, line1.c_str());
