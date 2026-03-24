@@ -429,7 +429,7 @@ body {
 
 /* Стили для админ панели */
 .admin-container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 20px auto;
     padding: 20px;
     background: white;
@@ -490,7 +490,7 @@ body {
 .table-container {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 60vh;
+    max-height: 70vh;
     border: 1px solid #ddd;
     border-radius: 4px;
 }
