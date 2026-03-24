@@ -335,17 +335,26 @@ class MongoService:
             logger.error(f"Error dropping indexes: {e}")
 
     def get_query_performance(self, user_id):
-        query = self.db.orders.find({"user_id": user_id})
-        explain_result = query.explain()
-        
+        explain_result = self.db.command("explain", {
+            "find": "orders",
+            "filter": {"user_id": user_id}
+        })
+
         execution_stats = explain_result.get("executionStats", {})
         return self._convert_objectid({
             "total_documents_examined": execution_stats.get("totalDocsExamined", 0),
             "total_documents_returned": execution_stats.get("nReturned", 0),
+            "execution_time_ms": execution_stats.get("executionTimeMillis", 0),
             "execution_stages": execution_stats.get("executionStages", {}).get("stage", "UNKNOWN"),
-            "is_index_used": "COLLSCAN" not in str(execution_stats.get("executionStages", {}).get("stage", "")),
+            "is_index_used": "IXSCAN" in str(explain_result.get("queryPlanner", {}).get("winningPlan", {})),
         })
 
+    def execute_query_and_measure_time(self, user_id):
+        import time
+        start = time.time()
+        result = list(self.db.orders.find({"user_id": user_id}))
+        elapsed_ms = (time.time() - start) * 1000
+        return elapsed_ms, len(result)
 
     def flush_db(self):
         self.db.categories.drop()

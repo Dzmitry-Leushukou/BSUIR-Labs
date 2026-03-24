@@ -1,7 +1,3 @@
-"""
-Analytics reports using MongoDB Aggregation Framework.
-"""
-
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
@@ -13,41 +9,23 @@ from mongo_client import get_mongo_db
 
 
 def get_action_logs_collection():
-    """Get action_logs collection."""
     db = get_mongo_db()
     return db['action_logs']
 
-
-# =============================================================================
-# 1. Статистика активности пользователей по периодам (день/неделя/месяц)
-# =============================================================================
 
 def get_user_activity_stats(
     period: str = 'day',
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> List[Dict[str, Any]]:
-    """
-    Get user activity statistics grouped by period.
-    
-    Args:
-        period: 'day', 'week', or 'month'
-        start_date: Filter from this date
-        end_date: Filter until this date
-    
-    Returns:
-        List of dicts with period, total_actions, unique_users, and actions breakdown
-    """
     collection = get_action_logs_collection()
-    
-    # Define date format based on period
+
     date_format = {
         'day': '%Y-%m-%d',
         'week': '%Y-W%V',
         'month': '%Y-%m'
     }.get(period, '%Y-%m-%d')
-    
-    # Build match stage
+
     match_stage = {}
     if start_date or end_date:
         match_stage['created_at'] = {}
@@ -114,8 +92,7 @@ def get_user_activity_stats(
     
     result = collection.aggregate(pipeline)
     data = list(result)[0]['by_period']
-    
-    # Convert actions_by_type to proper format
+
     for item in data:
         if 'actions_by_type' in item:
             type_counts = {}
@@ -127,26 +104,11 @@ def get_user_activity_stats(
     return data
 
 
-# =============================================================================
-# 2. ТОП-10 самых активных пользователей
-# =============================================================================
-
 def get_top_active_users(
     limit: int = 10,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> List[Dict[str, Any]]:
-    """
-    Get top N most active users.
-    
-    Args:
-        limit: Number of users to return
-        start_date: Filter from this date
-        end_date: Filter until this date
-    
-    Returns:
-        List of dicts with user_id, email, total_actions, actions_by_type, last_action
-    """
     collection = get_action_logs_collection()
     
     match_stage = {}
@@ -215,11 +177,9 @@ def get_top_active_users(
     result = collection.aggregate(pipeline)
     data = list(result)
 
-    # Получаем коллекцию пользователей из MongoDB (если имеется)
     db = get_mongo_db()
     users_collection = db['users']
 
-    # Convert actions_by_type to proper format и подставить email если отсутствует
     for item in data:
         if 'actions_by_type' in item:
             type_counts = {}
@@ -228,9 +188,10 @@ def get_top_active_users(
                     type_counts[type_item['k']] = type_item['v']
             item['actions_by_type'] = type_counts
 
-        # Подставить email по user_id если отсутствует
+        if item.get('user_id'):
+            item['user_id'] = str(item['user_id'])
+
         if (not item.get('email')) and item.get('user_id'):
-            # Сначала пробуем взять из MongoDB users
             try:
                 user_doc = users_collection.find_one({'_id': item['user_id']})
                 if user_doc and user_doc.get('email'):
@@ -238,7 +199,6 @@ def get_top_active_users(
                 else:
                     raise Exception('user not found in mongo')
             except Exception:
-                # fallback: взять из Postgres
                 try:
                     from crud.users_crud import get_user
                     user = get_user(item['user_id'])
@@ -250,26 +210,12 @@ def get_top_active_users(
     return data
 
 
-# =============================================================================
-# 3. Распределение операций по типам (CRUD-статистика)
-# =============================================================================
-
 def get_operations_distribution(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> Dict[str, Any]:
-    """
-    Get operations distribution by type with CRUD classification.
-    
-    Args:
-        start_date: Filter from this date
-        end_date: Filter until this date
-    
-    Returns:
-        Dict with total_operations, by_type breakdown, and CRUD classification
-    """
     collection = get_action_logs_collection()
-    
+
     match_stage = {}
     if start_date or end_date:
         match_stage['created_at'] = {}
@@ -277,8 +223,7 @@ def get_operations_distribution(
             match_stage['created_at']['$gte'] = start_date
         if end_date:
             match_stage['created_at']['$lte'] = end_date
-    
-    # Define CRUD classification
+
     crud_mapping = {
         'Create': ['user_registration', 'car_create', 'driver_license_create', 
                    'driver_license_upload', 'trip_completion_create', 
@@ -317,10 +262,9 @@ def get_operations_distribution(
     ]
     
     result = list(collection.aggregate(pipeline))[0]
-    
+
     total = result['total'][0]['total'] if result['total'] else 0
-    
-    # Process by_type
+
     by_type = []
     for item in result['by_type']:
         by_type.append({
@@ -328,22 +272,20 @@ def get_operations_distribution(
             'count': item['count'],
             'percentage': round((item['count'] / total * 100) if total > 0 else 0, 2)
         })
-    
-    # Calculate CRUD distribution
+
     crud_distribution = {'Create': 0, 'Read': 0, 'Update': 0, 'Delete': 0}
     for item in by_type:
         for crud_type, actions in crud_mapping.items():
             if item['action_type'] in actions:
                 crud_distribution[crud_type] += item['count']
                 break
-    
-    # Add percentages to CRUD
+
     for crud_type in crud_distribution:
         crud_distribution[crud_type] = {
             'count': crud_distribution[crud_type],
             'percentage': round((crud_distribution[crud_type] / total * 100) if total > 0 else 0, 2)
         }
-    
+
     return {
         'total_operations': total,
         'by_type': by_type,
@@ -351,26 +293,11 @@ def get_operations_distribution(
     }
 
 
-# =============================================================================
-# 4. Временные тренды (time series analysis)
-# =============================================================================
-
 def get_time_series_trends(
     period: str = 'hour',
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> Dict[str, Any]:
-    """
-    Get time series trends for activity analysis.
-    
-    Args:
-        period: 'hour', 'day_of_week', or 'hour_of_day'
-        start_date: Filter from this date
-        end_date: Filter until this date
-    
-    Returns:
-        Dict with trends data
-    """
     collection = get_action_logs_collection()
     
     match_stage = {}
@@ -421,8 +348,7 @@ def get_time_series_trends(
     
     result = collection.aggregate(pipeline)
     data = list(result)
-    
-    # Calculate statistics
+
     if data:
         counts = [item['count'] for item in data]
         stats = {
@@ -440,32 +366,17 @@ def get_time_series_trends(
             'min_actions': 0,
             'trend_data': []
         }
-    
+
     return stats
 
-
-# =============================================================================
-# 5. Аномалии в поведении пользователей
-# =============================================================================
 
 def detect_user_anomalies(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     std_threshold: float = 2.0
 ) -> List[Dict[str, Any]]:
-    """
-    Detect anomalies in user behavior using statistical analysis.
-    
-    Args:
-        start_date: Filter from this date
-        end_date: Filter until this date
-        std_threshold: Number of standard deviations for anomaly detection
-    
-    Returns:
-        List of anomalies with user details and anomaly type
-    """
     collection = get_action_logs_collection()
-    
+
     match_stage = {}
     if start_date or end_date:
         match_stage['created_at'] = {}
@@ -473,8 +384,7 @@ def detect_user_anomalies(
             match_stage['created_at']['$gte'] = start_date
         if end_date:
             match_stage['created_at']['$lte'] = end_date
-    
-    # First, calculate user statistics
+
     user_stats_pipeline = [
         {'$match': match_stage} if match_stage else {'$match': {}},
         {
@@ -508,30 +418,26 @@ def detect_user_anomalies(
     
     if not user_stats:
         return []
-    
-    # Calculate mean and std for action counts
+
     counts = [u['action_count'] for u in user_stats]
     mean_count = sum(counts) / len(counts)
     variance = sum((x - mean_count) ** 2 for x in counts) / len(counts)
     std_count = variance ** 0.5
-    
+
     anomalies = []
-    
+
     for user in user_stats:
         anomaly_types = []
-        
-        # Check for unusually high activity
+
         if std_count > 0 and (user['action_count'] - mean_count) / std_count > std_threshold:
             anomaly_types.append('high_activity')
-        
-        # Check for unusually low activity (if user has some actions but very few)
+
         if std_count > 0 and mean_count - user['action_count'] > std_threshold * std_count and user['action_count'] > 0:
             anomaly_types.append('low_activity')
-        
-        # Check for diverse action types (potential automated behavior)
+
         if user['unique_action_types_count'] > 10:
             anomaly_types.append('diverse_actions')
-        
+
         if anomaly_types:
             anomalies.append({
                 'user_id': user['user_id'],
@@ -541,10 +447,12 @@ def detect_user_anomalies(
                 'anomaly_types': anomaly_types,
                 'deviation': round((user['action_count'] - mean_count) / std_count, 2) if std_count > 0 else 0
             })
-    
-    # Sort by deviation
+
     anomalies.sort(key=lambda x: abs(x['deviation']), reverse=True)
-    
+
+    for anomaly in anomalies:
+        anomaly['user_id'] = str(anomaly['user_id'])
+
     return {
         'anomalies': anomalies,
         'statistics': {
@@ -557,45 +465,20 @@ def detect_user_anomalies(
     }
 
 
-# =============================================================================
-# 6. Экспорт отчётов
-# =============================================================================
-
 def export_to_json(data: Any, filename: Optional[str] = None) -> str:
-    """
-    Export data to JSON format.
-    
-    Args:
-        data: Data to export
-        filename: Optional filename (returns string if not provided)
-    
-    Returns:
-        JSON string or saves to file
-    """
     json_str = json.dumps(data, indent=2, default=str)
-    
+
     if filename:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(json_str)
         return f"Exported to {filename}"
-    
+
     return json_str
 
-
 def export_to_csv(
-    data: List[Dict[str, Any]], 
+    data: List[Dict[str, Any]],
     filename: Optional[str] = None
 ) -> str:
-    """
-    Export data to CSV format.
-    
-    Args:
-        data: List of dicts to export
-        filename: Optional filename (returns string if not provided)
-    
-    Returns:
-        CSV string or saves to file
-    """
     if not data:
         return ""
     

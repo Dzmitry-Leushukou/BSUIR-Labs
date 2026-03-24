@@ -31,7 +31,7 @@ class UserActivityStatsResponse(BaseModel):
 
 
 class TopUserResponse(BaseModel):
-    user_id: int
+    user_id: str
     email: Optional[str]
     total_actions: int
     actions_by_type: dict
