@@ -791,6 +791,7 @@ body {
 
 .filter-date-input,
 .filter-number-input,
+.filter-email-input,
 .filter-select {
     padding: 8px 12px;
     border: 1px solid #ddd;
@@ -800,12 +801,13 @@ body {
 }
 
 .filter-select {
-    min-width: 200px;
+    min-width: 250px;
     cursor: pointer;
 }
 
 .filter-date-input:focus,
 .filter-number-input:focus,
+.filter-email-input:focus,
 .filter-select:focus {
     outline: none;
     border-color: #007bff;
@@ -987,6 +989,7 @@ body {
 
     .filter-date-input,
     .filter-number-input,
+    .filter-email-input,
     .filter-select,
     .apply-filters-btn,
     .reset-filters-btn {

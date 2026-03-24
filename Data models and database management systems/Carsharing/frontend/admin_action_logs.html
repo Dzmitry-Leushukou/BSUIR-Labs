@@ -16,7 +16,7 @@
         <div class="admin-content">
             <!-- Time range filters -->
             <div class="filter-section">
-                <h3>Фильтры по времени</h3>
+                <h3>Фильтры</h3>
                 <div class="filter-row">
                     <div class="filter-group">
                         <label for="start-date">Дата начала:</label>
@@ -37,26 +37,38 @@
                             <option value="car_create">Создание автомобиля</option>
                             <option value="car_update">Обновление автомобиля</option>
                             <option value="car_delete">Удаление автомобиля</option>
+                            <option value="car_status_change">Изменение статуса автомобиля</option>
                             <option value="car_rental_start">Начало аренды</option>
                             <option value="car_rental_end">Завершение аренды</option>
                             <option value="car_rental_cancel">Отмена аренды</option>
                             <option value="car_rental_pending_completion">Ожидание завершения</option>
                             <option value="driver_license_upload">Загрузка прав</option>
+                            <option value="driver_license_create">Создание прав</option>
+                            <option value="driver_license_update">Обновление прав</option>
+                            <option value="driver_license_delete">Удаление прав</option>
                             <option value="driver_license_approved">Одобрение прав</option>
                             <option value="driver_license_rejected">Отклонение прав</option>
                             <option value="trip_completion_create">Создание завершения поездки</option>
                             <option value="trip_completion_approved">Поездка одобрена</option>
                             <option value="trip_completion_rejected">Поездка отклонена</option>
+                            <option value="trip_completion_update">Обновление завершения поездки</option>
                             <option value="user_ban">Блокировка пользователя</option>
                             <option value="user_unban">Разблокировка пользователя</option>
+                            <option value="user_status_change">Изменение статуса пользователя</option>
                             <option value="payment_success">Успешный платеж</option>
                             <option value="payment_failed">Неудачный платеж</option>
                             <option value="maintenance_request">Запрос на обслуживание</option>
+                            <option value="maintenance_request_create">Создание запроса на обслуживание</option>
+                            <option value="maintenance_request_update">Обновление запроса</option>
+                            <option value="maintenance_request_delete">Удаление запроса</option>
+                            <option value="maintenance_resolve">Решение запроса</option>
+                            <option value="car_photo_upload">Загрузка фото автомобиля</option>
+                            <option value="car_photo_delete">Удаление фото автомобиля</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="user-id-filter">ID пользователя:</label>
-                        <input type="number" id="user-id-filter" class="filter-number-input" placeholder="Например, 1">
+                        <label for="user-email-filter">Email пользователя:</label>
+                        <input type="email" id="user-email-filter" class="filter-email-input" placeholder="user@example.com">
                     </div>
                     <button class="btn apply-filters-btn" onclick="applyFilters()">Применить</button>
                     <button class="btn reset-filters-btn" onclick="resetFilters()">Сбросить</button>
@@ -114,7 +126,7 @@
 
     <script src="/static/auth.js"></script>
     <script src="/static/admin_common.js"></script>
-    <script src="/static/admin_action_logs_translations.js"></script>
-    <script src="/static/admin_action_logs.js"></script>
+    <script src="/static/admin_action_logs_translations.js?v=3"></script>
+    <script src="/static/admin_action_logs.js?v=2"></script>
 </body>
 </html>

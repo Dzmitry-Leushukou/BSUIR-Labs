@@ -7,7 +7,7 @@ let currentFilters = {
     start_date: null,
     end_date: null,
     action_type: null,
-    user_id: null
+    user_email: null
 };
 
 // Глобальное хранилище для всех логов (для отображения деталей)
@@ -31,7 +31,7 @@ async function loadActionLogs(page = 0) {
         const params = new URLSearchParams();
         params.append('offset', offset);
         params.append('limit', actionLogsPerPage);
-        
+
         // Add filters
         if (currentFilters.start_date) {
             params.append('start_date', currentFilters.start_date);
@@ -39,8 +39,8 @@ async function loadActionLogs(page = 0) {
         if (currentFilters.end_date) {
             params.append('end_date', currentFilters.end_date);
         }
-        if (currentFilters.user_id) {
-            params.append('user_id', currentFilters.user_id);
+        if (currentFilters.user_email) {
+            params.append('user_email', currentFilters.user_email);
         }
         if (currentFilters.action_type) {
             params.append('action_type', currentFilters.action_type);
@@ -80,19 +80,19 @@ function applyFilters() {
     const startDateInput = document.getElementById('start-date');
     const endDateInput = document.getElementById('end-date');
     const actionTypeSelect = document.getElementById('action-type-filter');
-    const userIdInput = document.getElementById('user-id-filter');
+    const userEmailInput = document.getElementById('user-email-filter');
 
     // Get values
     const startDate = startDateInput.value;
     const endDate = endDateInput.value;
     const actionType = actionTypeSelect.value;
-    const userId = userIdInput.value;
+    const userEmail = userEmailInput.value;
 
     // Convert to ISO format for API
     currentFilters.start_date = startDate ? new Date(startDate).toISOString() : null;
     currentFilters.end_date = endDate ? new Date(endDate).toISOString() : null;
     currentFilters.action_type = actionType || null;
-    currentFilters.user_id = userId ? parseInt(userId) : null;
+    currentFilters.user_email = userEmail || null;
 
     // Reload with first page
     loadActionLogs(0);
@@ -103,20 +103,20 @@ function resetFilters() {
     const startDateInput = document.getElementById('start-date');
     const endDateInput = document.getElementById('end-date');
     const actionTypeSelect = document.getElementById('action-type-filter');
-    const userIdInput = document.getElementById('user-id-filter');
+    const userEmailInput = document.getElementById('user-email-filter');
 
     // Reset values
     startDateInput.value = '';
     endDateInput.value = '';
     actionTypeSelect.value = '';
-    userIdInput.value = '';
+    userEmailInput.value = '';
 
     // Reset filters
     currentFilters = {
         start_date: null,
         end_date: null,
         action_type: null,
-        user_id: null
+        user_email: null
     };
 
     // Reload
@@ -138,8 +138,8 @@ function setupActionLogPagination(currentPage) {
     if (currentFilters.end_date) {
         countParams.append('end_date', currentFilters.end_date);
     }
-    if (currentFilters.user_id) {
-        countParams.append('user_id', currentFilters.user_id);
+    if (currentFilters.user_email) {
+        countParams.append('user_email', currentFilters.user_email);
     }
     if (currentFilters.action_type) {
         countParams.append('action_type', currentFilters.action_type);
@@ -280,13 +280,24 @@ function displayActionLogs(actionLogs) {
         row.className = 'log-row';
         row.onclick = () => showLogDetails(log.id || '');
         row.innerHTML = `
-            <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
-            <td>${log.actor_email || log.actor_user_id || ''}</td>
+            <td>${formatDate(log.created_at)}</td>
+            <td>${log.actor_email || 'N/A'}</td>
             <td>${translateActionType(log.action_type)}</td>
             <td>${translateDescription(log.description || '')}</td>
         `;
         tableBody.appendChild(row);
     });
+}
+
+// Форматирование даты
+function formatDate(dateValue) {
+    if (!dateValue) return '';
+    try {
+        const date = new Date(dateValue);
+        return date.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+    } catch (e) {
+        return dateValue;
+    }
 }
 
 // Глобальное хранилище для текущих деталей лога
@@ -316,24 +327,16 @@ function displayLogDetails(log) {
             <h3>Основная информация</h3>
             <table class="detail-table">
                 <tr>
-                    <td class="detail-label">ID:</td>
-                    <td>${log.id || 'N/A'}</td>
-                </tr>
-                <tr>
                     <td class="detail-label">Время:</td>
-                    <td>${log.created_at || 'N/A'}</td>
+                    <td>${formatDate(log.created_at)}</td>
                 </tr>
                 <tr>
                     <td class="detail-label">Email пользователя:</td>
                     <td>${log.actor_email || 'N/A'}</td>
                 </tr>
                 <tr>
-                    <td class="detail-label">ID пользователя:</td>
-                    <td>${log.actor_user_id || 'N/A'}</td>
-                </tr>
-                <tr>
                     <td class="detail-label">Тип действия:</td>
-                    <td>${translateActionType(log.action_type)} (${log.action_type})</td>
+                    <td>${translateActionType(log.action_type)}</td>
                 </tr>
                 <tr>
                     <td class="detail-label">Описание:</td>
@@ -344,9 +347,7 @@ function displayLogDetails(log) {
     `;
     
     // Целевые объекты
-    const hasTargetInfo = log.target_user_email || log.target_user_id || 
-                          log.target_car_vin || log.target_car_id || 
-                          log.target_rental_id;
+    const hasTargetInfo = log.target_user_email || log.target_car_vin || log.target_rental_id;
     
     if (hasTargetInfo) {
         html += `
@@ -358,16 +359,8 @@ function displayLogDetails(log) {
         if (log.target_user_email) {
             html += `
                 <tr>
-                    <td class="detail-label">Email целевого пользователя:</td>
+                    <td class="detail-label">Email пользователя:</td>
                     <td>${log.target_user_email}</td>
-                </tr>
-            `;
-        }
-        if (log.target_user_id) {
-            html += `
-                <tr>
-                    <td class="detail-label">ID целевого пользователя:</td>
-                    <td>${log.target_user_id}</td>
                 </tr>
             `;
         }
@@ -379,18 +372,10 @@ function displayLogDetails(log) {
                 </tr>
             `;
         }
-        if (log.target_car_id) {
-            html += `
-                <tr>
-                    <td class="detail-label">ID автомобиля:</td>
-                    <td>${log.target_car_id}</td>
-                </tr>
-            `;
-        }
         if (log.target_rental_id) {
             html += `
                 <tr>
-                    <td class="detail-label">ID аренды:</td>
+                    <td class="detail-label">Номер аренды:</td>
                     <td>${log.target_rental_id}</td>
                 </tr>
             `;

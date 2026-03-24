@@ -176,27 +176,30 @@ def get_action_logs_mongo(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     user_id: Optional[int] = None,
+    user_email: Optional[str] = None,
     action_type: Optional[str] = None,
     target_user_id: Optional[int] = None,
     target_car_id: Optional[int] = None,
 ) -> List[ActionLogMongo]:
     collection = get_collection(ACTION_LOGS_COLLECTION)
-    
+
     query = {}
-    
+
     if start_date:
         query["created_at"] = {"$gte": start_date}
     if end_date:
         query.setdefault("created_at", {})["$lte"] = end_date
     if user_id:
         query["actor_user_id"] = user_id
+    if user_email:
+        query["actor_email"] = {"$regex": user_email, "$options": "i"}
     if action_type:
         query["action_type"] = action_type
     if target_user_id:
         query["target_user_id"] = target_user_id
     if target_car_id:
         query["target_car_id"] = target_car_id
-    
+
     cursor = collection.find(query).sort("created_at", DESCENDING).skip(offset).limit(limit)
     
     db = get_mongo_db()
@@ -257,21 +260,24 @@ def get_action_logs_count_mongo(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     user_id: Optional[int] = None,
+    user_email: Optional[str] = None,
     action_type: Optional[str] = None,
 ) -> int:
     collection = get_collection(ACTION_LOGS_COLLECTION)
-    
+
     query = {}
-    
+
     if start_date:
         query["created_at"] = {"$gte": start_date}
     if end_date:
         query.setdefault("created_at", {})["$lte"] = end_date
     if user_id:
         query["actor_user_id"] = user_id
+    if user_email:
+        query["actor_email"] = {"$regex": user_email, "$options": "i"}
     if action_type:
         query["action_type"] = action_type
-    
+
     return collection.count_documents(query)
 
 

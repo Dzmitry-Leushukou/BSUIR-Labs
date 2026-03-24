@@ -39,11 +39,15 @@ const actionTypeTranslations = {
 };
 
 function translateActionType(actionType) {
-    return actionTypeTranslations[actionType] || actionType;
+    if (!actionType) return '';
+    const translation = actionTypeTranslations[actionType];
+    return translation || actionType;
 }
 
 // Перевод описаний
 function translateDescription(description) {
+    if (!description) return '';
+    
     const descriptionTranslations = {
         'Пользователь выполнил': 'Пользователь выполнил',
         'Действие:': 'Действие:',
@@ -72,7 +76,32 @@ function translateDescription(description) {
         'Успешный платеж': 'Успешный платеж'
     };
 
-    return descriptionTranslations[description] || description;
+    let result = description;
+    
+    // Сначала пробуем перевести полное описание
+    if (descriptionTranslations[result]) {
+        return descriptionTranslations[result];
+    }
+    
+    // Переводим префиксы
+    for (const [prefix, translation] of Object.entries(descriptionTranslations)) {
+        if (result.startsWith(prefix)) {
+            const rest = result.substring(prefix.length);
+            // Если после префикса идет ключ действия, переводим его
+            const actionTranslation = actionTypeTranslations[rest.trim()];
+            if (actionTranslation) {
+                return translation + ' ' + actionTranslation;
+            }
+            return result;
+        }
+    }
+    
+    // Если описание содержит ключ действия, переводим его
+    if (actionTypeTranslations[result]) {
+        return actionTypeTranslations[result];
+    }
+    
+    return result;
 }
 
 // Перевод заголовков колонок

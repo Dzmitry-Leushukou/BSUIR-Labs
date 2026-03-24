@@ -22,6 +22,7 @@ def get_action_logs_endpoint(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     user_id: Optional[int] = None,
+    user_email: Optional[str] = None,
     action_type: Optional[str] = None,
     target_user_id: Optional[int] = None,
     target_car_id: Optional[int] = None,
@@ -29,11 +30,12 @@ def get_action_logs_endpoint(
 ):
     """
     Get action logs with filtering and pagination.
-    
+
     Filters:
     - start_date: Filter logs from this date (ISO 8601 format)
     - end_date: Filter logs until this date (ISO 8601 format)
     - user_id: Filter by actor user ID
+    - user_email: Filter by actor user email
     - action_type: Filter by action type (e.g., 'user_login', 'car_create')
     - target_user_id: Filter by target user ID
     - target_car_id: Filter by target car ID
@@ -44,6 +46,7 @@ def get_action_logs_endpoint(
         start_date=start_date,
         end_date=end_date,
         user_id=user_id,
+        user_email=user_email,
         action_type=action_type,
         target_user_id=target_user_id,
         target_car_id=target_car_id,
@@ -55,6 +58,7 @@ def get_action_logs_count_endpoint(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     user_id: Optional[int] = None,
+    user_email: Optional[str] = None,
     action_type: Optional[str] = None,
     current_user: dict = Depends(get_current_user),
 ):
@@ -65,6 +69,7 @@ def get_action_logs_count_endpoint(
         start_date=start_date,
         end_date=end_date,
         user_id=user_id,
+        user_email=user_email,
         action_type=action_type,
     )
     return {"count": count}
