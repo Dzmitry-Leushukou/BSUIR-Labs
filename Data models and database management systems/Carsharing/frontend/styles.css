@@ -217,6 +217,7 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
 }
 
 .modal-content {
@@ -228,6 +229,18 @@ body {
     width: 90%;
     max-width: 500px;
     position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .close {
@@ -830,12 +843,148 @@ body {
     background-color: #5a6268;
 }
 
+/* Стили для кнопки "Подробнее" в таблице логов */
+.details-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.details-btn:hover {
+    background-color: #138496;
+}
+
+/* Кликабельные строки таблицы */
+.log-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.log-row:hover {
+    background-color: #f5f5f5;
+}
+
+/* Стили для модального окна деталей лога */
+.modal-content-large {
+    max-width: 900px;
+    width: 90%;
+}
+
+.log-detail-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.log-detail-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 2px solid #17a2b8;
+    padding-bottom: 8px;
+}
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table tr {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.detail-table tr:last-child {
+    border-bottom: none;
+}
+
+.detail-table td {
+    padding: 10px;
+    vertical-align: top;
+    word-break: break-word;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+    width: 220px;
+    white-space: nowrap;
+}
+
+.detail-text {
+    color: #212529;
+    word-break: break-word;
+    max-width: 600px;
+}
+
+.detail-json {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+/* Стили для модального окна */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: calc(70vh - 120px);
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.close-btn {
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
 @media (max-width: 1200px) {
     .filter-row {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filter-date-input,
     .filter-number-input,
     .filter-select,

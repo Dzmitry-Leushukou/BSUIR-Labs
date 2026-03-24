@@ -84,32 +84,7 @@
                             </th>
                             <th>
                                 <div class="filter-header">
-                                    <span data-i18n="target_user_email">Email целевого пользователя</span>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
-                                    <span data-i18n="target_car_vin">VIN целевого автомобиля</span>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
-                                    <span data-i18n="target_rental_id">Номер целевой аренды</span>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
                                     <span data-i18n="description">Описание</span>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
-                                    <span data-i18n="old_values">Старые значения</span>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="filter-header">
-                                    <span data-i18n="new_values">Новые значения</span>
                                 </div>
                             </th>
                         </tr>
@@ -118,6 +93,22 @@
                         <!-- Содержимое таблицы будет загружено через JavaScript -->
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Модальное окно для деталей лога -->
+            <div id="log-detail-modal" class="modal" style="display: none;">
+                <div class="modal-content modal-content-large">
+                    <div class="modal-header">
+                        <h2 data-i18n="modal_title">Детали лога</h2>
+                        <span class="close-btn" onclick="closeModal()">&times;</span>
+                    </div>
+                    <div class="modal-body" id="modal-body">
+                        <!-- Детали лога будут загружены здесь -->
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="closeModal()">Закрыть</button>
+                    </div>
+                </div>
             </div>
         </div>
 

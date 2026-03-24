@@ -85,7 +85,8 @@ const columnHeaderTranslations = {
     'target_rental_id': 'Номер целевой аренды',
     'description': 'Описание',
     'old_values': 'Старые значения',
-    'new_values': 'Новые значения'
+    'new_values': 'Новые значения',
+    'modal_title': 'Детали лога'
 };
 
 function translateColumnHeader(columnKey) {

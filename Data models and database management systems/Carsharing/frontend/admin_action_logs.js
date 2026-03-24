@@ -10,6 +10,9 @@ let currentFilters = {
     user_id: null
 };
 
+// Глобальное хранилище для всех логов (для отображения деталей)
+let allActionLogs = [];
+
 // Функция для загрузки и отображения данных таблицы Action logs с пагинацией
 async function loadActionLogs(page = 0) {
     if (!isAuthenticated()) {
@@ -264,26 +267,211 @@ function displayActionLogs(actionLogs) {
     const tableBody = document.getElementById('action-logs-table-body');
     tableBody.innerHTML = '';
 
+    // Сохраняем все логи для последующего отображения деталей
+    allActionLogs = actionLogs || [];
+
     if (!actionLogs || actionLogs.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Логи действий не найдены</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Логи действий не найдены</td></tr>';
         return;
     }
 
     actionLogs.forEach(log => {
         const row = document.createElement('tr');
+        row.className = 'log-row';
+        row.onclick = () => showLogDetails(log.id || '');
         row.innerHTML = `
             <td>${new Date(log.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}</td>
             <td>${log.actor_email || log.actor_user_id || ''}</td>
             <td>${translateActionType(log.action_type)}</td>
-            <td>${log.target_user_email || log.target_user_id || ''}</td>
-            <td>${log.target_car_vin || log.target_car_id || ''}</td>
-            <td>${log.target_rental_id || ''}</td>
             <td>${translateDescription(log.description || '')}</td>
-            <td>${log.old_values && log.old_values !== null && Object.keys(log.old_values).length > 0 ? translateFieldNames(JSON.stringify(log.old_values)).slice(1, -1) : ''}</td>
-            <td>${log.new_values && log.new_values !== null && Object.keys(log.new_values).length > 0 ? translateFieldNames(JSON.stringify(log.new_values)).slice(1, -1) : ''}</td>
         `;
         tableBody.appendChild(row);
     });
+}
+
+// Глобальное хранилище для текущих деталей лога
+let currentLogDetails = null;
+
+// Функция для показа деталей лога в модальном окне
+function showLogDetails(logId) {
+    // Ищем лог в сохраненных данных
+    const log = allActionLogs.find(l => (l.id || '') === logId);
+    
+    if (!log) {
+        alert('Лог не найден');
+        return;
+    }
+    
+    currentLogDetails = log;
+    displayLogDetails(log);
+    openModal();
+}
+
+// Функция для отображения деталей лога
+function displayLogDetails(log) {
+    const modalBody = document.getElementById('modal-body');
+    
+    let html = `
+        <div class="log-detail-section">
+            <h3>Основная информация</h3>
+            <table class="detail-table">
+                <tr>
+                    <td class="detail-label">ID:</td>
+                    <td>${log.id || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Время:</td>
+                    <td>${log.created_at || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Email пользователя:</td>
+                    <td>${log.actor_email || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">ID пользователя:</td>
+                    <td>${log.actor_user_id || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Тип действия:</td>
+                    <td>${translateActionType(log.action_type)} (${log.action_type})</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Описание:</td>
+                    <td>${translateDescription(log.description || 'N/A')}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    
+    // Целевые объекты
+    const hasTargetInfo = log.target_user_email || log.target_user_id || 
+                          log.target_car_vin || log.target_car_id || 
+                          log.target_rental_id;
+    
+    if (hasTargetInfo) {
+        html += `
+            <div class="log-detail-section">
+                <h3>Целевые объекты</h3>
+                <table class="detail-table">
+        `;
+        
+        if (log.target_user_email) {
+            html += `
+                <tr>
+                    <td class="detail-label">Email целевого пользователя:</td>
+                    <td>${log.target_user_email}</td>
+                </tr>
+            `;
+        }
+        if (log.target_user_id) {
+            html += `
+                <tr>
+                    <td class="detail-label">ID целевого пользователя:</td>
+                    <td>${log.target_user_id}</td>
+                </tr>
+            `;
+        }
+        if (log.target_car_vin) {
+            html += `
+                <tr>
+                    <td class="detail-label">VIN автомобиля:</td>
+                    <td>${log.target_car_vin}</td>
+                </tr>
+            `;
+        }
+        if (log.target_car_id) {
+            html += `
+                <tr>
+                    <td class="detail-label">ID автомобиля:</td>
+                    <td>${log.target_car_id}</td>
+                </tr>
+            `;
+        }
+        if (log.target_rental_id) {
+            html += `
+                <tr>
+                    <td class="detail-label">ID аренды:</td>
+                    <td>${log.target_rental_id}</td>
+                </tr>
+            `;
+        }
+        
+        html += `</table></div>`;
+    }
+    
+    // Старые значения
+    if (log.old_values && Object.keys(log.old_values).length > 0) {
+        html += `
+            <div class="log-detail-section">
+                <h3>Старые значения</h3>
+                <pre class="detail-json">${translateFieldNames(JSON.stringify(log.old_values, null, 2))}</pre>
+            </div>
+        `;
+    }
+    
+    // Новые значения
+    if (log.new_values && Object.keys(log.new_values).length > 0) {
+        html += `
+            <div class="log-detail-section">
+                <h3>Новые значения</h3>
+                <pre class="detail-json">${translateFieldNames(JSON.stringify(log.new_values, null, 2))}</pre>
+            </div>
+        `;
+    }
+    
+    // Дополнительная информация
+    const hasExtraInfo = log.user_agent || log.ip_address;
+    if (hasExtraInfo) {
+        html += `
+            <div class="log-detail-section">
+                <h3>Дополнительная информация</h3>
+                <table class="detail-table">
+        `;
+        
+        if (log.user_agent) {
+            html += `
+                <tr>
+                    <td class="detail-label">User Agent:</td>
+                    <td class="detail-text">${log.user_agent}</td>
+                </tr>
+            `;
+        }
+        if (log.ip_address) {
+            html += `
+                <tr>
+                    <td class="detail-label">IP адрес:</td>
+                    <td>${log.ip_address}</td>
+                </tr>
+            `;
+        }
+        
+        html += `</table></div>`;
+    }
+    
+    modalBody.innerHTML = html;
+}
+
+// Функция для открытия модального окна
+function openModal() {
+    const modal = document.getElementById('log-detail-modal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Функция для закрытия модального окна
+function closeModal() {
+    const modal = document.getElementById('log-detail-modal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    currentLogDetails = null;
+}
+
+// Закрытие модального окна при клике вне его
+window.onclick = function(event) {
+    const modal = document.getElementById('log-detail-modal');
+    if (event.target === modal) {
+        closeModal();
+    }
 }
 
 // Функция для применения переводов к заголовкам колонок
