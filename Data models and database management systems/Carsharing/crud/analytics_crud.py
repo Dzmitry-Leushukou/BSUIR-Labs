@@ -228,6 +228,10 @@ def get_top_active_users(
                     type_counts[type_item['k']] = type_item['v']
             item['actions_by_type'] = type_counts
 
+        # Convert user_id to string for JSON serialization
+        if item.get('user_id'):
+            item['user_id'] = str(item['user_id'])
+
         # Подставить email по user_id если отсутствует
         if (not item.get('email')) and item.get('user_id'):
             # Сначала пробуем взять из MongoDB users
@@ -544,7 +548,11 @@ def detect_user_anomalies(
     
     # Sort by deviation
     anomalies.sort(key=lambda x: abs(x['deviation']), reverse=True)
-    
+
+    # Convert ObjectId to string for JSON serialization
+    for anomaly in anomalies:
+        anomaly['user_id'] = str(anomaly['user_id'])
+
     return {
         'anomalies': anomalies,
         'statistics': {

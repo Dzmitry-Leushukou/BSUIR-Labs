@@ -137,11 +137,9 @@ def create_action_log_mongo(
 ) -> ActionLogMongo:
     """Create a new action log entry in MongoDB."""
     
-    # Автоматически добавляем email актера/цели, если они не были переданы
-    # (чтобы логи всегда содержали email и не зависели от вызова).
+ 
     if not actor_email and actor_user_id:
         try:
-            # Импорт внутри функции, чтобы избежать циклических импортов.
             from crud.users_crud import get_user
 
             user = get_user(actor_user_id)
@@ -240,6 +238,16 @@ def get_action_logs_mongo(
     for doc in cursor:
         doc["id"] = str(doc["_id"])
         del doc["_id"]
+
+        # Convert ObjectId fields to strings
+        if 'actor_user_id' in doc and not isinstance(doc['actor_user_id'], (int, str)):
+            doc['actor_user_id'] = str(doc['actor_user_id'])
+        if 'target_user_id' in doc and doc['target_user_id'] is not None and not isinstance(doc['target_user_id'], (int, str)):
+            doc['target_user_id'] = str(doc['target_user_id'])
+        if 'target_car_id' in doc and doc['target_car_id'] is not None and not isinstance(doc['target_car_id'], (int, str)):
+            doc['target_car_id'] = str(doc['target_car_id'])
+        if 'target_rental_id' in doc and doc['target_rental_id'] is not None and not isinstance(doc['target_rental_id'], (int, str)):
+            doc['target_rental_id'] = str(doc['target_rental_id'])
 
         # Подставить actor_email, если отсутствует
         if (not doc.get('actor_email')) and doc.get('actor_user_id'):

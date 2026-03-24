@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, field_validator
-from typing import List, Optional
+from typing import List, Optional, Union, Any
 from datetime import datetime
 
 
@@ -485,14 +485,14 @@ class ActionLogWithEmails(ActionLog):
 class ActionLogMongo(BaseModel):
     """Schema for action logs stored in MongoDB."""
     id: Optional[str] = None  # MongoDB ObjectId
-    actor_user_id: int
+    actor_user_id: Union[int, str]
     actor_email: Optional[str] = None
     action_type: str
-    target_user_id: Optional[int] = None
+    target_user_id: Optional[Union[int, str]] = None
     target_user_email: Optional[str] = None
-    target_car_id: Optional[int] = None
+    target_car_id: Optional[Union[int, str]] = None
     target_car_vin: Optional[str] = None
-    target_rental_id: Optional[int] = None
+    target_rental_id: Optional[Union[int, str]] = None
     description: Optional[str] = None
     old_values: Optional[dict] = None
     new_values: Optional[dict] = None
