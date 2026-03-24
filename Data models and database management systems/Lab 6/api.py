@@ -105,36 +105,36 @@ def performance_test(user_id: int = 1, iterations: int = 5):
     try:
         mongo_service.drop_indexes()
         time.sleep(0.5)
-        
+
         times_without_index = []
         stats_without_index = None
-        
+
         for _ in range(iterations):
-            start = time.time()
-            stats_without_index = mongo_service.get_query_performance(user_id)
-            times_without_index.append((time.time() - start) * 1000)
+            elapsed_ms, docs_returned = mongo_service.execute_query_and_measure_time(user_id)
+            times_without_index.append(elapsed_ms)
             time.sleep(0.1)
-        
+
+        stats_without_index = mongo_service.get_query_performance(user_id)
         avg_time_without_index = sum(times_without_index) / len(times_without_index)
-        
+
         mongo_service.create_indexes()
         time.sleep(0.5)
-        
+
         times_with_index = []
         stats_with_index = None
-        
+
         for _ in range(iterations):
-            start = time.time()
-            stats_with_index = mongo_service.get_query_performance(user_id)
-            times_with_index.append((time.time() - start) * 1000)
+            elapsed_ms, docs_returned = mongo_service.execute_query_and_measure_time(user_id)
+            times_with_index.append(elapsed_ms)
             time.sleep(0.1)
-        
+
+        stats_with_index = mongo_service.get_query_performance(user_id)
         avg_time_with_index = sum(times_with_index) / len(times_with_index)
-        
+
         improvement_percent = ((avg_time_without_index - avg_time_with_index) / avg_time_without_index * 100) if avg_time_without_index > 0 else 0
-        docs_reduction = ((stats_without_index['total_documents_examined'] - stats_with_index['total_documents_examined']) 
+        docs_reduction = ((stats_without_index['total_documents_examined'] - stats_with_index['total_documents_examined'])
                          / stats_without_index['total_documents_examined'] * 100) if stats_without_index['total_documents_examined'] > 0 else 0
-        
+
         return {
             "user_id": user_id,
             "test_iterations": iterations,
