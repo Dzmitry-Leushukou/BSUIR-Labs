@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
-"""
-Скрипт для проверки обнаружения аномалий через API.
-"""
 
 import requests
 import json
 
 BASE_URL = "http://localhost:8000"
 
-# Admin credentials (из populate_db.py)
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "admin123"
 
 
 def get_auth_token():
-    """Получить JWT токен для администратора."""
     response = requests.post(
         f"{BASE_URL}/users/login",
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
     )
-    
+
     if response.status_code == 200:
         data = response.json()
         return data.get("access_token") or data.get("token")
@@ -30,31 +25,30 @@ def get_auth_token():
 
 
 def check_anomalies(std_threshold=2.0):
-    """Проверить обнаружение аномалий."""
     token = get_auth_token()
-    
+
     if not token:
         print("❌ Не удалось получить токен")
         return
-    
+
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     response = requests.get(
         f"{BASE_URL}/analytics/anomalies",
         params={"std_threshold": std_threshold},
         headers=headers
     )
-    
+
     print(f"\n📊 Статус запроса: {response.status_code}")
-    
+
     if response.status_code == 200:
         data = response.json()
         print("\n✅ Аномалии обнаружены:")
         print(json.dumps(data, indent=2, ensure_ascii=False))
-        
+
         anomalies = data.get("anomalies", [])
         statistics = data.get("statistics", {})
-        
+
         print("\n" + "=" * 60)
         print("📈 СТАТИСТИКА:")
         print(f"   Среднее действий/пользователя: {statistics.get('mean_actions_per_user', 'N/A')}")
@@ -63,7 +57,7 @@ def check_anomalies(std_threshold=2.0):
         print(f"   Всего пользователей проанализировано: {statistics.get('total_users_analyzed', 'N/A')}")
         print(f"   Аномалий обнаружено: {statistics.get('anomalies_detected', 'N/A')}")
         print("=" * 60)
-        
+
         if anomalies:
             print("\n⚠️ СПИСОК АНОМАЛИЙ:")
             for i, anomaly in enumerate(anomalies, 1):

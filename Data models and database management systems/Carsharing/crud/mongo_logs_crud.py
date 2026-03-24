@@ -1,11 +1,3 @@
-"""
-CRUD operations for logs stored in MongoDB.
-Collections:
-- action_logs: User action logs (login, logout, create/update/delete objects)
-- db_query_logs: Database query logs
-- error_logs: Application errors and exceptions
-"""
-
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import PyMongoError
 from datetime import datetime, timedelta
@@ -16,60 +8,49 @@ from mongo_client import get_mongo_db
 from schemas import ActionLogMongo, DbQueryLogMongo, ErrorLogMongo, LogFilter
 
 
-# Collection names
 ACTION_LOGS_COLLECTION = "action_logs"
 DB_QUERY_LOGS_COLLECTION = "db_query_logs"
 ERROR_LOGS_COLLECTION = "error_logs"
 
 
 def get_collection(collection_name: str):
-    """Get MongoDB collection."""
     db = get_mongo_db()
     return db[collection_name]
 
 
 def setup_ttl_indexes():
-    """
-    Create TTL indexes for automatic deletion of old logs.
-    TTL values are configured via environment variables.
-    """
     db = get_mongo_db()
-    
-    # TTL for action logs (default: 90 days)
+
     action_logs_ttl_days = int(os.getenv("ACTION_LOGS_TTL_DAYS", 90))
     action_logs_ttl_seconds = action_logs_ttl_days * 24 * 60 * 60
-    
-    # TTL for DB query logs (default: 30 days)
+
     db_query_logs_ttl_days = int(os.getenv("DB_QUERY_LOGS_TTL_DAYS", 30))
     db_query_logs_ttl_seconds = db_query_logs_ttl_days * 24 * 60 * 60
-    
-    # TTL for error logs (default: 60 days)
+
     error_logs_ttl_days = int(os.getenv("ERROR_LOGS_TTL_DAYS", 60))
     error_logs_ttl_seconds = error_logs_ttl_days * 24 * 60 * 60
-    
-    # Create TTL indexes
+
     action_logs_collection = db[ACTION_LOGS_COLLECTION]
     action_logs_collection.create_index(
         [("created_at", ASCENDING)],
         expireAfterSeconds=action_logs_ttl_seconds,
         name="action_logs_ttl_idx"
     )
-    
+
     db_query_logs_collection = db[DB_QUERY_LOGS_COLLECTION]
     db_query_logs_collection.create_index(
         [("created_at", ASCENDING)],
         expireAfterSeconds=db_query_logs_ttl_seconds,
         name="db_query_logs_ttl_idx"
     )
-    
+
     error_logs_collection = db[ERROR_LOGS_COLLECTION]
     error_logs_collection.create_index(
         [("created_at", ASCENDING)],
         expireAfterSeconds=error_logs_ttl_seconds,
         name="error_logs_ttl_idx"
     )
-    
-    # Create additional indexes for better query performance
+
     action_logs_collection.create_index(
         [("actor_user_id", ASCENDING), ("created_at", DESCENDING)],
         name="action_logs_actor_idx"
@@ -86,7 +67,7 @@ def setup_ttl_indexes():
         [("target_car_id", ASCENDING), ("created_at", DESCENDING)],
         name="action_logs_target_car_idx"
     )
-    
+
     db_query_logs_collection.create_index(
         [("table_name", ASCENDING), ("created_at", DESCENDING)],
         name="db_query_logs_table_idx"
@@ -99,7 +80,7 @@ def setup_ttl_indexes():
         [("user_id", ASCENDING), ("created_at", DESCENDING)],
         name="db_query_logs_user_idx"
     )
-    
+
     error_logs_collection.create_index(
         [("error_type", ASCENDING), ("created_at", DESCENDING)],
         name="error_logs_type_idx"
@@ -112,13 +93,9 @@ def setup_ttl_indexes():
         [("user_id", ASCENDING), ("created_at", DESCENDING)],
         name="error_logs_user_idx"
     )
-    
+
     print(f"TTL indexes created: action_logs={action_logs_ttl_days}d, db_query_logs={db_query_logs_ttl_days}d, error_logs={error_logs_ttl_days}d")
 
-
-# =============================================================================
-# Action Logs CRUD
-# =============================================================================
 
 def create_action_log_mongo(
     actor_user_id: int,
@@ -135,9 +112,7 @@ def create_action_log_mongo(
     target_user_email: Optional[str] = None,
     target_car_vin: Optional[str] = None,
 ) -> ActionLogMongo:
-    """Create a new action log entry in MongoDB."""
-    
- 
+
     if not actor_email and actor_user_id:
         try:
             from crud.users_crud import get_user
@@ -158,7 +133,6 @@ def create_action_log_mongo(
         except Exception:
             pass
 
-    # Подставляем VIN автомобиля по car_id, если он не передан
     if not target_car_vin and target_car_id:
         try:
             from crud.cars_crud import get_car
@@ -206,12 +180,8 @@ def get_action_logs_mongo(
     target_user_id: Optional[int] = None,
     target_car_id: Optional[int] = None,
 ) -> List[ActionLogMongo]:
-    """
-    Get action logs with filtering and pagination.
-    """
     collection = get_collection(ACTION_LOGS_COLLECTION)
     
-    # Build filter query
     query = {}
     
     if start_date:
@@ -227,10 +197,8 @@ def get_action_logs_mongo(
     if target_car_id:
         query["target_car_id"] = target_car_id
     
-    # Execute query with sorting and pagination
     cursor = collection.find(query).sort("created_at", DESCENDING).skip(offset).limit(limit)
     
-    # Получаем коллекцию пользователей в MongoDB (если есть)
     db = get_mongo_db()
     users_collection = db['users']
 
@@ -239,7 +207,6 @@ def get_action_logs_mongo(
         doc["id"] = str(doc["_id"])
         del doc["_id"]
 
-        # Convert ObjectId fields to strings
         if 'actor_user_id' in doc and not isinstance(doc['actor_user_id'], (int, str)):
             doc['actor_user_id'] = str(doc['actor_user_id'])
         if 'target_user_id' in doc and doc['target_user_id'] is not None and not isinstance(doc['target_user_id'], (int, str)):
@@ -249,9 +216,7 @@ def get_action_logs_mongo(
         if 'target_rental_id' in doc and doc['target_rental_id'] is not None and not isinstance(doc['target_rental_id'], (int, str)):
             doc['target_rental_id'] = str(doc['target_rental_id'])
 
-        # Подставить actor_email, если отсутствует
         if (not doc.get('actor_email')) and doc.get('actor_user_id'):
-            # Сначала пробуем взять из MongoDB users (если такая коллекция есть)
             try:
                 user_doc = users_collection.find_one({'_id': doc['actor_user_id']})
                 if user_doc and user_doc.get('email'):
@@ -259,7 +224,6 @@ def get_action_logs_mongo(
                 else:
                     raise Exception('user not found in mongo')
             except Exception:
-                # Если нет коллекции users или нет пользователя, попробуем получить из Postgres
                 try:
                     from crud.users_crud import get_user
                     user = get_user(doc['actor_user_id'])
@@ -268,7 +232,6 @@ def get_action_logs_mongo(
                 except Exception:
                     pass
 
-        # Подставить target_user_email, если отсутствует
         if (not doc.get('target_user_email')) and doc.get('target_user_id'):
             try:
                 user_doc = users_collection.find_one({'_id': doc['target_user_id']})
@@ -296,7 +259,6 @@ def get_action_logs_count_mongo(
     user_id: Optional[int] = None,
     action_type: Optional[str] = None,
 ) -> int:
-    """Get count of action logs with optional filtering."""
     collection = get_collection(ACTION_LOGS_COLLECTION)
     
     query = {}
@@ -314,9 +276,8 @@ def get_action_logs_count_mongo(
 
 
 def get_action_log_by_id_mongo(log_id: str) -> Optional[ActionLogMongo]:
-    """Get a single action log by MongoDB ObjectId."""
     from bson import ObjectId
-    
+
     collection = get_collection(ACTION_LOGS_COLLECTION)
     
     try:
@@ -331,18 +292,13 @@ def get_action_log_by_id_mongo(log_id: str) -> Optional[ActionLogMongo]:
 
 
 def delete_action_log_mongo(log_id: str) -> bool:
-    """Delete an action log by MongoDB ObjectId."""
     from bson import ObjectId
-    
+
     collection = get_collection(ACTION_LOGS_COLLECTION)
-    
+
     result = collection.delete_one({"_id": ObjectId(log_id)})
     return result.deleted_count > 0
 
-
-# =============================================================================
-# DB Query Logs CRUD
-# =============================================================================
 
 def create_db_query_log_mongo(
     query: str,
@@ -354,7 +310,6 @@ def create_db_query_log_mongo(
     endpoint: Optional[str] = None,
     ip_address: Optional[str] = None,
 ) -> DbQueryLogMongo:
-    """Create a new database query log entry in MongoDB."""
     collection = get_collection(DB_QUERY_LOGS_COLLECTION)
     
     log_data = {
@@ -387,10 +342,8 @@ def get_db_query_logs_mongo(
     user_id: Optional[int] = None,
     endpoint: Optional[str] = None,
 ) -> List[DbQueryLogMongo]:
-    """Get database query logs with filtering and pagination."""
     collection = get_collection(DB_QUERY_LOGS_COLLECTION)
     
-    # Build filter query
     query = {}
     
     if start_date:
@@ -406,7 +359,6 @@ def get_db_query_logs_mongo(
     if endpoint:
         query["endpoint"] = endpoint
     
-    # Execute query with sorting and pagination
     cursor = collection.find(query).sort("created_at", DESCENDING).skip(offset).limit(limit)
     
     logs = []
@@ -424,7 +376,6 @@ def get_db_query_logs_count_mongo(
     table_name: Optional[str] = None,
     query_type: Optional[str] = None,
 ) -> int:
-    """Get count of database query logs with optional filtering."""
     collection = get_collection(DB_QUERY_LOGS_COLLECTION)
     
     query = {}
@@ -441,10 +392,6 @@ def get_db_query_logs_count_mongo(
     return collection.count_documents(query)
 
 
-# =============================================================================
-# Error Logs CRUD
-# =============================================================================
-
 def create_error_log_mongo(
     error_type: str,
     error_message: str,
@@ -458,7 +405,6 @@ def create_error_log_mongo(
     ip_address: Optional[str] = None,
     severity: str = "ERROR",
 ) -> ErrorLogMongo:
-    """Create a new error log entry in MongoDB."""
     collection = get_collection(ERROR_LOGS_COLLECTION)
     
     log_data = {
@@ -494,10 +440,8 @@ def get_error_logs_mongo(
     user_id: Optional[int] = None,
     endpoint: Optional[str] = None,
 ) -> List[ErrorLogMongo]:
-    """Get error logs with filtering and pagination."""
     collection = get_collection(ERROR_LOGS_COLLECTION)
     
-    # Build filter query
     query = {}
     
     if start_date:
@@ -513,7 +457,6 @@ def get_error_logs_mongo(
     if endpoint:
         query["endpoint"] = endpoint
     
-    # Execute query with sorting and pagination
     cursor = collection.find(query).sort("created_at", DESCENDING).skip(offset).limit(limit)
     
     logs = []
@@ -531,7 +474,6 @@ def get_error_logs_count_mongo(
     error_type: Optional[str] = None,
     severity: Optional[str] = None,
 ) -> int:
-    """Get count of error logs with optional filtering."""
     collection = get_collection(ERROR_LOGS_COLLECTION)
     
     query = {}
