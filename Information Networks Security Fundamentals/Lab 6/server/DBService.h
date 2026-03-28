@@ -8,17 +8,17 @@ public:
     DBService();
     ~DBService();
 
-    std::string register_user(const std::string& email, const std::string& password);
-    std::string login_user(const std::string& email, const std::string& password);
-    std::string update_user(const std::string& email, const std::string& password);
-    std::string delete_user(const std::string& email, const std::string& password);
+    std::string register_user(const std::string& login, const std::string& password);
+    std::string login_user(const std::string& login, const std::string& password);
+    std::string update_user(const std::string& login, const std::string& password);
+    std::string delete_user(const std::string& login, const std::string& password);
 
 private:
     sqlite3 *db_pointer;
     const char* SQL_INIT_DB="CREATE TABLE IF NOT EXISTS\
      users(\
      id int primary key,\
-     email text unique, \
+     login text unique, \
      password text\
      )";
     Logger* logger=nullptr;

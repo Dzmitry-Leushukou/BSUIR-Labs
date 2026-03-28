@@ -37,20 +37,20 @@ DBService::~DBService()
     sqlite3_close(db_pointer);
 }
 
-std::string DBService::register_user(const std::string& email, const std::string& password)
+std::string DBService::register_user(const std::string& login, const std::string& password)
 {
-    if (email == "" || password == "")
+    if (login == "" || password == "")
     {
-        logger->log("Email or password is empty",3);
-        return "Email or password is empty";
+        logger->log("Login or password is empty",3);
+        return "Login or password is empty";
     }
 
 
     char * err_msg = nullptr;
 
-    std::string query="INSERT INTO users (email, password) VALUES ('" + email + "', '" + password + "')";
+    std::string query="INSERT INTO users (login, password) VALUES ('" + login + "', '" + password + "')";
 
-    logger->log("Register user: " + email + " " + password);
+    logger->log("Register user: " + login + " " + password);
     int query_status=sqlite3_exec(db_pointer, query.c_str(), NULL, NULL, &err_msg);
     logger->log("Status of query: " + std::to_string(query_status), 2);
     if(query_status != SQLITE_OK)
@@ -64,12 +64,12 @@ std::string DBService::register_user(const std::string& email, const std::string
     return "User registered successfully";       
 }
 
-std::string DBService::login_user(const std::string& email, const std::string& password)
+std::string DBService::login_user(const std::string& login, const std::string& password)
 {
-    if (email == "" || password == "")
+    if (login == "" || password == "")
     {
-        logger->log("Email or password is empty",3);
-        return "Email or password is empty";
+        logger->log("Login or password is empty",3);
+        return "Login or password is empty";
     }
 
     char * err_msg = nullptr;
@@ -79,11 +79,11 @@ std::string DBService::login_user(const std::string& email, const std::string& p
         (*result)++;
         return 0;
     };
-    
-    
-    std::string query="SELECT * FROM users WHERE email='" + email + "' AND password='" + password + "'";
 
-    logger->log("Login user: " + email + " " + password);
+
+    std::string query="SELECT * FROM users WHERE login='" + login + "' AND password='" + password + "'";
+
+    logger->log("Login user: " + login + " " + password);
     int query_status = sqlite3_exec(db_pointer, query.c_str(), callback, &count, &err_msg);
     logger->log("Status of query: " + std::to_string(query_status), 2);
     if(query_status != SQLITE_OK || count==0)
@@ -103,18 +103,18 @@ std::string DBService::login_user(const std::string& email, const std::string& p
      
 }
 
-std::string DBService::delete_user(const std::string& email, const std::string& password)
+std::string DBService::delete_user(const std::string& login, const std::string& password)
 {
-    if (email == "" || password == "")
+    if (login == "" || password == "")
     {
-        logger->log("Email or password is empty",3);
-        return "Email or password is empty";
+        logger->log("Login or password is empty",3);
+        return "Login or password is empty";
     }
 
     char* err_msg = nullptr;
-    std::string query="DELETE FROM users WHERE email='" + email + "' AND password='" + password + "'";
+    std::string query="DELETE FROM users WHERE login='" + login + "' AND password='" + password + "'";
 
-    logger->log("Delete user: " + email + " " + password);
+    logger->log("Delete user: " + login + " " + password);
     int query_status = sqlite3_exec(db_pointer, query.c_str(), NULL, NULL, &err_msg);
     logger->log("Status of query: " + std::to_string(query_status), 2);
     if(query_status != SQLITE_OK)
@@ -129,25 +129,25 @@ std::string DBService::delete_user(const std::string& email, const std::string& 
     
     if (rows_deleted > 0) {
         return "User deleted successfully";
-    } 
-    
-    logger->log("User not found: " + email, 3);
+    }
+
+    logger->log("User not found: " + login, 3);
     return "User not found";
-    
+
 }
 
-std::string DBService::update_user(const std::string& email, const std::string& new_password)
+std::string DBService::update_user(const std::string& login, const std::string& new_password)
 {
-    if (email == "" || new_password == "")
+    if (login == "" || new_password == "")
     {
-        logger->log("Email or password is empty",3);
-        return "Email or password is empty";
+        logger->log("Login or password is empty",3);
+        return "Login or password is empty";
     }
 
     char* err_msg = nullptr;
-    std::string query="UPDATE users SET password='" + new_password + "' WHERE email='" + email + "'";
+    std::string query="UPDATE users SET password='" + new_password + "' WHERE login='" + login + "'";
 
-    logger->log("Update user: " + email + " " + new_password);
+    logger->log("Update user: " + login + " " + new_password);
     int query_status = sqlite3_exec(db_pointer, query.c_str(), NULL, NULL, &err_msg);
     logger->log("Status of query: " + std::to_string(query_status), 2);
     if(query_status != SQLITE_OK)
@@ -162,9 +162,9 @@ std::string DBService::update_user(const std::string& email, const std::string& 
     
     if (rows_deleted > 0) {
         return "User updated successfully";
-    } 
-    
-    logger->log("User not found: " + email, 3);
+    }
+
+    logger->log("User not found: " + login, 3);
     return "User not found";
-          
+
 }

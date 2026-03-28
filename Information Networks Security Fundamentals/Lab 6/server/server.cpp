@@ -1,24 +1,33 @@
 #include "server.h"
 
-std::string Server::make_query(const std::string& req, const std::string& email, const std::string& password) {
-    logger->log("Make query: " + req + " " + email + " " + password);
-
+std::string Server::make_query(const std::string& req, const std::string& login, const std::string& password) {
+    logger->log("Make query: " + req + " " + login + " " + password);
+    std::string qlogin = login;
+    std::string qpassword = password;
     if(isSQLInjectionDef)
     {
+
+        if(check_sql_injection(qlogin) || check_sql_injection(qpassword))
+        {
+            return "SQL injection detected. Query doesn`t be executed";
+        }
+
+        qlogin = make_safe_string(qlogin);
+        qpassword = make_safe_string(qpassword);
 
     }
 
     if (req == "register") {
-        return db_service->register_user(email, password);
+        return db_service->register_user(qlogin, qpassword);
     } else if (req == "login") {
-        return db_service->login_user(email, password);
+        return db_service->login_user(qlogin, qpassword);
     } else if (req == "update")
     {
-        return db_service->update_user(email, password);
-    } 
+        return db_service->update_user(qlogin, qpassword);
+    }
     else if(req=="delete")
     {
-        return db_service->delete_user(email, password);
+        return db_service->delete_user(qlogin, qpassword);
     }
     else {
         return "Invalid request";
@@ -93,7 +102,7 @@ void Server::run()
 
         std::string req="";
         std::string s="";
-        std::string email="";
+        std::string login="";
         std::string password="";
         for(int i = 0; i < std::min((int)bytes_read,BUFFER_SIZE); i++)
         {
@@ -101,8 +110,8 @@ void Server::run()
             {
                 if(req=="")
                     req=s,s="";
-                else if (email=="")
-                    email=s,s="";
+                else if (login=="")
+                    login=s,s="";
                     else s+=buffer[i];
                 continue;
             }
@@ -114,16 +123,87 @@ void Server::run()
 
         if(req=="")
             req=s;
-        else if (email=="")
-            email=s;
+        else if (login=="")
+            login=s;
         else if (password=="")
             password=s;
         
-        std::string str_response = make_query(req,email,password);
+        std::string str_response = make_query(req,login,password);
         const char *response = str_response.c_str();
         send(new_socket, response, strlen(response), 0);
         
         close(new_socket);
     }
     close(server_fd);
+}
+
+
+std::string Server::make_safe_string(const std::string& str) {
+    logger->log("Make string\"" + str + "\" more safer");
+    std::string safe_str = str;
+
+    logger->log("Escape single quotes");
+    for(int i = 0; i < safe_str.length(); i++) {
+        if(safe_str[i] == '\'') {
+            safe_str.insert(i, "'");
+            i++;
+        }
+    }
+
+    return safe_str;
+}
+
+
+bool Server::check_sql_injection(const std::string& str) {
+    logger->log("Check SQL injection in string\"" + str + "\"");
+    std::string upper_str = str;
+    for(auto& c : upper_str) c = toupper(c);
+
+    std::string dangerous_list[] = {
+        "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP",
+        "ALTER", "GRANT", "REVOKE", "EXECUTE", "DECLARE", "TRUNCATE",
+        "RENAME", "UNION", "MERGE", "CALL", "FETCH"
+    };
+
+    for(auto& dangerous_word : dangerous_list) {
+        size_t pos = 0;
+        while((pos = upper_str.find(dangerous_word, pos)) != std::string::npos) {
+            bool before_ok = (pos == 0 || !isalpha(upper_str[pos-1]));
+            bool after_ok = (pos + dangerous_word.length() == upper_str.length() || 
+                            !isalpha(upper_str[pos + dangerous_word.length()]));
+            
+            if(before_ok && after_ok) {
+                logger->log("SQL injection detected: " + dangerous_word);
+                return true;
+            }
+            pos += dangerous_word.length();
+        }
+    }
+    
+    if(str.find("--") != std::string::npos ||
+       str.find(";") != std::string::npos) {
+        logger->log("SQL injection detected: comment or multiple queries");
+        return true;
+    }
+    
+
+    size_t quote_pos = upper_str.find('\'');
+    if(quote_pos != std::string::npos) {
+        std::string after_quote = upper_str.substr(quote_pos);
+        
+        if(after_quote.find("' OR '") != std::string::npos ||
+           after_quote.find("' AND '") != std::string::npos) {
+            logger->log("SQL injection detected: quote-operator-quote pattern");
+            return true;
+        }
+        
+        if((after_quote.find("' OR ") != std::string::npos ||
+            after_quote.find("' AND ") != std::string::npos) &&
+           after_quote.find("=") != std::string::npos) {
+            logger->log("SQL injection detected: OR/AND with equals");
+            return true;
+        }
+    }
+        
+    return false;
 }

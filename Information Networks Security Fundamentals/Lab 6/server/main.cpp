@@ -2,7 +2,7 @@
 
 
 int main() {
-    Server* server = new Server();
+    Server* server = new Server(true);
     server->run();
     delete server;
     server = nullptr;
