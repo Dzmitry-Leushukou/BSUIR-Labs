@@ -64,24 +64,27 @@ class AnomalyDetectionResponse(BaseModel):
 
 @router.get("/user-activity", response_model=List[UserActivityStatsResponse])
 def get_user_activity_endpoint(
-    period: str = Query('day', regex='^(day|week|month)$'),
+    period: str = Query('day', pattern='^(day|week|month)$'),
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Статистика активности пользователей по периодам.
-    
+
     - **period**: Группировка по дням/неделям/месяцам
     - **start_date**: Начальная дата периода (ISO 8601)
     - **end_date**: Конечная дата периода (ISO 8601)
-    
+
     Возвращает:
     - period: Период (дата/неделя/месяц)
     - total_actions: Общее количество действий
     - unique_users_count: Количество уникальных пользователей
     - actions_by_type: Распределение по типам действий
     """
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_user_activity_stats(period, start_date, end_date)
         return data
@@ -98,11 +101,11 @@ def get_top_users_endpoint(
 ):
     """
     ТОП-10 самых активных пользователей.
-    
+
     - **limit**: Количество пользователей (1-100)
     - **start_date**: Начальная дата периода (ISO 8601)
     - **end_date**: Конечная дата периода (ISO 8601)
-    
+
     Возвращает:
     - user_id: ID пользователя
     - email: Email пользователя
@@ -111,6 +114,9 @@ def get_top_users_endpoint(
     - last_action: Время последнего действия
     - first_action: Время первого действия
     """
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_top_active_users(limit, start_date, end_date)
         return data
@@ -126,15 +132,18 @@ def get_operations_distribution_endpoint(
 ):
     """
     Распределение операций по типам (CRUD-статистика).
-    
+
     - **start_date**: Начальная дата периода (ISO 8601)
     - **end_date**: Конечная дата периода (ISO 8601)
-    
+
     Возвращает:
     - total_operations: Общее количество операций
     - by_type: Распределение по типам действий
     - crud_distribution: Распределение по CRUD операциям (Create/Read/Update/Delete)
     """
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_operations_distribution(start_date, end_date)
         return data
@@ -144,21 +153,21 @@ def get_operations_distribution_endpoint(
 
 @router.get("/time-series", response_model=TimeSeriesTrendsResponse)
 def get_time_series_endpoint(
-    period: str = Query('hour', regex='^(hour|day_of_week|hour_of_day)$'),
+    period: str = Query('hour', pattern='^(hour|day_of_week|hour_of_day)$'),
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Временные тренды (time series analysis).
-    
+
     - **period**: Тип группировки (hour/day_of_week/hour_of_day)
         - hour: По часам за период
         - day_of_week: По дням недели (0-6)
         - hour_of_day: По часам суток (0-23)
     - **start_date**: Начальная дата периода (ISO 8601)
     - **end_date**: Конечная дата периода (ISO 8601)
-    
+
     Возвращает:
     - total_periods: Количество периодов
     - avg_actions: Среднее количество действий за период
@@ -166,6 +175,9 @@ def get_time_series_endpoint(
     - min_actions: Минимальное количество действий
     - trend_data: Детальные данные по периодам
     """
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_time_series_trends(period, start_date, end_date)
         return data
@@ -182,20 +194,23 @@ def detect_anomalies_endpoint(
 ):
     """
     Аномалии в поведении пользователей.
-    
+
     Использует статистический анализ для обнаружения аномалий:
     - high_activity: Необычно высокая активность (> threshold стандартных отклонений)
     - low_activity: Необычно низкая активность
     - diverse_actions: Слишком разнообразное поведение (возможная автоматизация)
-    
+
     - **std_threshold**: Порог в стандартных отклонениях (1.0-5.0)
     - **start_date**: Начальная дата периода (ISO 8601)
     - **end_date**: Конечная дата периода (ISO 8601)
-    
+
     Возвращает:
     - anomalies: Список аномалий с деталями
     - statistics: Статистика анализа (среднее, отклонение, количество)
     """
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = detect_user_anomalies(start_date, end_date, std_threshold)
         return data
@@ -209,12 +224,15 @@ def detect_anomalies_endpoint(
 
 @router.get("/export/user-activity/json")
 def export_user_activity_json(
-    period: str = Query('day', regex='^(day|week|month)$'),
+    period: str = Query('day', pattern='^(day|week|month)$'),
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт статистики активности в JSON формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_user_activity_stats(period, start_date, end_date)
         json_data = export_to_json(data)
@@ -230,12 +248,15 @@ def export_user_activity_json(
 
 @router.get("/export/user-activity/csv")
 def export_user_activity_csv(
-    period: str = Query('day', regex='^(day|week|month)$'),
+    period: str = Query('day', pattern='^(day|week|month)$'),
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт статистики активности в CSV формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_user_activity_stats(period, start_date, end_date)
         csv_data = export_to_csv(data)
@@ -258,6 +279,9 @@ def export_top_users_json(
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт ТОП пользователей в JSON формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_top_active_users(limit, start_date, end_date)
         return JSONResponse(
@@ -278,6 +302,9 @@ def export_top_users_csv(
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт ТОП пользователей в CSV формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_top_active_users(limit, start_date, end_date)
         csv_data = export_to_csv(data)
@@ -299,6 +326,9 @@ def export_operations_distribution_json(
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт распределения операций в JSON формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = get_operations_distribution(start_date, end_date)
         return JSONResponse(
@@ -319,6 +349,9 @@ def export_anomalies_json(
     current_user: dict = Depends(get_current_user)
 ):
     """Экспорт аномалий в JSON формате."""
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code=400, detail="Дата начала должна быть раньше или равна дате конца")
+    
     try:
         data = detect_user_anomalies(start_date, end_date, std_threshold)
         return JSONResponse(
