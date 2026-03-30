@@ -36,11 +36,17 @@ async function loadAnalytics() {
     const endDate = document.getElementById('end-date').value;
     const period = document.getElementById('period-select').value;
     const timePeriod = document.getElementById('time-period').value;
-    
+
+    // Validate dates on frontend
+    if (startDate && endDate && startDate > endDate) {
+        showError('Дата начала должна быть раньше или равна дате конца');
+        return;
+    }
+
     const params = new URLSearchParams();
     if (startDate) params.append('start_date', startDate + 'T00:00:00Z');
     if (endDate) params.append('end_date', endDate + 'T23:59:59Z');
-    
+
     try {
         // Load all reports in parallel
         await Promise.all([
@@ -50,7 +56,7 @@ async function loadAnalytics() {
             loadTopUsers(startDate, endDate),
             loadAnomalies(startDate, endDate)
         ]);
-        
+
         updateSummaryStats();
     } catch (error) {
         console.error('Error loading analytics:', error);
