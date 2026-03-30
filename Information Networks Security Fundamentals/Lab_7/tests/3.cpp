@@ -13,7 +13,7 @@ private:
 };
 
 TestClass::TestClass(const std::string& name) : m_name(name), m_value(0) {
-    std::cout << "TestClass object \"" << m_name << "\" created." << std::endl;
+    std::cout << "TestClass object " << m_name << " created." << std::endl;
 }
 
 void TestClass::greet() const {

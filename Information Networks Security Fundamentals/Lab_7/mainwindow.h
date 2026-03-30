@@ -39,6 +39,7 @@ private:
     void obfuscate();
     void crypto(bool encrypt=true);
     void rename_identifiers(QString& code);
+    void insert_dead_code(QString& code);
     QString readFile();
 
 

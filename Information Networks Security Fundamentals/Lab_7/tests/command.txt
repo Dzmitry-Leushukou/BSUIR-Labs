@@ -1,1 +1,0 @@
-g++ -x c++ 1.cpp.obf -o output.exe

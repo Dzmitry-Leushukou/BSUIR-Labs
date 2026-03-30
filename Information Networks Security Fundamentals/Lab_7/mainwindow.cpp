@@ -151,6 +151,8 @@ void MainWindow::obfuscate()
     QString code = QString::fromUtf8(file.readAll());
     file.close();
 
+
+    insert_dead_code(code);
     rename_identifiers(code);
 
     QString outputPath = inputPath + ".obf";
@@ -272,4 +274,97 @@ void MainWindow::rename_identifiers(QString& code)
     }
 
     code=new_code;
+}
+
+void MainWindow::insert_dead_code(QString& code)
+{
+    enum State { DEFAULT, LINE_COMMENT, BLOCK_COMMENT, STRING, CHAR };
+    State state = DEFAULT;
+
+    QString deadBlock = R"(
+        if (0) {
+            int __dead = 0;
+            for (int __i = 0; __i < 112312; ++__i) __dead += __i;
+        }
+    )";
+
+    QString result;
+    int i = 0;
+    int n = code.size();
+
+    while (i < n) {
+        QChar c = code[i];
+
+        if (state == DEFAULT) {
+            if (c == '/' && i+1 < n) {
+                if (code[i+1] == '/') {
+                    state = LINE_COMMENT;
+                    result += c;
+                    i++;
+                    continue;
+                } else if (code[i+1] == '*') {
+                    state = BLOCK_COMMENT;
+                    result += c;
+                    i++;
+                    continue;
+                }
+            }
+            if (c == '"') {
+                state = STRING;
+                result += c;
+                i++;
+                continue;
+            }
+            if (c == '\'') {
+                state = CHAR;
+                result += c;
+                i++;
+                continue;
+            }
+
+            if (c == '}') {
+                int j = i+1;
+                while (j < n && code[j].isSpace()) ++j;
+                bool classEnd = (j < n && code[j] == ';');
+
+                if (!classEnd) {
+                    int lineStart = i;
+                    while (lineStart > 0 && code[lineStart-1] != '\n') --lineStart;
+                    QString indent;
+                    int k = lineStart;
+                    while (k < i && code[k].isSpace()) {
+                        indent += code[k];
+                        k++;
+                    }
+
+                    result += deadBlock + "\n" + indent;
+                    result += '}';
+                    i++;
+                    continue;
+                }
+            }
+        }
+        else if (state == LINE_COMMENT) {
+            if (c == '\n') state = DEFAULT;
+        }
+        else if (state == BLOCK_COMMENT) {
+            if (c == '*' && i+1 < n && code[i+1] == '/') {
+                state = DEFAULT;
+                result += c;
+                ++i;
+                continue;
+            }
+        }
+        else if (state == STRING) {
+            if (c == '"') state = DEFAULT;
+        }
+        else if (state == CHAR) {
+            if (c == '\'') state = DEFAULT;
+        }
+
+        result += c;
+        i++;
+    }
+
+    code = result;
 }
