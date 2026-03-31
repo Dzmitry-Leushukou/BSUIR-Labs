@@ -88,6 +88,24 @@ function applyFilters() {
     const actionType = actionTypeSelect.value;
     const userEmail = userEmailInput.value;
 
+    // Clear previous error styles
+    startDateInput.style.borderColor = '';
+    endDateInput.style.borderColor = '';
+
+    // Validate dates
+    if (startDate && endDate) {
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+
+        if (startDateObj > endDateObj) {
+            // Highlight error fields
+            startDateInput.style.borderColor = 'red';
+            endDateInput.style.borderColor = 'red';
+            alert('Дата начала не может быть позже даты окончания!');
+            return;
+        }
+    }
+
     // Convert to ISO format for API
     currentFilters.start_date = startDate ? new Date(startDate).toISOString() : null;
     currentFilters.end_date = endDate ? new Date(endDate).toISOString() : null;
@@ -110,6 +128,10 @@ function resetFilters() {
     endDateInput.value = '';
     actionTypeSelect.value = '';
     userEmailInput.value = '';
+
+    // Clear error styles
+    startDateInput.style.borderColor = '';
+    endDateInput.style.borderColor = '';
 
     // Reset filters
     currentFilters = {
