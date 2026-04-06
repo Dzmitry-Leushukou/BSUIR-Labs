@@ -165,17 +165,21 @@ if __name__ == '__main__':
     best_var, best_corr = find_best_predictor(correlations)
     print(f"\nЛучший предиктор: {best_var} (|r| = {abs(best_corr):.6f})")
     
-    use_log = 'log' in best_var
-    
-    if use_log:
+    if best_var == 'log(Население) vs log(ВВП)':
         x_data = df_log['log_population'].tolist()
         x_name = "log(Население)"
+        y_data = df_log['log_gdp'].tolist()
+        y_name = "log(ВВП на душу)"
+    elif best_var == 'log(Население) vs ВВП на душу':
+        x_data = df_log['log_population'].tolist()
+        x_name = "log(Население)"
+        y_data = clean_df['gdp_per_capita'].tolist()
+        y_name = "ВВП на душу (USD)"
     else:
         x_data = clean_df['population'].tolist()
         x_name = "Население"
-    
-    y_data = clean_df['gdp_per_capita'].tolist()
-    y_name = "ВВП на душу (USD)"
+        y_data = clean_df['gdp_per_capita'].tolist()
+        y_name = "ВВП на душу (USD)"
     
     print("\n" + "="*80)
     print("РЕЗУЛЬТАТЫ ЛИНЕЙНОЙ РЕГРЕССИИ")
@@ -241,16 +245,23 @@ if __name__ == '__main__':
     print("ПРИМЕРЫ ПРОГНОЗИРОВАНИЯ")
     print("="*80)
     
-    if use_log:
+    if x_name == "log(Население)":
         example_x_values = [np.log(1e6), np.log(1e7), np.log(1e8)]
         example_labels = ["1 000 000", "10 000 000", "100 000 000"]
+        pred_table = []
+        for x_val, label in zip(example_x_values, example_labels):
+            y_pred = reg_results['intercept'] + reg_results['slope'] * x_val
+            if y_name == "log(ВВП на душу)":
+                y_pred = np.exp(y_pred)
+                pred_table.append([f"Население = {label}", f"${y_pred:,.2f}"])
+            else:
+                pred_table.append([f"Население = {label}", f"${y_pred:,.2f}"])
     else:
         example_x_values = [1e6, 1e7, 1e8]
         example_labels = ["1 000 000", "10 000 000", "100 000 000"]
-    
-    pred_table = []
-    for x_val, label in zip(example_x_values, example_labels):
-        y_pred = reg_results['intercept'] + reg_results['slope'] * x_val
-        pred_table.append([f"Население = {label}", f"${y_pred:,.2f}"])
+        pred_table = []
+        for x_val, label in zip(example_x_values, example_labels):
+            y_pred = reg_results['intercept'] + reg_results['slope'] * x_val
+            pred_table.append([f"Население = {label}", f"${y_pred:,.2f}"])
     
     print(tabulate(pred_table, headers=["Значение X", "Предсказанный ВВП на душу"], tablefmt="grid"))
