@@ -3,6 +3,7 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from redis_client import redis_client, CARS_CACHE_TTL, CAR_CACHE_TTL
+from crud.event_publisher import notify_cars_updated
 import pytz
 from datetime import datetime
 
@@ -119,6 +120,9 @@ def create_car(car: CarCreate):
         # Invalidate cars cache
         redis_client.invalidate_list_cache("cars")
         
+        # Публикуем событие о создании автомобиля
+        notify_cars_updated(action="created")
+
         return new_car
     except Exception as e:
         conn.rollback()
@@ -197,6 +201,9 @@ def update_car(car_id: int, car: CarUpdate):
         redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
         redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
         
+        # Публикуем событие об обновлении автомобиля
+        notify_cars_updated(car_id=car_id, action="updated")
+
         return updated_car
     except Exception as e:
         conn.rollback()
@@ -232,6 +239,9 @@ def delete_car(car_id: int):
     redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
     redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
     
+    # Публикуем событие об удалении автомобиля
+    notify_cars_updated(car_id=car_id, action="deleted")
+
     return {"message": "Автомобиль успешно удален"}
 
 

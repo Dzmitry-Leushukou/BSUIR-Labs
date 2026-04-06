@@ -3,6 +3,7 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from redis_client import redis_client, SESSIONS_CACHE_TTL
+from crud.event_publisher import notify_sessions_updated
 
 # Cache key constants
 SESSIONS_LIST_CACHE_KEY = "sessions:list"
@@ -86,13 +87,16 @@ def create_session(session: SessionCreate):
     
     # Invalidate sessions list cache
     redis_client.invalidate_list_cache("sessions")
-    
+
     # Also cache individual session
     session_dict = dict(new_session)
     session_id = session_dict.get('id')
     if session_id:
         redis_client.set_cache(f"{SESSION_CACHE_KEY_PREFIX}:{session_id}", session_dict, ttl=SESSIONS_CACHE_TTL)
     
+    # Публикуем событие о создании сессии
+    notify_sessions_updated(action="created")
+
     return new_session
 
 
@@ -118,6 +122,9 @@ def update_session(session_id: int, session: SessionBase):
     redis_client.delete_cache(f"{SESSION_CACHE_KEY_PREFIX}:{session_id}")
     redis_client.invalidate_list_cache("sessions")
     
+    # Публикуем событие об обновлении сессии
+    notify_sessions_updated(session_id=session_id, action="updated")
+
     return updated_session
 
 
@@ -140,6 +147,9 @@ def delete_session(session_id: int):
     redis_client.delete_cache(f"{SESSION_CACHE_KEY_PREFIX}:{session_id}")
     redis_client.invalidate_list_cache("sessions")
     
+    # Публикуем событие об удалении сессии
+    notify_sessions_updated(session_id=session_id, action="deleted")
+
     return {"message": "Session deleted successfully"}
 
 

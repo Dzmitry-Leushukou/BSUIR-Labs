@@ -715,6 +715,12 @@ if (logoutBtn) {
 
     // Вызываем API endpoint для логирования выхода
     await logout();
+    
+    // Закрываем WebSocket
+    if (wsConnection) {
+        wsConnection.close();
+        wsConnection = null;
+    }
 
     // Обновление статуса авторизации
     updateAuthStatus(false);
@@ -758,11 +764,90 @@ function goToUserLocation() {
     }
 }
 
+// WebSocket для уведомлений
+let wsConnection = null;
+
+function initWebSocket() {
+    if (!isAuthenticated()) {
+        return;
+    }
+    
+    const userData = getUserData();
+    if (!userData || !userData.id) {
+        return;
+    }
+    
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/notifications/${userData.id}`;
+    
+    console.log('[WS] Подключение к WebSocket:', wsUrl);
+    wsConnection = new WebSocket(wsUrl);
+    
+    wsConnection.onopen = function(e) {
+        console.log('[WS] WebSocket подключен');
+    };
+    
+    wsConnection.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('[WS] Получено сообщение:', data);
+            
+            if (data.type === 'session_event') {
+                if (data.event_type === 'rental_completed' || data.event_type === 'rental_pending_completion') {
+                    console.log('[WS] Обнаружено завершение аренды, обновляю данные');
+                    hideActiveRentalPanel();
+                    showCarsOnMap();
+                } else if (data.event_type === 'rental_created' || data.event_type === 'session_created') {
+                    console.log('[WS] Обнаружено создание аренды, обновляю данные');
+                    // Проверяем есть ли уже панель, чтобы не создавать дубликат
+                    const existingPanel = document.getElementById('active-rental-panel');
+                    if (!existingPanel) {
+                        checkAndShowActiveRental();
+                    }
+                    showCarsOnMap();
+                }
+            }
+            
+            if (data.type === 'data_changed') {
+                console.log('[WS] Данные изменены, обновляю карту');
+                showCarsOnMap();
+            }
+        } catch (e) {
+            console.error('[WS] Ошибка обработки сообщения:', e);
+        }
+    };
+    
+    wsConnection.onclose = function(e) {
+        console.log('[WS] WebSocket отключен, переподключение через 5 сек');
+        setTimeout(initWebSocket, 5000);
+    };
+    
+    wsConnection.onerror = function(e) {
+        console.error('[WS] Ошибка WebSocket:', e);
+    };
+    
+    // Пинг каждые 30 секунд
+    setInterval(() => {
+        if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+            wsConnection.send(JSON.stringify({type: 'ping'}));
+        }
+    }, 30000);
+}
+
+function hideActiveRentalPanel() {
+    const rentalPanel = document.getElementById('active-rental-panel');
+    if (rentalPanel) {
+        rentalPanel.remove();
+        console.log('[DEBUG] Панель аренды скрыта');
+    }
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     getCurrentLocation();
     checkAuthStatus();
     // checkAndShowActiveRental() вызывается внутри loadUserInfo() после загрузки данных
+    initWebSocket();
 
     // Добавляем обработчик для кнопки "Мое местоположение"
     const locateBtn = document.getElementById('locate-user-btn');
@@ -839,27 +924,38 @@ function updateCarMarkerStatus(carId, newStatus) {
 // Функция для получения активной аренды пользователя
 async function getActiveRental() {
     if (!isAuthenticated()) {
+        console.log('[DEBUG] getActiveRental: не авторизован');
         return null;
     }
 
     const userData = getUserData();
+    console.log('[DEBUG] getActiveRental userData:', userData);
+    
     if (!userData || !userData.id) {
+        console.log('[DEBUG] getActiveRental: userData или userData.id отсутствует');
         return null;
     }
 
     try {
         // Запрашиваем все аренды пользователя с информацией о машинах
-        const response = await authenticatedFetch(`/rentals/user/${userData.id}/with-car-info`, {
+        const url = `/rentals/user/${userData.id}/with-car-info`;
+        console.log('[DEBUG] Запрос к API:', url);
+        
+        const response = await authenticatedFetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
+        console.log('[DEBUG] Response status:', response.status);
+        
         if (response.ok) {
             const rentals = await response.json();
+            console.log('[DEBUG] Получено арен:', rentals.length);
             // Находим активную аренду (если есть)
             const activeRental = rentals.find(rental => rental.status === 'active');
+            console.log('[DEBUG] Active rental:', activeRental);
             return activeRental || null;
         } else {
             const errorData = await response.json();
@@ -874,19 +970,23 @@ async function getActiveRental() {
 
 // Функция для отображения панели активной аренды
 async function showActiveRentalPanel(rental) {
+    console.log('[DEBUG] showActiveRentalPanel вызвана с rental:', rental);
+    
     // Если панель уже существует, удаляем её
     const existingPanel = document.getElementById('active-rental-panel');
     if (existingPanel) {
+        console.log('[DEBUG] Удаляю существующую панель');
         existingPanel.remove();
     }
-    
+
     if (rental) {
+        console.log('[DEBUG] rental присутствует, продолжаю...');
         // Загружаем информацию о машине, связанной с арендой
         if (!isAuthenticated()) {
             console.error('showActiveRentalPanel: пользователь не авторизован');
             return;
         }
-        
+
         let userData = getUserData();
         
         // Если userData нет, загружаем его из профиля
@@ -968,13 +1068,23 @@ async function showActiveRentalPanel(rental) {
                 <button id="end-rental-btn" class="btn end-btn">⏹️ Завершить</button>
             </div>
         `;
-        
+
         document.body.appendChild(rentalPanel);
-        
+        console.log('[DEBUG] Панель добавлена в DOM!');
+        console.log('[DEBUG] Элемент панели:', document.getElementById('active-rental-panel'));
+
         // Добавляем обработчики для кнопок
-        document.getElementById('end-rental-btn').addEventListener('click', () => {
-            showCompletionModal(rental.id);
-        });
+        const endBtn = document.getElementById('end-rental-btn');
+        console.log('[DEBUG] endBtn элемент:', endBtn);
+        
+        if (endBtn) {
+            endBtn.addEventListener('click', () => {
+                console.log('[DEBUG] Кнопка Завершить нажата, rental.id:', rental.id);
+                showCompletionModal(rental.id);
+            });
+        } else {
+            console.error('[DEBUG] endBtn не найден!');
+        }
         
         // Обновляем цену каждую секунду для реального времени
         const updatePriceInterval = setInterval(() => {
@@ -1430,12 +1540,16 @@ function updateCashbackDisplay() {
 
 // Функция для обработки оплаты и завершения аренды
 async function processPaymentAndComplete(rentalId) {
+    console.log('[DEBUG] processPaymentAndComplete вызвана с rentalId:', rentalId);
+    
     if (!isAuthenticated()) {
         alert('Необходима авторизация для завершения аренды');
         return;
     }
 
     let userData = getUserData();
+    console.log('[DEBUG] processPaymentAndComplete userData:', userData);
+    
     if (!userData) {
         alert('Необходима авторизация для завершения аренды');
         return;
@@ -1503,7 +1617,7 @@ async function processPaymentAndComplete(rentalId) {
         let cashbackUsed = 0;
 
         if (useCashback) {
-            let userData = await getUserData();
+            let userData = getUserData();
             if (userData.cashback > 0) {
                 // Получаем выбранную сумму кэшбэка
                 const cashbackInputValue = document.getElementById('cashback-amount-input').value;
@@ -1811,27 +1925,6 @@ function validateCardData(cardNumber, cardHolder, expiryDate, cvv) {
     return true;
 }
 
-// Функция для получения данных пользователя
-async function getUserData() {
-    if (!isAuthenticated()) {
-        return null;
-    }
-
-    try {
-        const response = await authenticatedFetch('/users/profile', {
-            method: 'GET'
-        });
-
-        if (response.ok) {
-            return await response.json();
-        }
-        return null;
-    } catch (error) {
-        console.error('Ошибка при получении данных пользователя:', error);
-        return null;
-    }
-}
-
 // Функция для обновления баланса кэшбэка
 async function updateCashbackBalance(amount) {
     if (!isAuthenticated()) {
@@ -1839,7 +1932,7 @@ async function updateCashbackBalance(amount) {
     }
 
     try {
-        const userData = await getUserData();
+        const userData = getUserData();
         if (!userData) {
             return;
         }
@@ -1892,8 +1985,16 @@ function goToAdminPanel() {
 
 // Функция для проверки и отображения активной аренды при загрузке
 async function checkAndShowActiveRental() {
+    console.log('[DEBUG] checkAndShowActiveRental вызвана');
+    console.log('[DEBUG] isAuthenticated:', isAuthenticated());
+    
     const activeRental = await getActiveRental();
+    console.log('[DEBUG] activeRental:', activeRental);
+    
     if (activeRental) {
+        console.log('[DEBUG] Вызываю showActiveRentalPanel...');
         await showActiveRentalPanel(activeRental);
+    } else {
+        console.log('[DEBUG] Активная аренда не найдена');
     }
 }

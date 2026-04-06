@@ -50,7 +50,7 @@ services:
 
   web:
     build: .
-    container_name: carsharing_app
+    container_name: carsharing_app_1
     ports:
       - "8000:8000"
     environment:
@@ -64,6 +64,7 @@ services:
       - MONGODB_DB=carsharing_logs
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - INSTANCE_ID=instance-1
       - JWT_SECRET_KEY=your-secret-key-change-in-production
       - JWT_ALGORITHM=HS256
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -81,6 +82,44 @@ services:
       - .:/app
     command: >
       sh -c "python populate_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+  # Второй инстанс приложения для демонстрации синхронизации
+  web-2:
+    build: .
+    container_name: carsharing_app_2
+    ports:
+      - "8001:8001"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=carsharing_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_PORT=5432
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DB=carsharing_logs
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - INSTANCE_ID=instance-2
+      - JWT_SECRET_KEY=your-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ACTION_LOGS_TTL_DAYS=90
+      - DB_QUERY_LOGS_TTL_DAYS=30
+      - ERROR_LOGS_TTL_DAYS=60
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    volumes:
+      - .:/app
+    command: >
+      sh -c "uvicorn main:app --host 0.0.0.0 --port 8001 --reload"
 
 
 volumes:

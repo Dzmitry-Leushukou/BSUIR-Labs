@@ -4,6 +4,12 @@ from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from datetime import datetime, timezone
 import pytz
+import os
+from redis_client import redis_client
+from crud.event_publisher import notify_rentals_updated, notify_cars_updated
+
+# Константы кэша (определены здесь для использования)
+CARS_POSITIONS_CACHE_KEY = "cars:positions"
 
 # Rentals CRUD
 def get_rentals(offset: int = 0, limit: int = 10):
@@ -84,7 +90,27 @@ def create_rental(rental: RentalCreate):
     conn.commit()
     cur.close()
     conn.close()
+
+    # Инвалидируем кэш позиций автомобилей для этого пользователя
+    redis_client.delete_cache(f"{CARS_POSITIONS_CACHE_KEY}:user:{rental.user_id}")
+    # Также инвалидируем общий кэш позиций
+    redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
+    # Инвалидируем кэш конкретного автомобиля
+    redis_client.delete_cache(f"cars:id:{rental.car_id}")
+    # Инвалидируем список автомобилей
+    redis_client.invalidate_list_cache("cars")
     
+    # Публикуем события об изменениях
+    notify_rentals_updated(rental_id=new_rental['id'], action="created")
+    notify_cars_updated(car_id=rental.car_id, action="updated")
+    
+    # Публикуем событие о начале аренды для фронтенда
+    redis_client.publish_user_session_event(
+        user_id=rental.user_id,
+        event_type="rental_created",
+        instance_id=os.getenv("INSTANCE_ID", "unknown")
+    )
+
     # Log to MongoDB
     try:
         from crud.mongo_logs_crud import create_action_log_mongo
@@ -171,6 +197,32 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     cur.close()
     conn.close()
 
+    # Инвалидируем кэш при изменении статуса аренды
+    if rental.status in ['completed', 'pending_completion']:
+        user_id = current_rental['user_id']
+        car_id = updated_rental['car_id']
+        # Инвалидируем кэш позиций для пользователя
+        redis_client.delete_cache(f"{CARS_POSITIONS_CACHE_KEY}:user:{user_id}")
+        redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
+        # Инвалидируем кэш автомобиля
+        redis_client.delete_cache(f"cars:id:{car_id}")
+        redis_client.invalidate_list_cache("cars")
+        
+        # Публикуем события
+        notify_rentals_updated(rental_id=rental_id, action="updated")
+        notify_cars_updated(car_id=car_id, action="updated")
+        
+        # Специальное событие о завершении аренды для фронтенда
+        if rental.status in ['completed', 'pending_completion']:
+            instance_id = os.getenv("INSTANCE_ID", "unknown")
+            event_type_str = "rental_completed" if rental.status == 'completed' else "rental_pending_completion"
+            print(f"[RENTALS] Publishing {event_type_str} event for user {user_id} from {instance_id}")
+            redis_client.publish_user_session_event(
+                user_id=user_id,
+                event_type=event_type_str,
+                instance_id=instance_id
+            )
+
     # Проверяем, что обновленная аренда существует
     if not updated_rental:
         raise HTTPException(status_code=404, detail="Аренда не найдена после обновления")
@@ -207,15 +259,33 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     return updated_rental
 
 def delete_rental(rental_id: int):
+    # Получаем информацию об аренде перед удалением
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT user_id, car_id, status FROM rentals WHERE id = %s", (rental_id,))
+    rental_to_delete = cur.fetchone()
+    
     cur.execute("DELETE FROM rentals WHERE id = %s", (rental_id,))
     conn.commit()
     deleted_count = cur.rowcount
     cur.close()
     conn.close()
+    
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Аренда не найдена")
+    
+    # Если аренда была активная, инвалидируем кэш позиций
+    if rental_to_delete and rental_to_delete['status'] == 'active':
+        user_id = rental_to_delete['user_id']
+        car_id = rental_to_delete['car_id']
+        redis_client.delete_cache(f"{CARS_POSITIONS_CACHE_KEY}:user:{user_id}")
+        redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
+        redis_client.delete_cache(f"cars:id:{car_id}")
+        redis_client.invalidate_list_cache("cars")
+        
+        notify_rentals_updated(rental_id=rental_id, action="deleted")
+        notify_cars_updated(car_id=car_id, action="updated")
+    
     return {"message": "Аренда успешно удалена"}
 
 def get_rentals_count_by_user_id(user_id: int):
