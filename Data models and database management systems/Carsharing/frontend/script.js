@@ -764,6 +764,30 @@ function goToUserLocation() {
     }
 }
 
+// Функция для обновления данных пользователя
+async function refreshUserData() {
+    if (!isAuthenticated()) {
+        return;
+    }
+
+    try {
+        const response = await authenticatedFetch('/users/profile');
+        if (response.ok) {
+            const userData = await response.json();
+            setUserData(userData);
+            console.log('[DEBUG] Данные пользователя обновлены:', userData);
+            
+            // Обновляем отображение кэшбэка если есть
+            const cashbackEl = document.getElementById('user-cashback');
+            if (cashbackEl && userData.cashback !== undefined) {
+                cashbackEl.textContent = `Кэшбэк: ${userData.cashback} BYN`;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении данных пользователя:', error);
+    }
+}
+
 // WebSocket для уведомлений
 let wsConnection = null;
 
@@ -797,6 +821,11 @@ function initWebSocket() {
                     console.log('[WS] Обнаружено завершение аренды, обновляю данные');
                     hideActiveRentalPanel();
                     showCarsOnMap();
+                    // Обновляем кэшбэк асинхронно без блокировки
+                    setTimeout(() => refreshUserData(), 500);
+                } else if (data.event_type === 'cashback_updated') {
+                    console.log('[WS] Обновление кэшбэка, обновляю данные');
+                    refreshUserData();
                 } else if (data.event_type === 'rental_created' || data.event_type === 'session_created') {
                     console.log('[WS] Обнаружено создание аренды, обновляю данные');
                     // Проверяем есть ли уже панель, чтобы не создавать дубликат

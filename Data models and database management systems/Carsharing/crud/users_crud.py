@@ -4,6 +4,8 @@ from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from redis_client import redis_client, USERS_CACHE_TTL, USER_CACHE_TTL
 from crud.event_publisher import notify_users_updated
+from redis_client import redis_client
+import os
 import pytz
 from datetime import datetime
 
@@ -212,6 +214,14 @@ def update_user(user_id: int, user: UserUpdate):
     
     # Публикуем событие об обновлении пользователя
     notify_users_updated(user_id=user_id, action="updated")
+    
+    # Если обновлялся кэшбэк, публикуем специальное событие
+    if 'cashback' in [k for k in user.model_dump().keys() if getattr(user, k) is not None]:
+        redis_client.publish_user_session_event(
+            user_id=user_id,
+            event_type="cashback_updated",
+            instance_id=os.getenv("INSTANCE_ID", "unknown")
+        )
 
     return updated_user
 
