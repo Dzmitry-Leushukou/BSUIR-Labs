@@ -790,6 +790,7 @@ async function refreshUserData() {
 
 // WebSocket для уведомлений
 let wsConnection = null;
+let lastEventTimestamp = null; // Для дедупликации событий
 
 function initWebSocket() {
     if (!isAuthenticated()) {
@@ -815,7 +816,15 @@ function initWebSocket() {
         try {
             const data = JSON.parse(event.data);
             console.log('[WS] Получено сообщение:', data);
-            
+
+            // Дедупликация: игнорируем события с тем же timestamp
+            const eventKey = `${data.type}_${data.event_type}_${data.timestamp}`;
+            if (lastEventTimestamp === eventKey) {
+                console.log('[WS] Игнорирую дубликат события');
+                return;
+            }
+            lastEventTimestamp = eventKey;
+
             if (data.type === 'session_event') {
                 if (data.event_type === 'rental_completed' || data.event_type === 'rental_pending_completion') {
                     console.log('[WS] Обнаружено завершение аренды, обновляю данные');
@@ -831,12 +840,18 @@ function initWebSocket() {
                     // Проверяем есть ли уже панель, чтобы не создавать дубликат
                     const existingPanel = document.getElementById('active-rental-panel');
                     if (!existingPanel) {
-                        checkAndShowActiveRental();
+                        // Небольшая задержка, чтобы БД успела синхронизироваться между инстансами
+                        setTimeout(() => {
+                            console.log('[WS] Задержка 300мс истекла, вызываю checkAndShowActiveRental');
+                            checkAndShowActiveRental();
+                        }, 300);
+                    } else {
+                        console.log('[WS] Панель аренды уже существует, пропускаю');
                     }
                     showCarsOnMap();
                 }
             }
-            
+
             if (data.type === 'data_changed') {
                 console.log('[WS] Данные изменены, обновляю карту');
                 showCarsOnMap();
@@ -928,8 +943,8 @@ async function rentCar(carId) {
             // Обновляем статус машины на "rented" визуально на карте
             updateCarMarkerStatus(carId, "rented");
 
-            // Показываем панель активной аренды сразу после аренды
-            await showActiveRentalPanel(rentalData);
+            // Панель активной аренды будет создана через WebSocket-событие rental_created
+            // (обработчик в initWebSocket), чтобы избежать дублирования и гонки состояний
 
             // Обновляем карту, чтобы отобразить только арендованную машину
             showCarsOnMap();

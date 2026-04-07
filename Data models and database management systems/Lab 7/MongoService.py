@@ -186,9 +186,16 @@ class MongoService:
                 "total_items_sold": {"$sum": "$quantity"},
                 "order_count": {"$sum": 1}
             }},
+            {"$lookup": {
+                "from": "categories",
+                "localField": "_id.category_id",
+                "foreignField": "category_id",
+                "as": "category"
+            }},
+            {"$unwind": "$category"},
             {"$project": {
                 "_id": 0,
-                "category_id": "$_id.category_id",
+                "category_name": "$category.name",
                 "year": "$_id.year",
                 "month": "$_id.month",
                 "revenue": {"$round": ["$revenue", 2]},
@@ -207,9 +214,7 @@ class MongoService:
         self.db.order_items.create_index([("status", 1)])
         self.db.order_items.create_index([("product_id", 1)])
 
-        # MongoDB 4.4 не поддерживает $unwind с 'as'.
-        # Поэтому получаем продукты по заказам через агрегацию,
-        # а пары считаем на Python.
+       
         orders_data = list(self.db.order_items.aggregate([
             {"$match": {"status": {"$ne": "cancelled"}}},
             {"$group": {"_id": "$order_id", "products": {"$addToSet": "$product_id"}}},
