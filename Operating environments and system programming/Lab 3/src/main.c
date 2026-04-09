@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     FILE *in = stdin, *out = stdout;
     const char *out_filename = NULL;
     int opt;
-
+    
     while ((opt = getopt(argc, argv, "ho:")) != -1) {
         switch (opt) {
             case 'o':
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
                 return 1;
         }
     }
-
+    
     if (optind < argc) {
         const char* in_filename = argv[optind];
         in = fopen(in_filename, "r");
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-
+    
     if (out_filename) {
         out = fopen(out_filename, "w");
         if (!out) {
@@ -48,29 +48,37 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-
+    
     int ch;
     int first_in_line = 1;
-
+    int output_something = 0; 
+    
     while ((ch = fgetc(in)) != EOF) {
+ 
+        if (ch == '\r') continue;
+        
         if (ch == '\n') {
             fputc('\n', out);
             first_in_line = 1;
             continue;
         }
-
+        
         const char* code = morse_encode((char)ch);
         if (code != NULL) {
-            if (!first_in_line) {
-                fputc(' ', out);
-            }
+            if (!first_in_line) fputc(' ', out);
             fputs(code, out);
             first_in_line = 0;
+            output_something = 1;
         }
     }
-
+    
+ 
+    if (!first_in_line && output_something) {
+        fputc('\n', out);
+    }
+    
     if (in != stdin) fclose(in);
     if (out != stdout) fclose(out);
-
+    
     return 0;
 }

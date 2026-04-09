@@ -64,7 +64,7 @@ with open(users_file, "w", encoding="utf-8", newline="") as f:
     for i in range(1, NUM_USERS + 1):
         fn = random.choice(first_names)
         ln = random.choice(last_names)
-        created = datetime(2023, 1, 1) + timedelta(days=random.randint(0, 730))
+        created = datetime(2023, 1, 1) + timedelta(days=random.randint(0, 364))  # 2023 год
         writer.writerow([i, f"{ln} {fn}", f"user{i}@example.com", created.strftime("%Y-%m-%d %H:%M:%S")])
 print(f"Users: {NUM_USERS}")
 
@@ -92,7 +92,7 @@ with open(orders_file, "w", encoding="utf-8", newline="") as f:
     for i in range(1, NUM_ORDERS + 1):
         uid = random.randint(1, NUM_USERS)
         created = datetime(2024, 1, 1) + timedelta(
-            days=random.randint(0, 1095),
+            days=random.randint(0, 730),  # 2024-2025 годы
             hours=random.randint(0, 23),
             minutes=random.randint(0, 59)
         )

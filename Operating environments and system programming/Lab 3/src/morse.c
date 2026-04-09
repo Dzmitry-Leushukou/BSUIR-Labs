@@ -1,6 +1,6 @@
 #include "morse.h"
 #include <ctype.h>
-
+#include <stddef.h>
 typedef struct {
     char ch;
     const char* code;
@@ -23,7 +23,7 @@ static const morse_pair morse_table[] = {
 const char* morse_encode(char c) {
     c = toupper((unsigned char)c);
 
-    for (size_t i = 0; i < sizeof(morse_table)/sizeof(morse_table[0]); ++i) {
+    for (unsigned int i = 0; i < sizeof(morse_table)/sizeof(morse_table[0]); ++i) {
         if (morse_table[i].ch == c) {
             return morse_table[i].code;
         }
