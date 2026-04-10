@@ -75,7 +75,6 @@ void process_client_message(int client_sock, const char *buffer) {
     broadcast_message(full_msg, client_sock);
 }
 
-// Удаление клиента из списка
 void remove_client(int client_sock) {
     int i;
     for (i = 0; i < client_count; i++) {
@@ -94,7 +93,6 @@ void remove_client(int client_sock) {
     client_count--;
 }
 
-// Принять нового клиента
 void accept_new_client() {
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
@@ -145,7 +143,6 @@ void accept_new_client() {
            name, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), client_count);
 }
 
-// Главный цикл сервера с select
 void run_server() {
     fd_set read_fds;
     int max_fd;

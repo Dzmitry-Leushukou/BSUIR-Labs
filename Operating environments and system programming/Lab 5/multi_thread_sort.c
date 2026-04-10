@@ -64,7 +64,6 @@ void heap_insert(heap_node_t *heap, size_t *heap_size, heap_node_t node) {
     size_t idx = *heap_size;
     heap[*heap_size] = node;
     (*heap_size)++;
-    // Просеивание вверх
     while (idx > 0) {
         size_t parent = (idx - 1) / 2;
         if (heap[parent].value <= heap[idx].value)
@@ -126,7 +125,7 @@ int *generate_random_array(size_t n, unsigned int seed) {
     }
     srand(seed);
     for (size_t i = 0; i < n; ++i) {
-        arr[i] = rand() % 1000000;  // числа в диапазоне [0, 999999]
+        arr[i] = rand() % 1000000;
     }
     return arr;
 }

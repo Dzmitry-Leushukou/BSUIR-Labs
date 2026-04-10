@@ -1,13 +1,15 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic
+TARGET = mydaemon
+SRC = mydaemon.c
 
-all: server client
+all: $(TARGET)
 
-server: server.c
-	$(CC) $(CFLAGS) -o server server.c
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 
-client: client.c
-	$(CC) $(CFLAGS) -o client client.c
+run: $(TARGET)
+	./$(TARGET) -c daemon.conf -l daemon.log -p mydaemon.pid
 
 clean:
-	rm -f server client server.log /tmp/server_fifo /tmp/client_fifo_*
+	rm -f $(TARGET) *.o daemon.log mydaemon.pid
