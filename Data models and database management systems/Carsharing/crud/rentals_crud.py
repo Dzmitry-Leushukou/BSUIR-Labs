@@ -5,6 +5,22 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 import pytz
 
+
+def _notify_rentals_change(action: str, rental_id: int = None, rental_data: dict = None, user_id: int = None):
+    """Send pub/sub notification for rental changes."""
+    from middleware.session_middleware import notify_data_change
+    notify_data_change(
+        entity_type="rentals",
+        action=action,
+        entity_id=rental_id,
+        new_data=rental_data if action == "create" else None,
+        user_id=user_id
+    )
+    
+    # Invalidate cars cache to update map display
+    from redis_client import redis_client
+    redis_client.delete_cache_by_pattern("cars:positions:user:*")
+
 # Rentals CRUD
 def get_rentals(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
@@ -84,7 +100,7 @@ def create_rental(rental: RentalCreate):
     conn.commit()
     cur.close()
     conn.close()
-    
+
     # Log to MongoDB
     try:
         from crud.mongo_logs_crud import create_action_log_mongo
@@ -103,6 +119,9 @@ def create_rental(rental: RentalCreate):
     except Exception as e:
         print(f"Failed to log rental creation to MongoDB: {str(e)}")
     
+    # Send pub/sub notification
+    _notify_rentals_change("create", new_rental['id'], dict(new_rental), rental.user_id)
+
     return new_rental
 
 def update_rental(rental_id: int, rental: RentalUpdate):
@@ -175,6 +194,9 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     if not updated_rental:
         raise HTTPException(status_code=404, detail="Аренда не найдена после обновления")
     
+    # Send pub/sub notification
+    _notify_rentals_change("update", rental_id, dict(updated_rental), current_rental['user_id'])
+
     # Log to MongoDB
     try:
         from crud.mongo_logs_crud import create_action_log_mongo
@@ -206,7 +228,7 @@ def update_rental(rental_id: int, rental: RentalUpdate):
     
     return updated_rental
 
-def delete_rental(rental_id: int):
+def delete_rental(rental_id: int, user_id: int = None):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM rentals WHERE id = %s", (rental_id,))
@@ -216,6 +238,10 @@ def delete_rental(rental_id: int):
     conn.close()
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Аренда не найдена")
+    
+    # Send pub/sub notification
+    _notify_rentals_change("delete", rental_id, user_id=user_id)
+    
     return {"message": "Аренда успешно удалена"}
 
 def get_rentals_count_by_user_id(user_id: int):

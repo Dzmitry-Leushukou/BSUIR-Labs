@@ -112,7 +112,13 @@ async function showCarsOnMap() {
 
         if (response.ok) {
             const cars = await response.json();
-            
+
+            // Проверяем, что карта инициализирована
+            if (typeof map === 'undefined' || !map) {
+                console.warn('Карта ещё не инициализирована, пропускаем обновление маркеров');
+                return;
+            }
+
             // Добавить маркеры для каждой машины
             // Теперь бэкенд возвращает только те машины, которые нужно показать
             cars.forEach(car => {
@@ -361,7 +367,10 @@ async function loadUserInfo() {
             } else {
                 // Если пользователь не заблокирован, показываем обычное меню
                 showUserInfo(userData);
-                
+
+                // Запускаем обновление карты
+                startMapUpdatePolling();
+
                 // Проверяем и показываем активную аренду после загрузки данных
                 setTimeout(checkAndShowActiveRental, 100);
             }
@@ -819,6 +828,12 @@ async function rentCar(carId) {
 
             // Обновляем карту, чтобы отобразить только арендованную машину
             showCarsOnMap();
+            
+            // Отправляем уведомление другим вкладкам
+            notifyRentalChange('rental_started', rentalData);
+            
+            // Запускаем polling для отслеживания статуса аренды
+            startActiveRentalPolling();
         } else {
             const errorData = await response.json();
             console.error('Ошибка аренды:', errorData);
@@ -842,14 +857,9 @@ async function getActiveRental() {
         return null;
     }
 
-    const userData = getUserData();
-    if (!userData || !userData.id) {
-        return null;
-    }
-
     try {
-        // Запрашиваем все аренды пользователя с информацией о машинах
-        const response = await authenticatedFetch(`/rentals/user/${userData.id}/with-car-info`, {
+        // Запрашиваем активную аренду напрямую
+        const response = await authenticatedFetch(`/rentals/active`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -857,9 +867,7 @@ async function getActiveRental() {
         });
 
         if (response.ok) {
-            const rentals = await response.json();
-            // Находим активную аренду (если есть)
-            const activeRental = rentals.find(rental => rental.status === 'active');
+            const activeRental = await response.json();
             return activeRental || null;
         } else {
             const errorData = await response.json();
@@ -869,6 +877,159 @@ async function getActiveRental() {
     } catch (error) {
         console.error('Ошибка при запросе аренды:', error);
         return null;
+    }
+}
+
+// Глобальный интервал для обновления активной аренды
+let activeRentalPollingInterval = null;
+
+// Глобальный интервал для обновления карты
+let mapUpdateInterval = null;
+
+// BroadcastChannel для синхронизации между вкладками
+const rentalChannel = new BroadcastChannel('rental_updates');
+
+// Отправка уведомления другим вкладкам
+function notifyRentalChange(action, data = null) {
+    rentalChannel.postMessage({ action, data, timestamp: Date.now() });
+}
+
+// Обработка уведомлений от других вкладок
+rentalChannel.onmessage = (event) => {
+    const { action, data } = event.data;
+    console.log('Получено уведомление от другой вкладки:', action, data);
+    
+    if (action === 'rental_started') {
+        // Если аренда началась, запускаем polling и обновляем карту
+        if (typeof map !== 'undefined' && map) {
+            showCarsOnMap();
+        }
+        startActiveRentalPolling();
+        setTimeout(checkAndShowActiveRental, 100);
+    }
+    
+    if (action === 'rental_ended') {
+        // Если аренда завершилась:
+        // 1. Останавливаем polling
+        stopActiveRentalPolling();
+        
+        // 2. Удаляем панель активной аренды
+        const panel = document.getElementById('active-rental-panel');
+        if (panel) {
+            panel.remove();
+        }
+        
+        // 3. Обновляем карту (машины станут зелёными)
+        if (typeof map !== 'undefined' && map) {
+            showCarsOnMap();
+        }
+        
+        // 4. Обновляем данные пользователя (кэшбэк)
+        refreshUserData();
+    }
+};
+
+// Функция для запуска обновления карты
+function startMapUpdatePolling() {
+    if (mapUpdateInterval) {
+        clearInterval(mapUpdateInterval);
+    }
+    
+    // Обновляем карту каждые 5 секунд
+    mapUpdateInterval = setInterval(() => {
+        // Проверяем, что карта инициализирована
+        if (typeof map !== 'undefined' && map) {
+            showCarsOnMap();
+        }
+    }, 5000);
+}
+
+// Функция для остановки обновления карты
+function stopMapUpdatePolling() {
+    if (mapUpdateInterval) {
+        clearInterval(mapUpdateInterval);
+        mapUpdateInterval = null;
+    }
+}
+
+// Функция для обновления данных пользователя (кэшбэк и т.д.)
+async function refreshUserData() {
+    if (!isAuthenticated()) {
+        return;
+    }
+    
+    try {
+        const response = await authenticatedFetch('/users/profile');
+        if (response.ok) {
+            const userData = await response.json();
+            
+            // Сохраняем обновлённые данные
+            setUserData(userData);
+            
+            // Обновляем кэшбэк в шапке
+            const cashbackElement = document.getElementById('user-cashback');
+            if (cashbackElement) {
+                cashbackElement.textContent = `Кэшбэк: ${userData.cashback} BYN`;
+            }
+            
+            // Обновляем кэшбэк в профиле если есть
+            const profileCashbackElement = document.getElementById('profile-cashback');
+            if (profileCashbackElement) {
+                profileCashbackElement.textContent = `${userData.cashback} BYN`;
+            }
+            
+            console.log('Данные пользователя обновлены:', userData);
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении данных пользователя:', error);
+    }
+}
+
+// Функция для запуска polling активной аренды
+function startActiveRentalPolling() {
+    // Останавливаем предыдущий polling если есть
+    if (activeRentalPollingInterval) {
+        clearInterval(activeRentalPollingInterval);
+    }
+    
+    // Проверяем каждые 3 секунды
+    activeRentalPollingInterval = setInterval(async () => {
+        const activeRental = await getActiveRental();
+        
+        // Если аренда есть, обновляем панель
+        if (activeRental) {
+            const panel = document.getElementById('active-rental-panel');
+            if (panel) {
+                // Обновляем статус в панели
+                const statusElement = panel.querySelector('[data-status]');
+                if (statusElement) {
+                    statusElement.textContent = activeRental.status === 'active' ? 'Активна' : 
+                                               activeRental.status === 'completed' ? 'Завершена' : 
+                                               activeRental.status === 'cancelled' ? 'Отменена' : 
+                                               activeRental.status === 'pending_completion' ? 'Ожидает завершения' : activeRental.status;
+                }
+            }
+            // Обновляем карту для отображения изменений статуса машины
+            showCarsOnMap();
+        } else {
+            // Если аренды нет, удаляем панель и обновляем карту
+            const panel = document.getElementById('active-rental-panel');
+            if (panel) {
+                panel.remove();
+            }
+            // Обновляем карту - машина должна стать зелёной
+            showCarsOnMap();
+            // Останавливаем polling
+            stopActiveRentalPolling();
+        }
+    }, 3000);
+}
+
+// Функция для остановки polling активной аренды
+function stopActiveRentalPolling() {
+    if (activeRentalPollingInterval) {
+        clearInterval(activeRentalPollingInterval);
+        activeRentalPollingInterval = null;
     }
 }
 
@@ -1113,7 +1274,24 @@ async function endRental(rentalId) {
             if (rentalPanel) {
                 rentalPanel.remove();
             }
+            // Останавливаем polling активной аренды
+            stopActiveRentalPolling();
+            
+            // Обновляем кэшбэк в UI
+            const cashbackElement = document.getElementById('user-cashback');
+            if (cashbackElement) {
+                const userData = getUserData();
+                if (userData) {
+                    userData.cashback = (userData.cashback || 0) + (totalPrice * 0.03);
+                    cashbackElement.textContent = `Кэшбэк: ${userData.cashback.toFixed(2)} BYN`;
+                }
+            }
+            
             alert(`Аренда успешно завершена! С вас списано: ${price} BYN (1 BYN за начало + ${minutesDiff * 0.5} BYN за ${minutesDiff} минут).`);
+            
+            // Отправляем уведомление другим вкладкам
+            notifyRentalChange('rental_ended', { rentalId: rentalId, carId: updatedRental.car_id });
+            
             // Обновляем карту
             showCarsOnMap();
         } else {
@@ -1895,5 +2073,7 @@ async function checkAndShowActiveRental() {
     const activeRental = await getActiveRental();
     if (activeRental) {
         await showActiveRentalPanel(activeRental);
+        // Запускаем polling для обновления статуса аренды
+        startActiveRentalPolling();
     }
 }

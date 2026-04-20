@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from starlette.responses import FileResponse
 from middleware.mongo_logging import MongoDBLoggingMiddleware, DatabaseQueryLoggingMiddleware, setup_mongodb_logging
+from middleware.session_middleware import SessionManagementMiddleware, PubSubListenerMiddleware
 import os
 
 app = FastAPI(title="Carsharing API", description="API for carsharing application", version="1.0.0")
@@ -39,6 +40,12 @@ app.mount("/uploads", NoCacheStaticFiles(directory="frontend/uploads"), name="up
 
 # Add MongoDB error logging middleware
 app.add_middleware(MongoDBLoggingMiddleware)
+
+# Add Redis session management middleware (for cross-instance session consistency)
+app.add_middleware(SessionManagementMiddleware)
+
+# Add Pub/Sub listener middleware (for cross-instance data synchronization)
+app.add_middleware(PubSubListenerMiddleware)
 
 # Include routers
 app.include_router(roles_router)
@@ -159,7 +166,7 @@ async def read_admin_analytics():
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize MongoDB logging on startup."""
+    """Initialize MongoDB logging and Redis pub/sub on startup."""
     try:
         # Check if MongoDB logging is enabled
         if os.getenv("MONGODB_HOST"):
@@ -169,6 +176,28 @@ async def startup_event():
             print("MongoDB logging not configured (MONGODB_HOST not set)")
     except Exception as e:
         print(f"Warning: Could not initialize MongoDB logging: {e}")
+    
+    # Initialize Redis pub/sub listener
+    try:
+        from pubsub_manager import pubsub_manager
+        if pubsub_manager.is_connected():
+            pubsub_manager.start_listening()
+            print("Redis pub/sub listener started successfully")
+        else:
+            print("Warning: Redis pub/sub not available")
+    except Exception as e:
+        print(f"Warning: Could not initialize Redis pub/sub: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup resources on shutdown."""
+    try:
+        from pubsub_manager import pubsub_manager
+        pubsub_manager.stop_listening()
+        print("Redis pub/sub listener stopped")
+    except Exception as e:
+        print(f"Warning: Error stopping pub/sub listener: {e}")
 
 
 if __name__ == "__main__":

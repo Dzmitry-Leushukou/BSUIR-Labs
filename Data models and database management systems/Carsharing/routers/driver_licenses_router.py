@@ -69,4 +69,4 @@ def delete_driver_license_endpoint(request: Request, driver_id: int, current_use
     current_user_details = get_user(current_user['id'])
     is_admin = current_user_details['role_id'] == 1
 
-    return delete_driver_license(driver_id)
+    return delete_driver_license(driver_id, current_user['id'])

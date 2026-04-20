@@ -1,10 +1,17 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from schemas import *
 from crud.rentals_crud import *
-from typing import List
+from typing import List, Optional
 from .users_router import get_current_user
 
 router = APIRouter(prefix="/rentals", tags=["Аренды"])
+
+@router.get("/active", response_model=Optional[RentalWithCarInfo])
+def get_active_rental_endpoint(current_user: dict = Depends(get_current_user)):
+    """Get current active rental for the user with car info."""
+    rentals = get_rentals_with_car_info_by_user_id(current_user['id'], offset=0, limit=10)
+    active_rentals = [r for r in rentals if r['status'] == 'active']
+    return active_rentals[0] if active_rentals else None
 
 @router.get("/", response_model=List[Rental])
 def get_rentals_endpoint(offset: int = 0, limit: int = 10):
@@ -84,4 +91,4 @@ def delete_rental_endpoint(request: Request, rental_id: int, current_user: dict 
         if rental_obj['user_id'] != current_user['id']:
             raise HTTPException(status_code=403, detail="Нет прав для удаления этой аренды")
 
-    return delete_rental(rental_id)
+    return delete_rental(rental_id, current_user['id'])

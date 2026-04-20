@@ -3,6 +3,7 @@ from schemas import *
 from crud.cars_crud import *
 from typing import List
 from .users_router import get_current_user
+from middleware.session_middleware import notify_data_change
 
 router = APIRouter(prefix="/cars", tags=["Автомобили"])
 
@@ -26,17 +27,19 @@ def get_car_endpoint(car_id: int):
 def create_car_endpoint(car: CarCreate, current_user: dict = Depends(get_current_user)):
     return create_car(car)
 
+
 @router.put("/{car_id}", response_model=Car)
 def update_car_endpoint(car_id: int, car: CarUpdate, current_user: dict = Depends(get_current_user)):
     if car_id <= 0:
         raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
     return update_car(car_id, car)
 
+
 @router.delete("/{car_id}")
 def delete_car_endpoint(car_id: int, current_user: dict = Depends(get_current_user)):
     if car_id <= 0:
         raise HTTPException(status_code=400, detail="ID автомобиля должен быть положительным целым числом")
-    return delete_car(car_id)
+    return delete_car(car_id, current_user['id'])
 
 class CarPosition(BaseModel):
     id: int

@@ -6,6 +6,18 @@ from datetime import datetime
 import pytz
 from typing import List, Optional
 
+
+def _notify_trip_completions_change(action: str, completion_id: int = None, completion_data: dict = None, user_id: int = None):
+    """Send pub/sub notification for trip completion changes."""
+    from middleware.session_middleware import notify_data_change
+    notify_data_change(
+        entity_type="trip_completions",
+        action=action,
+        entity_id=completion_id,
+        new_data=completion_data if action == "create" else None,
+        user_id=user_id
+    )
+
 # Trip Completions CRUD
 def get_trip_completions(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
@@ -162,6 +174,9 @@ def create_trip_completion(completion: TripCompletionCreate):
     except Exception as e:
         print(f"Failed to log trip completion creation to MongoDB: {str(e)}")
     
+    # Send pub/sub notification
+    _notify_trip_completions_change("create", new_completion['id'], dict(new_completion))
+
     return new_completion
 
 def update_trip_completion(completion_id: int, completion: TripCompletionUpdate):
@@ -233,6 +248,9 @@ def update_trip_completion(completion_id: int, completion: TripCompletionUpdate)
     if not updated_completion:
         raise HTTPException(status_code=404, detail="Завершение поездки не найдено")
     
+    # Send pub/sub notification
+    _notify_trip_completions_change("update", completion_id, dict(updated_completion))
+
     # Log to MongoDB
     try:
         from crud.mongo_logs_crud import create_action_log_mongo

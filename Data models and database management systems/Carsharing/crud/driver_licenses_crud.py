@@ -4,6 +4,26 @@ from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from typing import Optional
 
+
+def _notify_driver_licenses_change(action: str, driver_id: int = None, license_data: dict = None, user_id: int = None):
+    """Send pub/sub notification for driver license changes."""
+    from middleware.session_middleware import notify_data_change
+    
+    # Convert date objects to strings for JSON serialization
+    if license_data:
+        license_data = dict(license_data)  # Convert RealDictRow to dict
+        for key, value in license_data.items():
+            if hasattr(value, 'isoformat'):  # date/datetime objects
+                license_data[key] = value.isoformat()
+    
+    notify_data_change(
+        entity_type="driver_licenses",
+        action=action,
+        entity_id=driver_id,
+        new_data=license_data if action == "create" else None,
+        user_id=user_id
+    )
+
 # Driver Licenses CRUD
 def get_driver_licenses(offset: int = 0, limit: int = 100, driver_id: Optional[int] = None):
     conn = get_db_connection()
@@ -71,6 +91,9 @@ def create_driver_license(license: DriverLicenseCreate, driver_id: int):
     except Exception as e:
         print(f"Failed to log driver license creation to MongoDB: {str(e)}")
     
+    # Send pub/sub notification
+    _notify_driver_licenses_change("create", driver_id, dict(new_license), driver_id)
+
     return new_license
 
 def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
@@ -116,6 +139,9 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     if not updated_license:
         raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
     
+    # Send pub/sub notification
+    _notify_driver_licenses_change("update", driver_id, dict(updated_license))
+
     # Log to MongoDB
     try:
         from crud.mongo_logs_crud import create_action_log_mongo
@@ -146,7 +172,7 @@ def update_driver_license(driver_id: int, license: DriverLicenseUpdate):
     
     return updated_license
 
-def delete_driver_license(driver_id: int):
+def delete_driver_license(driver_id: int, user_id: int = None):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM driver_licenses WHERE driver_id = %s", (driver_id,))
@@ -156,6 +182,10 @@ def delete_driver_license(driver_id: int):
     conn.close()
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Водительское удостоверение не найдено")
+    
+    # Send pub/sub notification
+    _notify_driver_licenses_change("delete", driver_id, user_id=user_id)
+    
     return {"message": "Водительское удостоверение успешно удалено"}
 
 def get_driver_licenses_count():

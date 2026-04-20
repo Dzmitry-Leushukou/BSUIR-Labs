@@ -17,6 +17,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - carsharing_network
 
   mongodb:
     image: mongo:7
@@ -33,10 +35,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - carsharing_network
 
   redis:
     image: redis:7-alpine
     container_name: carsharing_redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     volumes:
@@ -47,6 +52,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - carsharing_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   web:
     build: .
@@ -67,6 +78,8 @@ services:
       - JWT_SECRET_KEY=your-secret-key-change-in-production
       - JWT_ALGORITHM=HS256
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - SESSION_TTL_MINUTES=30
+      - INSTANCE_ID=instance_1
       - ACTION_LOGS_TTL_DAYS=90
       - DB_QUERY_LOGS_TTL_DAYS=30
       - ERROR_LOGS_TTL_DAYS=60
@@ -77,13 +90,25 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - carsharing_network
     volumes:
       - .:/app
     command: >
-      sh -c "python populate_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "python populate_db.py || true && uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
 
 volumes:
   postgres_data:
   mongodb_data:
   redis_data:
+
+networks:
+  carsharing_network:
+    driver: bridge

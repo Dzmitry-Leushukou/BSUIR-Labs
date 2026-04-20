@@ -2,9 +2,9 @@ mod lexer;
 mod symbol_table;
 mod token;
 
+use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::path::Path;
 use std::process;
 
 use lexer::Lexer;
@@ -827,9 +827,95 @@ fn find_assignment(line: &str) -> Option<(String, String, usize)> {
     None
 }
 
+fn is_top_level_line(line: &str) -> bool {
+    matches!(line.chars().next(), Some(ch) if !ch.is_whitespace())
+}
+
+fn lex_line_tokens(line: &str) -> Result<Vec<crate::token::Token>, ParseError> {
+    let mut lexer = Lexer::new(line);
+    let (tokens, errors) = lexer.tokenize();
+
+    if let Some(first_error) = errors.first() {
+        return Err(ParseError {
+            column: first_error.column,
+            message: first_error.message.clone(),
+        });
+    }
+
+    Ok(tokens
+        .into_iter()
+        .filter(|token| !matches!(token.token_type, TokenType::Eof))
+        .collect())
+}
+
+fn extract_top_level_signature_name(line: &str) -> Option<String> {
+    if !is_top_level_line(line) {
+        return None;
+    }
+
+    let tokens = lex_line_tokens(line).ok()?;
+    if tokens.len() < 2 {
+        return None;
+    }
+
+    match (&tokens[0].token_type, &tokens[1].token_type) {
+        (TokenType::Identifier(name), TokenType::Colon) => Some(name.clone()),
+        _ => None,
+    }
+}
+
+fn extract_assignment_binding_name(lhs: &str) -> Option<String> {
+    let tokens = lex_line_tokens(lhs).ok()?;
+    let first = tokens.first()?;
+
+    match &first.token_type {
+        TokenType::Identifier(name) => Some(name.clone()),
+        TokenType::Keyword(keyword) if keyword == "let" => {
+            let second = tokens.get(1)?;
+            if let TokenType::Identifier(name) = &second.token_type {
+                Some(name.clone())
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
+fn extract_binding_head_without_assignment(line: &str) -> Option<(String, usize)> {
+    let tokens = lex_line_tokens(line).ok()?;
+    let first = tokens.first()?;
+
+    match &first.token_type {
+        TokenType::Identifier(name) => {
+            let fallback_column = first.column + name.chars().count();
+            let column = tokens
+                .get(1)
+                .map(|token| token.column)
+                .unwrap_or(fallback_column);
+            Some((name.clone(), column))
+        }
+        TokenType::Keyword(keyword) if keyword == "let" => {
+            let second = tokens.get(1)?;
+            if let TokenType::Identifier(name) = &second.token_type {
+                let fallback_column = second.column + name.chars().count();
+                let column = tokens
+                    .get(2)
+                    .map(|token| token.column)
+                    .unwrap_or(fallback_column);
+                Some((name.clone(), column))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
 fn analyze_file(content: &str) -> (Vec<ParsedAssignment>, Vec<String>) {
     let mut parsed = Vec::new();
     let mut errors = Vec::new();
+    let mut pending_signatures: HashMap<String, usize> = HashMap::new();
 
     for (idx, raw_line) in content.lines().enumerate() {
         let line_number = idx + 1;
@@ -840,7 +926,33 @@ fn analyze_file(content: &str) -> (Vec<ParsedAssignment>, Vec<String>) {
             continue;
         }
 
+        if let Some(name) = extract_top_level_signature_name(line) {
+            pending_signatures.insert(name, line_number);
+            continue;
+        }
+
         let Some((lhs, rhs, rhs_col)) = find_assignment(line) else {
+            if is_top_level_line(line) {
+                match lex_line_tokens(line) {
+                    Ok(_) => {
+                        if let Some((name, column)) = extract_binding_head_without_assignment(line)
+                        {
+                            if let Some(signature_line) = pending_signatures.remove(&name) {
+                                errors.push(format!(
+                                    "Строка {}: синтаксическая ошибка в колонке {}: ожидался '=' после '{}'. Сигнатура типа объявлена в строке {}",
+                                    line_number, column, name, signature_line
+                                ));
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        errors.push(format!(
+                            "Строка {}: лексическая ошибка в колонке {}: {}",
+                            line_number, err.column, err.message
+                        ));
+                    }
+                }
+            }
             continue;
         };
 
@@ -858,6 +970,10 @@ fn analyze_file(content: &str) -> (Vec<ParsedAssignment>, Vec<String>) {
 
         if looks_like_type_signature(&lhs) {
             continue;
+        }
+
+        if let Some(name) = extract_assignment_binding_name(&lhs) {
+            pending_signatures.remove(&name);
         }
 
         if rhs.is_empty() {
@@ -903,6 +1019,13 @@ fn analyze_file(content: &str) -> (Vec<ParsedAssignment>, Vec<String>) {
             rhs,
             tree: assignment_tree,
         });
+    }
+
+    for (name, signature_line) in pending_signatures {
+        errors.push(format!(
+            "Строка {}: для '{}' объявлена сигнатура типа, но определение с '=' не найдено",
+            signature_line, name
+        ));
     }
 
     (parsed, errors)

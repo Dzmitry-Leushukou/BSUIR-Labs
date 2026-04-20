@@ -14,6 +14,18 @@ CARS_POSITIONS_CACHE_KEY = "cars:positions"
 CARS_COUNT_CACHE_KEY = "cars:count"
 
 
+def _notify_cars_change(action: str, car_id: int = None, car_data: dict = None, user_id: int = None):
+    """Send pub/sub notification for car changes."""
+    from middleware.session_middleware import notify_data_change
+    notify_data_change(
+        entity_type="cars",
+        action=action,
+        entity_id=car_id,
+        new_data=car_data if action == "create" else None,
+        user_id=user_id
+    )
+
+
 # Cars CRUD
 def get_cars(offset: int = 0, limit: int = 100):
     """
@@ -115,10 +127,13 @@ def create_car(car: CarCreate):
         conn.commit()
         cur.close()
         conn.close()
-        
+
         # Invalidate cars cache
         redis_client.invalidate_list_cache("cars")
         
+        # Send pub/sub notification
+        _notify_cars_change("create", new_car['id'], dict(new_car))
+
         return new_car
     except Exception as e:
         conn.rollback()
@@ -190,13 +205,16 @@ def update_car(car_id: int, car: CarUpdate):
         
         if not updated_car:
             raise HTTPException(status_code=404, detail="Автомобиль не найден")
-        
+
         # Invalidate car-specific cache and list caches
         redis_client.delete_cache(f"{CAR_CACHE_KEY_PREFIX}:{car_id}")
         redis_client.invalidate_list_cache("cars")
         redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
         redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
         
+        # Send pub/sub notification
+        _notify_cars_change("update", car_id, dict(updated_car))
+
         return updated_car
     except Exception as e:
         conn.rollback()
@@ -211,7 +229,7 @@ def update_car(car_id: int, car: CarUpdate):
             raise HTTPException(status_code=400, detail=f"Ошибка при обновлении автомобиля: {str(e)}")
 
 
-def delete_car(car_id: int):
+def delete_car(car_id: int, user_id: int = None):
     """
     Delete a car and invalidate cache.
     """
@@ -222,16 +240,19 @@ def delete_car(car_id: int):
     deleted_count = cur.rowcount
     cur.close()
     conn.close()
-    
+
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
-    
+
     # Invalidate car-specific cache and list caches
     redis_client.delete_cache(f"{CAR_CACHE_KEY_PREFIX}:{car_id}")
     redis_client.invalidate_list_cache("cars")
     redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
     redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
     
+    # Send pub/sub notification
+    _notify_cars_change("delete", car_id, user_id=user_id)
+
     return {"message": "Автомобиль успешно удален"}
 
 

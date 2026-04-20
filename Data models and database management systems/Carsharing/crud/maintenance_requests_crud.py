@@ -5,6 +5,18 @@ from fastapi import HTTPException
 import pytz
 from datetime import datetime
 
+
+def _notify_maintenance_requests_change(action: str, request_id: int = None, request_data: dict = None, user_id: int = None):
+    """Send pub/sub notification for maintenance request changes."""
+    from middleware.session_middleware import notify_data_change
+    notify_data_change(
+        entity_type="maintenance_requests",
+        action=action,
+        entity_id=request_id,
+        new_data=request_data if action == "create" else None,
+        user_id=user_id
+    )
+
 # Maintenance Requests CRUD
 def get_maintenance_requests(offset: int = 0, limit: int = 10):
     conn = get_db_connection()
@@ -42,7 +54,7 @@ def create_maintenance_request(request: MaintenanceRequestCreate):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(
-        """INSERT INTO maintenance_requests (car_id, reported_by, status, description) 
+        """INSERT INTO maintenance_requests (car_id, reported_by, status, description)
            VALUES (%s, %s, %s, %s) RETURNING *""",
         (request.car_id, request.reported_by, request.status, request.description)
     )
@@ -50,6 +62,10 @@ def create_maintenance_request(request: MaintenanceRequestCreate):
     conn.commit()
     cur.close()
     conn.close()
+    
+    # Send pub/sub notification
+    _notify_maintenance_requests_change("create", new_request['id'], dict(new_request), request.reported_by)
+    
     return new_request
 
 def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdate):
@@ -157,9 +173,14 @@ def update_maintenance_request(request_id: int, request: MaintenanceRequestUpdat
     conn.close()
     if not updated_request:
         raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
+    
+    # Send pub/sub notification
+    _notify_maintenance_requests_change("update", request_id, dict(updated_request))
+    
     return updated_request
 
-def delete_maintenance_request(request_id: int):
+
+def delete_maintenance_request(request_id: int, user_id: int = None):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM maintenance_requests WHERE id = %s", (request_id,))
@@ -169,6 +190,10 @@ def delete_maintenance_request(request_id: int):
     conn.close()
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Запрос на обслуживание не найден")
+    
+    # Send pub/sub notification
+    _notify_maintenance_requests_change("delete", request_id, user_id=user_id)
+    
     return {"message": "Запрос на обслуживание успешно удален"}
 
 def get_maintenance_requests_count():

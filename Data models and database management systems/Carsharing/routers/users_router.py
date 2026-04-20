@@ -11,6 +11,8 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from jwt_utils import create_access_token, decode_access_token
 from redis_client import redis_client
+from middleware.session_middleware import notify_data_change, notify_user_event, notify_session_event
+import uuid
 
 security = HTTPBearer(auto_error=False)
 
@@ -215,17 +217,107 @@ def change_password_endpoint(
 
 
 @router.put("/{user_id}", response_model=User)
-def update_user_endpoint(user_id: int, user: UserUpdate):
+def update_user_endpoint(user_id: int, user: UserUpdate, current_user: dict = Depends(get_current_user)):
     if user_id <= 0:
         raise HTTPException(status_code=400, detail="ID пользователя должен быть положительным целым числом")
-    return update_user(user_id, user)
+    
+    updated_user = update_user(user_id, user)
+    
+    # Notify about user update for cross-instance cache invalidation
+    notify_data_change(
+        entity_type="users",
+        action="update",
+        entity_id=user_id,
+        new_data=dict(updated_user),
+        user_id=current_user['id']
+    )
+    
+    # Notify user event for cross-instance consistency
+    notify_user_event(
+        event_type="updated",
+        user_id=user_id,
+        data={"updated_by": current_user['id']}
+    )
+    
+    return updated_user
 
 
 @router.delete("/{user_id}")
-def delete_user_endpoint(user_id: int):
+def delete_user_endpoint(user_id: int, current_user: dict = Depends(get_current_user)):
     if user_id <= 0:
         raise HTTPException(status_code=400, detail="User ID must be a positive integer")
-    return delete_user(user_id)
+    
+    # Delete all user sessions first (force logout from all instances)
+    redis_client.delete_all_user_sessions(user_id)
+    
+    result = delete_user(user_id)
+    
+    # Notify about user deletion for cross-instance cache invalidation
+    notify_data_change(
+        entity_type="users",
+        action="delete",
+        entity_id=user_id,
+        user_id=current_user['id']
+    )
+    
+    # Notify user event for cross-instance consistency
+    notify_user_event(
+        event_type="deleted",
+        user_id=user_id,
+        data={"deleted_by": current_user['id']}
+    )
+    
+    return result
+
+
+@router.post("/{user_id}/force-logout")
+def force_logout_user_endpoint(request: Request, user_id: int, current_user: dict = Depends(get_current_user)):
+    """
+    Force logout user from all instances.
+    Deletes all sessions for the user across all application instances.
+    """
+    if user_id <= 0:
+        raise HTTPException(status_code=400, detail="User ID must be a positive integer")
+    
+    # Check permissions (admin only)
+    if current_user.get('role_id') != 1:  # Assuming role_id=1 is admin
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Только администратор может принудительно завершать сессии"
+        )
+    
+    # Delete all user sessions
+    deleted_count = redis_client.delete_all_user_sessions(user_id)
+    
+    # Notify about force logout for cross-instance consistency
+    notify_session_event(
+        event_type="logout_all",
+        user_id=user_id,
+        data={"initiated_by": current_user['id'], "sessions_deleted": deleted_count}
+    )
+    
+    # Log action to MongoDB
+    from crud.mongo_logs_crud import create_action_log_mongo
+    
+    try:
+        create_action_log_mongo(
+            actor_user_id=current_user['id'],
+            actor_email=current_user['email'],
+            action_type='force_logout',
+            target_user_id=user_id,
+            description=f'Принудительный выход пользователя (сессий удалено: {deleted_count})',
+            old_values=None,
+            new_values={"sessions_deleted": deleted_count},
+            user_agent=request.headers.get('User-Agent', 'Unknown'),
+            ip_address=request.client.host if request.client else None,
+        )
+    except Exception as e:
+        print(f"Failed to log force logout to MongoDB: {str(e)}")
+    
+    return {
+        "message": f"Пользователь вышел из всех сессий",
+        "sessions_deleted": deleted_count
+    }
 
 
 @router.post("/login")
@@ -310,14 +402,6 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
     except Exception as e:
         print(f"Failed to log user login to MongoDB: {str(e)}")
 
-    # Create JWT token
-    access_token = create_access_token(
-        data={
-            "sub": user['id'],
-            "email": user['email']
-        }
-    )
-
     # Prepare user data without sensitive information
     # Convert RealDictCursor to regular dict explicitly
     user_data = {
@@ -332,10 +416,36 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
         "updated_at": user['updated_at'].isoformat() if hasattr(user['updated_at'], 'isoformat') else str(user['updated_at']) if user['updated_at'] else None
     }
 
+    # Create JWT token
+    access_token = create_access_token(
+        data={
+            "sub": user['id'],
+            "email": user['email']
+        }
+    )
+
+    # Create Redis session for cross-instance consistency
+    session_token = str(uuid.uuid4())
+    redis_client.create_session(
+        user_id=user['id'],
+        email=user['email'],
+        user_data=user_data,
+        session_token=session_token
+    )
+
+    # Notify about login event (for cross-instance session tracking)
+    notify_session_event(
+        event_type="login",
+        user_id=user['id'],
+        session_token=session_token,
+        data={"instance_id": "current"}
+    )
+
     # Return token and user data
     return {
         "access_token": access_token,
         "token_type": "bearer",
+        "session_token": session_token,
         **user_data
     }
 
@@ -430,6 +540,18 @@ def logout_user_endpoint(request: Request, current_user: dict = Depends(get_curr
         )
     except Exception as e:
         print(f"Failed to log user logout to MongoDB: {str(e)}")
+
+    # Invalidate user session in Redis (if using session token)
+    session_token = request.headers.get('X-Session-Token')
+    if session_token:
+        redis_client.delete_session(session_token)
+    
+    # Notify about logout event for cross-instance consistency
+    notify_session_event(
+        event_type="logout",
+        user_id=current_user['id'],
+        session_token=session_token
+    )
 
     return {"message": "Выход из системы выполнен успешно"}
 

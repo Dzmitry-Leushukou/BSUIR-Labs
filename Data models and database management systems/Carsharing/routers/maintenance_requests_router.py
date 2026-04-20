@@ -30,4 +30,4 @@ def update_maintenance_request_endpoint(request_id: int, request: MaintenanceReq
 
 @router.delete("/{request_id}")
 def delete_maintenance_request_endpoint(request_id: int, current_user: dict = Depends(get_current_user)):
-    return delete_maintenance_request(request_id)
+    return delete_maintenance_request(request_id, current_user['id'])
