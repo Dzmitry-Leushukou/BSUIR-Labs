@@ -1,0 +1,136 @@
+services:
+  mongo:
+    image: mongo:4.4.10
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - app_network
+    volumes:
+      - mongo_data:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+
+  mongo-init:
+    image: mongo:4.4.10
+    container_name: mongo_init
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command:
+      - bash
+      - -c
+      - |
+        echo "Waiting for mongo to be ready..."
+        sleep 3
+        echo "Initiating replica set..."
+        mongo --host mongo --port 27017 --eval '
+          var needsInit = false;
+          try {
+            var status = rs.status();
+            if (status.ok === 1 && status.myState === 1) {
+              print("Replica set OK, PRIMARY (myState=1). Done.");
+              needsInit = false;
+            } else {
+              print("Replica set exists but myState=" + status.myState + ". Needs re-init.");
+              needsInit = true;
+            }
+          } catch(e) {
+            print("No replica set found: " + e.message);
+            needsInit = true;
+          }
+
+          if (needsInit) {
+            // Force re-init: remove existing config
+            print("Forcing replica set re-initialization...");
+            try {
+              db.getSiblingDB("local").system.replset.remove({});
+              print("Cleared existing replset config");
+            } catch(e) {
+              print("Could not clear config: " + e.message);
+            }
+
+            var result = rs.initiate({
+              _id: "rs0",
+              members: [{ _id: 0, host: "mongo:27017" }]
+            });
+            printjson(result);
+
+            if (result.ok === 1) {
+              print("Waiting for primary election...");
+              for (var i = 0; i < 30; i++) {
+                try {
+                  var st = rs.status();
+                  print("State: " + st.myState + " (" + (st.myState===1?"PRIMARY":"waiting") + ")");
+                  if (st.myState === 1) {
+                    print("PRIMARY elected! Done.");
+                    break;
+                  }
+                } catch(e2) {
+                  print("Status check: " + e2.message);
+                }
+                sleep(1000);
+              }
+            }
+          }
+          print("Replica set setup complete.");
+          
+          // Verify PRIMARY state before exiting
+          var finalCheck = false;
+          for (var j = 0; j < 10; j++) {
+            try {
+              var fs = rs.status();
+              if (fs.myState === 1) {
+                finalCheck = true;
+                break;
+              }
+            } catch(fe) {}
+            sleep(1000);
+          }
+          if (finalCheck) {
+            print("FINAL CHECK: PRIMARY confirmed. Exiting 0.");
+            quit(0);
+          } else {
+            print("FINAL CHECK: Not PRIMARY after wait. Exiting 1.");
+            quit(1);
+          }
+        '
+    networks:
+      - app_network
+
+  migrator:
+    build: .
+    container_name: mongo_migrator
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USER=
+      - MONGO_PASSWORD=
+      - MONGO_DB=lab7_db
+    volumes:
+      - ./Data_csv:/app/Data_csv
+    command:
+      - bash
+      - -c
+      - |
+        echo "Starting application..."
+        python main.py
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mongo_data:

@@ -11,8 +11,12 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from jwt_utils import create_access_token, decode_access_token
 from redis_client import redis_client
+<<<<<<< HEAD
 from middleware.session_middleware import notify_data_change, notify_user_event, notify_session_event
 import uuid
+=======
+from session_manager import session_manager
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
 security = HTTPBearer(auto_error=False)
 
@@ -402,6 +406,32 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
     except Exception as e:
         print(f"Failed to log user login to MongoDB: {str(e)}")
 
+<<<<<<< HEAD
+=======
+    # Create JWT token
+    access_token = create_access_token(
+        data={
+            "sub": user['id'],
+            "email": user['email']
+        }
+    )
+
+    # Создаем Redis сессию
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+    ip_address = request.client.host if request.client else None
+    
+    session_data = {
+        "ip_address": ip_address,
+        "user_agent": user_agent
+    }
+    
+    try:
+        session_id = session_manager.create_session(user['id'], session_data)
+    except Exception as e:
+        print(f"Warning: Failed to create Redis session: {str(e)}")
+        session_id = None
+
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
     # Prepare user data without sensitive information
     # Convert RealDictCursor to regular dict explicitly
     user_data = {
@@ -442,12 +472,18 @@ def login_user_endpoint(request: Request, user_login: UserLogin):
     )
 
     # Return token and user data
-    return {
+    response = {
         "access_token": access_token,
         "token_type": "bearer",
+<<<<<<< HEAD
         "session_token": session_token,
+=======
+        "session_id": session_id,
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
         **user_data
     }
+    
+    return response
 
 
 @router.post("/register")
@@ -541,6 +577,7 @@ def logout_user_endpoint(request: Request, current_user: dict = Depends(get_curr
     except Exception as e:
         print(f"Failed to log user logout to MongoDB: {str(e)}")
 
+<<<<<<< HEAD
     # Invalidate user session in Redis (if using session token)
     session_token = request.headers.get('X-Session-Token')
     if session_token:
@@ -552,6 +589,15 @@ def logout_user_endpoint(request: Request, current_user: dict = Depends(get_curr
         user_id=current_user['id'],
         session_token=session_token
     )
+=======
+    # Удаляем Redis сессию (если есть session_id в заголовке)
+    session_id = request.headers.get('X-Session-ID')
+    if session_id:
+        try:
+            session_manager.delete_session(session_id, current_user['id'])
+        except Exception as e:
+            print(f"Warning: Failed to delete Redis session: {str(e)}")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
     return {"message": "Выход из системы выполнен успешно"}
 

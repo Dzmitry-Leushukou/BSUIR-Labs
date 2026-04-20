@@ -13,12 +13,18 @@ from routers.logs_router import router as logs_router
 from routers.action_logs_router import router as action_logs_router
 from routers.trip_completions_router import router as trip_completions_router
 from routers.analytics_router import router as analytics_router
+from websocket_router import router as websocket_router
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from starlette.responses import FileResponse
 from middleware.mongo_logging import MongoDBLoggingMiddleware, DatabaseQueryLoggingMiddleware, setup_mongodb_logging
+<<<<<<< HEAD
 from middleware.session_middleware import SessionManagementMiddleware, PubSubListenerMiddleware
+=======
+from event_handler import event_handler
+from redis_client import redis_client, pubsub_subscriber
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 import os
 
 app = FastAPI(title="Carsharing API", description="API for carsharing application", version="1.0.0")
@@ -62,6 +68,7 @@ app.include_router(logs_router)
 app.include_router(action_logs_router)
 app.include_router(trip_completions_router)
 app.include_router(analytics_router)
+app.include_router(websocket_router)
 
 
 @app.middleware("http")
@@ -166,7 +173,11 @@ async def read_admin_analytics():
 
 @app.on_event("startup")
 async def startup_event():
+<<<<<<< HEAD
     """Initialize MongoDB logging and Redis pub/sub on startup."""
+=======
+    """Initialize MongoDB logging and Pub/Sub on startup."""
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
     try:
         # Check if MongoDB logging is enabled
         if os.getenv("MONGODB_HOST"):
@@ -174,7 +185,17 @@ async def startup_event():
             print("MongoDB logging initialized successfully")
         else:
             print("MongoDB logging not configured (MONGODB_HOST not set)")
+        
+        # Инициализируем Pub/Sub subscriber
+        await pubsub_subscriber.connect()
+        print("Redis Pub/Sub subscriber connected successfully")
+        
+        # Запускаем обработчик событий
+        await event_handler.start()
+        print("Event handler started successfully")
+        
     except Exception as e:
+<<<<<<< HEAD
         print(f"Warning: Could not initialize MongoDB logging: {e}")
     
     # Initialize Redis pub/sub listener
@@ -187,17 +208,27 @@ async def startup_event():
             print("Warning: Redis pub/sub not available")
     except Exception as e:
         print(f"Warning: Could not initialize Redis pub/sub: {e}")
+=======
+        print(f"Warning: Could not initialize services: {e}")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup resources on shutdown."""
     try:
+<<<<<<< HEAD
         from pubsub_manager import pubsub_manager
         pubsub_manager.stop_listening()
         print("Redis pub/sub listener stopped")
     except Exception as e:
         print(f"Warning: Error stopping pub/sub listener: {e}")
+=======
+        await event_handler.stop()
+        print("Event handler stopped")
+    except Exception as e:
+        print(f"Warning: Could not cleanup resources: {e}")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
 
 if __name__ == "__main__":

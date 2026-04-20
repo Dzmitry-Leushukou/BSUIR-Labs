@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 psycopg2-binary
 python-multipart
 pydantic[email]
@@ -9,3 +9,4 @@ pytz
 PyJWT
 redis
 pymongo
+websockets

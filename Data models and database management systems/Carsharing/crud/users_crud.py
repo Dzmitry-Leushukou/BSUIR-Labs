@@ -3,6 +3,9 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from redis_client import redis_client, USERS_CACHE_TTL, USER_CACHE_TTL
+from crud.event_publisher import notify_users_updated
+from redis_client import redis_client
+import os
 import pytz
 from datetime import datetime
 
@@ -97,6 +100,9 @@ def create_user(user: UserCreate):
         # Invalidate users list cache
         redis_client.invalidate_list_cache("users")
         
+        # Публикуем событие о создании пользователя
+        notify_users_updated(action="created")
+
         return new_user
     except Exception as e:
         conn.rollback()
@@ -205,6 +211,17 @@ def update_user(user_id: int, user: UserUpdate):
     redis_client.delete_cache(f"{USER_BY_EMAIL_CACHE_KEY_PREFIX}:{updated_user.get('email')}")
     redis_client.invalidate_list_cache("users")
     redis_client.delete_cache(USERS_COUNT_CACHE_KEY)
+    
+    # Публикуем событие об обновлении пользователя
+    notify_users_updated(user_id=user_id, action="updated")
+    
+    # Если обновлялся кэшбэк, публикуем специальное событие
+    if 'cashback' in [k for k in user.model_dump().keys() if getattr(user, k) is not None]:
+        redis_client.publish_user_session_event(
+            user_id=user_id,
+            event_type="cashback_updated",
+            instance_id=os.getenv("INSTANCE_ID", "unknown")
+        )
 
     return updated_user
 
@@ -235,6 +252,9 @@ def delete_user(user_id: int):
     redis_client.invalidate_list_cache("users")
     redis_client.delete_cache(USERS_COUNT_CACHE_KEY)
     
+    # Публикуем событие об удалении пользователя
+    notify_users_updated(user_id=user_id, action="deleted")
+
     return {"message": "Пользователь успешно удален"}
 
 

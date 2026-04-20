@@ -3,6 +3,7 @@ from database import get_db_connection
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from redis_client import redis_client, CARS_CACHE_TTL, CAR_CACHE_TTL
+from crud.event_publisher import notify_cars_updated
 import pytz
 from datetime import datetime
 
@@ -131,8 +132,13 @@ def create_car(car: CarCreate):
         # Invalidate cars cache
         redis_client.invalidate_list_cache("cars")
         
+<<<<<<< HEAD
         # Send pub/sub notification
         _notify_cars_change("create", new_car['id'], dict(new_car))
+=======
+        # Публикуем событие о создании автомобиля
+        notify_cars_updated(action="created")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
         return new_car
     except Exception as e:
@@ -212,8 +218,13 @@ def update_car(car_id: int, car: CarUpdate):
         redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
         redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
         
+<<<<<<< HEAD
         # Send pub/sub notification
         _notify_cars_change("update", car_id, dict(updated_car))
+=======
+        # Публикуем событие об обновлении автомобиля
+        notify_cars_updated(car_id=car_id, action="updated")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
         return updated_car
     except Exception as e:
@@ -250,8 +261,13 @@ def delete_car(car_id: int, user_id: int = None):
     redis_client.delete_cache(CARS_POSITIONS_CACHE_KEY)
     redis_client.delete_cache(CARS_COUNT_CACHE_KEY)
     
+<<<<<<< HEAD
     # Send pub/sub notification
     _notify_cars_change("delete", car_id, user_id=user_id)
+=======
+    # Публикуем событие об удалении автомобиля
+    notify_cars_updated(car_id=car_id, action="deleted")
+>>>>>>> be6f42effb671486e8433257025662a233e281e2
 
     return {"message": "Автомобиль успешно удален"}
 
