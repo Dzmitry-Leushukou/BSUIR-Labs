@@ -11,7 +11,7 @@ doubleValue : Double
 doubleValue = 3.14159
 
 hexValue : Int
-hexValue  0x1F
+hexValue = 0x1F
 
 greeting : String
 greeting = "Hello, Idris!"
