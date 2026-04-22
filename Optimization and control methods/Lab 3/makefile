@@ -10,4 +10,4 @@ parser: lexer.c parser.tab.c
 	gcc -o parser lexer.c parser.tab.c -lfl -lm
 
 clean:
-	rm -f lexer.c parser.tab.c parser.tab.h parser
+	rm -f lexer.c parser.tab.c parser.tab.h parser output.json

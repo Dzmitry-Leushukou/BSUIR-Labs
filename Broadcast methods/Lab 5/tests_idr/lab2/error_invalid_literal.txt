@@ -1,0 +1,3 @@
+x = 'ab'
+y = 'unclosed
+z = 5

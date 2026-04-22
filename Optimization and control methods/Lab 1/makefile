@@ -15,7 +15,7 @@ parser.tab.c parser.tab.h: parser.y
 	$(YACC) -v parser.y
 
 clean:
-	rm -f lex.yy.c parser.tab.c parser.tab.h parser.output matrix_inv
+	rm -f lex.yy.c parser.tab.c parser.tab.h parser.output matrix_inv output.json
 
 run: matrix_inv
 	./matrix_inv input.json

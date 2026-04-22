@@ -1,0 +1,1 @@
+COST = (PRICE + TAX) * 0.98

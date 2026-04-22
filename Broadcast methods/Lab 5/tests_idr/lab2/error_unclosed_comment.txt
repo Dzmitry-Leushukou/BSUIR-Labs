@@ -1,0 +1,3 @@
+x = 5
+{- unclosed comment
+y = 10
