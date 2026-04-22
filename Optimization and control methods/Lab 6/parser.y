@@ -6,25 +6,31 @@
 
 extern FILE *yyin;
 
-int m, n;
-double *a;
-double *b;
-double **c;
-double **x;
+int m = 0, n = 0;
+double *a = NULL;
+double *b = NULL;
+double **c = NULL;
+double **x = NULL;
 int basis_size;
-int *basis_rows;
-int *basis_cols;
+int *basis_rows = NULL;
+int *basis_cols = NULL;
 
 int parsing_matrix = 0;
 int parsing_vector = 0;
+int vector_target = 0;
 int current_row, current_col;
 int current_index;
 int error_flag = 0;
+int data_allocated = 0;
+int m_set = 0, n_set = 0;
+int has_a = 0, has_b = 0, has_c = 0;
 
 double optimal_value;
 
 void yyerror(const char *s);
 int yylex(void);
+void semantic_error(const char *message);
+void try_allocate_data(void);
 
 void allocate_data() {
     a = (double*)calloc(m, sizeof(double));
@@ -38,9 +44,11 @@ void allocate_data() {
     basis_size = m + n - 1;
     basis_rows = (int*)malloc(basis_size * sizeof(int));
     basis_cols = (int*)malloc(basis_size * sizeof(int));
+    data_allocated = 1;
 }
 
 void free_data() {
+    if (!data_allocated) return;
     free(a);
     free(b);
     for (int i = 0; i < m; i++) {
@@ -51,6 +59,27 @@ void free_data() {
     free(x);
     free(basis_rows);
     free(basis_cols);
+    a = NULL;
+    b = NULL;
+    c = NULL;
+    x = NULL;
+    basis_rows = NULL;
+    basis_cols = NULL;
+    data_allocated = 0;
+}
+
+void semantic_error(const char *message) {
+    fprintf(stderr, "Error: %s\n", message);
+    error_flag = 1;
+}
+
+void try_allocate_data(void) {
+    if (data_allocated || !m_set || !n_set) return;
+    if (m <= 0 || n <= 0) {
+        semantic_error("Fields \"m\" and \"n\" must be positive integers.");
+        return;
+    }
+    allocate_data();
 }
 
 void northwest_corner_method() {
@@ -75,153 +104,237 @@ void northwest_corner_method() {
     free(b_rem);
 }
 
-int is_basic(int row, int col, int cnt, int *br, int *bc) {
-    for (int k = 0; k < cnt; k++)
-        if (br[k] == row && bc[k] == col) return 1;
-    return 0;
+typedef struct {
+    int from;
+    int to;
+    int rev;
+    int next;
+    double cap;
+    double cost;
+} Edge;
+
+int add_residual_edge(Edge *edges, int *head, int *edge_count, int from, int to, double cap, double cost) {
+    int fwd = *edge_count;
+    int rev = fwd + 1;
+
+    edges[fwd].from = from;
+    edges[fwd].to = to;
+    edges[fwd].cap = cap;
+    edges[fwd].cost = cost;
+    edges[fwd].rev = rev;
+    edges[fwd].next = head[from];
+    head[from] = fwd;
+
+    edges[rev].from = to;
+    edges[rev].to = from;
+    edges[rev].cap = 0.0;
+    edges[rev].cost = -cost;
+    edges[rev].rev = fwd;
+    edges[rev].next = head[to];
+    head[to] = rev;
+
+    *edge_count += 2;
+    return fwd;
 }
 
-void potentials(double *u, double *v, int cnt, int *br, int *bc) {
-    for (int i = 0; i < m; i++) u[i] = NAN;
-    for (int j = 0; j < n; j++) v[j] = NAN;
-    u[0] = 0;
-    int changed;
-    do {
-        changed = 0;
-        for (int k = 0; k < cnt; k++) {
-            int i = br[k], j = bc[k];
-            if (!isnan(u[i]) && isnan(v[j])) {
-                v[j] = c[i][j] - u[i];
-                changed = 1;
-            } else if (isnan(u[i]) && !isnan(v[j])) {
-                u[i] = c[i][j] - v[j];
-                changed = 1;
-            }
-        }
-    } while (changed);
-    for (int i = 0; i < m; i++) if (isnan(u[i])) u[i] = 0;
-    for (int j = 0; j < n; j++) if (isnan(v[j])) v[j] = 0;
-}
-
-int dfs(int sr, int sc, int r, int c, int pr, int pc, int *cyc_r, int *cyc_c, int *len, int cnt, int *br, int *bc, int *vis) {
-    for (int k = 0; k < cnt; k++) {
-        int nr = br[k], nc = bc[k];
-        if (nr == pr && nc == pc) continue;
-        if ((nr == r && nc != c) || (nc == c && nr != r)) {
-            if (nr == sr && nc == sc && *len >= 2) {
-                cyc_r[*len] = nr;
-                cyc_c[*len] = nc;
-                (*len)++;
-                return 1;
-            }
-            if (!vis[k]) {
-                vis[k] = 1;
-                cyc_r[*len] = nr;
-                cyc_c[*len] = nc;
-                (*len)++;
-                if (dfs(sr, sc, nr, nc, r, c, cyc_r, cyc_c, len, cnt, br, bc, vis))
-                    return 1;
-                (*len)--;
-                vis[k] = 0;
-            }
-        }
+int has_basis_position(int row, int col, int count) {
+    for (int k = 0; k < count; k++) {
+        if (basis_rows[k] == row && basis_cols[k] == col) return 1;
     }
     return 0;
 }
 
-int find_cycle(int sr, int sc, int *cyc_r, int *cyc_c, int *len, int cnt, int *br, int *bc) {
-    int *vis = (int*)calloc(cnt, sizeof(int));
-    cyc_r[0] = sr;
-    cyc_c[0] = sc;
-    *len = 1;
-    for (int k = 0; k < cnt; k++) {
-        int nr = br[k], nc = bc[k];
-        if (nr == sr || nc == sc) {
-            vis[k] = 1;
-            cyc_r[*len] = nr;
-            cyc_c[*len] = nc;
-            (*len)++;
-            if (dfs(sr, sc, nr, nc, sr, sc, cyc_r, cyc_c, len, cnt, br, bc, vis)) {
-                free(vis);
-                return 1;
+void initialize_potentials(Edge *edges, int edge_count, int node_count, int source, double *potential) {
+    const double INF = 1e100;
+    const double EPS = 1e-9;
+    double *dist = (double*)malloc(node_count * sizeof(double));
+    for (int i = 0; i < node_count; i++) {
+        dist[i] = INF;
+        potential[i] = 0.0;
+    }
+    dist[source] = 0.0;
+
+    for (int iter = 0; iter < node_count - 1; iter++) {
+        int changed = 0;
+        for (int e = 0; e < edge_count; e++) {
+            if (edges[e].cap <= EPS) continue;
+            int u = edges[e].from;
+            int v = edges[e].to;
+            if (dist[u] >= INF / 2) continue;
+            double nd = dist[u] + edges[e].cost;
+            if (nd + EPS < dist[v]) {
+                dist[v] = nd;
+                changed = 1;
             }
-            (*len)--;
-            vis[k] = 0;
+        }
+        if (!changed) break;
+    }
+
+    for (int i = 0; i < node_count; i++) {
+        if (dist[i] < INF / 2) potential[i] = dist[i];
+    }
+    free(dist);
+}
+
+int shortest_path_dijkstra(Edge *edges, int *head, int node_count, int source, int sink,
+                           double *potential, int *prev_edge) {
+    const double INF = 1e100;
+    const double EPS = 1e-9;
+    double *dist = (double*)malloc(node_count * sizeof(double));
+    int *used = (int*)calloc(node_count, sizeof(int));
+
+    for (int i = 0; i < node_count; i++) {
+        dist[i] = INF;
+        prev_edge[i] = -1;
+    }
+    dist[source] = 0.0;
+
+    for (int iter = 0; iter < node_count; iter++) {
+        int u = -1;
+        double best = INF;
+        for (int i = 0; i < node_count; i++) {
+            if (!used[i] && dist[i] < best) {
+                best = dist[i];
+                u = i;
+            }
+        }
+        if (u == -1) break;
+        used[u] = 1;
+
+        for (int e = head[u]; e != -1; e = edges[e].next) {
+            if (edges[e].cap <= EPS) continue;
+            int v = edges[e].to;
+            double reduced = edges[e].cost + potential[u] - potential[v];
+            if (reduced < 0.0 && reduced > -1e-9) reduced = 0.0;
+            double nd = dist[u] + reduced;
+            if (nd + EPS < dist[v]) {
+                dist[v] = nd;
+                prev_edge[v] = e;
+            }
         }
     }
-    free(vis);
-    return 0;
+
+    int found = (prev_edge[sink] != -1);
+    if (found) {
+        for (int i = 0; i < node_count; i++) {
+            if (dist[i] < INF / 2) potential[i] += dist[i];
+        }
+    }
+    free(used);
+    free(dist);
+    return found;
 }
 
 void transport_simplex() {
-    int *br = (int*)malloc(basis_size * sizeof(int));
-    int *bc = (int*)malloc(basis_size * sizeof(int));
+    const double EPS = 1e-9;
+    int source = 0;
+    int supply_start = 1;
+    int demand_start = supply_start + m;
+    int sink = demand_start + n;
+    int node_count = sink + 1;
+
+    int max_edges = 2 * (m + n + m * n) + 10;
+    Edge *edges = (Edge*)malloc(max_edges * sizeof(Edge));
+    int *head = (int*)malloc(node_count * sizeof(int));
+    int edge_count = 0;
+    int **transport_edge = (int**)malloc(m * sizeof(int*));
+    double total_supply = 0.0;
+
+    for (int i = 0; i < node_count; i++) head[i] = -1;
+    for (int i = 0; i < m; i++) {
+        transport_edge[i] = (int*)malloc(n * sizeof(int));
+        for (int j = 0; j < n; j++) transport_edge[i][j] = -1;
+        total_supply += a[i];
+        for (int j = 0; j < n; j++) x[i][j] = 0.0;
+    }
+
+    for (int i = 0; i < m; i++) {
+        add_residual_edge(edges, head, &edge_count, source, supply_start + i, a[i], 0.0);
+    }
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            int idx = add_residual_edge(edges, head, &edge_count,
+                                        supply_start + i, demand_start + j,
+                                        total_supply, c[i][j]);
+            transport_edge[i][j] = idx;
+        }
+    }
+    for (int j = 0; j < n; j++) {
+        add_residual_edge(edges, head, &edge_count, demand_start + j, sink, b[j], 0.0);
+    }
+
+    double flow = 0.0;
+    optimal_value = 0.0;
+    int *prev_edge = (int*)malloc(node_count * sizeof(int));
+    double *potential = (double*)malloc(node_count * sizeof(double));
+
+    initialize_potentials(edges, edge_count, node_count, source, potential);
+
+    while (flow + EPS < total_supply) {
+        if (!shortest_path_dijkstra(edges, head, node_count, source, sink, potential, prev_edge)) {
+            semantic_error("Failed to find augmenting path while solving transportation problem.");
+            break;
+        }
+        double add_flow = total_supply - flow;
+        int v = sink;
+        while (v != source) {
+            int e = prev_edge[v];
+            if (e < 0) {
+                add_flow = 0.0;
+                break;
+            }
+            if (edges[e].cap < add_flow) add_flow = edges[e].cap;
+            v = edges[e].from;
+        }
+        if (add_flow <= EPS) {
+            semantic_error("Internal error: non-positive augmentation value.");
+            break;
+        }
+        v = sink;
+        while (v != source) {
+            int e = prev_edge[v];
+            edges[e].cap -= add_flow;
+            edges[edges[e].rev].cap += add_flow;
+            optimal_value += add_flow * edges[e].cost;
+            v = edges[e].from;
+        }
+        flow += add_flow;
+    }
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            int e = transport_edge[i][j];
+            x[i][j] = edges[edges[e].rev].cap;
+            if (fabs(x[i][j]) < EPS) x[i][j] = 0.0;
+        }
+    }
+
     int cur = 0;
-    for (int i = 0; i < m; i++)
-        for (int j = 0; j < n; j++)
-            if (x[i][j] > 1e-9 && cur < basis_size) {
-                br[cur] = i; bc[cur] = j; cur++;
-            }
-    if (cur < basis_size) {
-        for (int i = 0; i < m && cur < basis_size; i++)
-            for (int j = 0; j < n && cur < basis_size; j++)
-                if (fabs(x[i][j]) < 1e-9) {
-                    int ok = 1;
-                    for (int k = 0; k < cur; k++)
-                        if (br[k] == i && bc[k] == j) { ok = 0; break; }
-                    if (ok) { br[cur] = i; bc[cur] = j; cur++; }
-                }
-    }
-    double *u = (double*)malloc(m * sizeof(double));
-    double *v = (double*)malloc(n * sizeof(double));
-    int iter = 0;
-    while (iter < 100) {
-        potentials(u, v, cur, br, bc);
-        int ei = -1, ej = -1; double best = 0;
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
-                if (!is_basic(i, j, cur, br, bc)) {
-                    double d = c[i][j] - u[i] - v[j];
-                    if (d < best - 1e-9) { best = d; ei = i; ej = j; }
-                }
-        if (ei == -1) break;
-        int *cyc_r = (int*)malloc((m+n+10) * sizeof(int));
-        int *cyc_c = (int*)malloc((m+n+10) * sizeof(int));
-        int clen = 0;
-        if (!find_cycle(ei, ej, cyc_r, cyc_c, &clen, cur, br, bc)) {
-            free(cyc_r); free(cyc_c); break;
-        }
-        double theta = 1e100;
-        int li = -1;
-        for (int k = 1; k < clen; k += 2) {
-            int ii = cyc_r[k], jj = cyc_c[k];
-            if (x[ii][jj] < theta - 1e-9) {
-                theta = x[ii][jj];
-                li = k;
+    for (int i = 0; i < m && cur < basis_size; i++) {
+        for (int j = 0; j < n && cur < basis_size; j++) {
+            if (x[i][j] > EPS) {
+                basis_rows[cur] = i + 1;
+                basis_cols[cur] = j + 1;
+                cur++;
             }
         }
-        if (li == -1) { free(cyc_r); free(cyc_c); break; }
-        for (int k = 0; k < clen; k++) {
-            int ii = cyc_r[k], jj = cyc_c[k];
-            if (k % 2 == 0) x[ii][jj] += theta;
-            else x[ii][jj] -= theta;
-        }
-        for (int k = 0; k < cur; k++)
-            if (br[k] == cyc_r[li] && bc[k] == cyc_c[li]) {
-                br[k] = ei; bc[k] = ej; break;
+    }
+    for (int i = 0; i < m && cur < basis_size; i++) {
+        for (int j = 0; j < n && cur < basis_size; j++) {
+            if (!has_basis_position(i + 1, j + 1, cur)) {
+                basis_rows[cur] = i + 1;
+                basis_cols[cur] = j + 1;
+                cur++;
             }
-        free(cyc_r); free(cyc_c);
-        iter++;
+        }
     }
-    optimal_value = 0;
-    for (int i = 0; i < m; i++)
-        for (int j = 0; j < n; j++)
-            optimal_value += c[i][j] * x[i][j];
-    for (int i = 0; i < cur; i++) {
-        basis_rows[i] = br[i] + 1;
-        basis_cols[i] = bc[i] + 1;
-    }
-    free(u); free(v); free(br); free(bc);
+
+    for (int i = 0; i < m; i++) free(transport_edge[i]);
+    free(transport_edge);
+    free(potential);
+    free(prev_edge);
+    free(head);
+    free(edges);
 }
 
 void print_solution() {
@@ -274,22 +387,105 @@ void output_json(const char *filename) {
 input: '{' fields '}' ;
 fields: field | fields ',' field ;
 field: m_field | n_field | a_field | b_field | c_field ;
-m_field: TOKEN_M ':' NUMBER { m = (int)$3; };
-n_field: TOKEN_N ':' NUMBER { n = (int)$3; allocate_data(); };
-a_field: TOKEN_A ':' { parsing_vector = 1; current_index = 0; } vector_a { parsing_vector = 0; };
+m_field: TOKEN_M ':' NUMBER {
+        if (m_set) semantic_error("Duplicate field \"m\".");
+        if (fabs($3 - round($3)) > 1e-9) semantic_error("Field \"m\" must be an integer.");
+        m = (int)llround($3);
+        m_set = 1;
+        try_allocate_data();
+    };
+n_field: TOKEN_N ':' NUMBER {
+        if (n_set) semantic_error("Duplicate field \"n\".");
+        if (fabs($3 - round($3)) > 1e-9) semantic_error("Field \"n\" must be an integer.");
+        n = (int)llround($3);
+        n_set = 1;
+        try_allocate_data();
+    };
+a_field: TOKEN_A ':' {
+        parsing_vector = 1;
+        vector_target = 1;
+        current_index = 0;
+        if (!data_allocated) semantic_error("Fields \"m\" and \"n\" must be defined before \"a\".");
+    } vector_a {
+        parsing_vector = 0;
+        vector_target = 0;
+        if (data_allocated && current_index != m)
+            semantic_error("Vector \"a\" must contain exactly m elements.");
+        has_a = 1;
+    };
 vector_a: '[' number_list_a ']';
-number_list_a: NUMBER { if (parsing_vector) a[current_index++] = $1; }
-    | number_list_a ',' NUMBER { if (parsing_vector) a[current_index++] = $3; };
-b_field: TOKEN_B ':' { parsing_vector = 1; current_index = 0; } vector_b { parsing_vector = 0; };
+number_list_a: NUMBER {
+        if (parsing_vector && data_allocated && vector_target == 1) {
+            if (current_index >= m) semantic_error("Vector \"a\" has too many elements.");
+            else a[current_index++] = $1;
+        }
+    }
+    | number_list_a ',' NUMBER {
+        if (parsing_vector && data_allocated && vector_target == 1) {
+            if (current_index >= m) semantic_error("Vector \"a\" has too many elements.");
+            else a[current_index++] = $3;
+        }
+    };
+b_field: TOKEN_B ':' {
+        parsing_vector = 1;
+        vector_target = 2;
+        current_index = 0;
+        if (!data_allocated) semantic_error("Fields \"m\" and \"n\" must be defined before \"b\".");
+    } vector_b {
+        parsing_vector = 0;
+        vector_target = 0;
+        if (data_allocated && current_index != n)
+            semantic_error("Vector \"b\" must contain exactly n elements.");
+        has_b = 1;
+    };
 vector_b: '[' number_list_b ']';
-number_list_b: NUMBER { if (parsing_vector) b[current_index++] = $1; }
-    | number_list_b ',' NUMBER { if (parsing_vector) b[current_index++] = $3; };
-c_field: TOKEN_C ':' { parsing_matrix = 1; current_row = 0; current_col = 0; } matrix_c { parsing_matrix = 0; };
+number_list_b: NUMBER {
+        if (parsing_vector && data_allocated && vector_target == 2) {
+            if (current_index >= n) semantic_error("Vector \"b\" has too many elements.");
+            else b[current_index++] = $1;
+        }
+    }
+    | number_list_b ',' NUMBER {
+        if (parsing_vector && data_allocated && vector_target == 2) {
+            if (current_index >= n) semantic_error("Vector \"b\" has too many elements.");
+            else b[current_index++] = $3;
+        }
+    };
+c_field: TOKEN_C ':' {
+        parsing_matrix = 1;
+        current_row = 0;
+        current_col = 0;
+        if (!data_allocated) semantic_error("Fields \"m\" and \"n\" must be defined before \"c\".");
+    } matrix_c {
+        parsing_matrix = 0;
+        if (data_allocated && current_row != m)
+            semantic_error("Matrix \"c\" must contain exactly m rows.");
+        has_c = 1;
+    };
 matrix_c: '[' row_list_c ']';
 row_list_c: row_c | row_list_c ',' row_c;
-row_c: '[' number_list_c ']' { current_row++; current_col = 0; };
-number_list_c: NUMBER { if (parsing_matrix) c[current_row][current_col++] = $1; }
-    | number_list_c ',' NUMBER { if (parsing_matrix) c[current_row][current_col++] = $3; };
+row_c: '[' number_list_c ']' {
+        if (parsing_matrix && data_allocated) {
+            if (current_col != n) semantic_error("Each row in matrix \"c\" must contain exactly n elements.");
+            if (current_row >= m) semantic_error("Matrix \"c\" has too many rows.");
+            else current_row++;
+        }
+        current_col = 0;
+    };
+number_list_c: NUMBER {
+        if (parsing_matrix && data_allocated) {
+            if (current_row >= m) semantic_error("Matrix \"c\" has too many rows.");
+            else if (current_col >= n) semantic_error("Matrix \"c\" has too many elements in a row.");
+            else c[current_row][current_col++] = $1;
+        }
+    }
+    | number_list_c ',' NUMBER {
+        if (parsing_matrix && data_allocated) {
+            if (current_row >= m) semantic_error("Matrix \"c\" has too many rows.");
+            else if (current_col >= n) semantic_error("Matrix \"c\" has too many elements in a row.");
+            else c[current_row][current_col++] = $3;
+        }
+    };
 
 %%
 
@@ -299,17 +495,47 @@ int main(int argc, char **argv) {
     if (argc != 2) { fprintf(stderr, "Usage: %s input.json\n", argv[0]); return 1; }
     FILE *file = fopen(argv[1], "r");
     if (!file) { fprintf(stderr, "Cannot open input file\n"); return 1; }
-    yyin = file; yyparse(); fclose(file);
-    if (error_flag) { fprintf(stderr, "Parsing failed.\n"); return 1; }
+    yyin = file;
+    int parse_status = yyparse();
+    fclose(file);
+    if (parse_status != 0 || error_flag) {
+        fprintf(stderr, "Parsing failed.\n");
+        free_data();
+        return 1;
+    }
+    if (!m_set || !n_set || !has_a || !has_b || !has_c || !data_allocated) {
+        fprintf(stderr, "Error: Input must contain fields \"m\", \"n\", \"a\", \"b\", and \"c\".\n");
+        free_data();
+        return 1;
+    }
     double ta = 0, tb = 0;
-    for (int i = 0; i < m; i++) ta += a[i];
-    for (int j = 0; j < n; j++) tb += b[j];
+    for (int i = 0; i < m; i++) {
+        if (a[i] < -1e-9) {
+            fprintf(stderr, "Error: Supply values in \"a\" must be non-negative.\n");
+            free_data();
+            return 1;
+        }
+        ta += a[i];
+    }
+    for (int j = 0; j < n; j++) {
+        if (b[j] < -1e-9) {
+            fprintf(stderr, "Error: Demand values in \"b\" must be non-negative.\n");
+            free_data();
+            return 1;
+        }
+        tb += b[j];
+    }
     if (fabs(ta - tb) > 1e-9) {
         fprintf(stderr, "Error: Balance condition violated (sum a=%.2f, sum b=%.2f)\n", ta, tb);
-        free_data(); return 1;
+        free_data();
+        return 1;
     }
-    northwest_corner_method();
     transport_simplex();
+    if (error_flag) {
+        fprintf(stderr, "Solving failed.\n");
+        free_data();
+        return 1;
+    }
     print_solution();
     output_json("output.json");
     free_data();
