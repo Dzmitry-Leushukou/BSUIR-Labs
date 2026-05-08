@@ -6,56 +6,59 @@
 
 extern FILE *yyin;
 
-// Global variables
-int n;                      // matrix size
-double **A, **A_inv;        // original matrices
-double **A_bar, **A_bar_inv;// modified and its inverse
-double **Q;                 // auxiliary matrix
-double *x, *l, *l_tilde, *l_hat; // vectors
-int i;                      // column to replace (1-indexed)
+/* Глобальные переменные программы */
+int n;                      // размер матриц (n x n)
+double **A, **A_inv;        // исходные матрица и её обратная
+double **A_bar, **A_bar_inv;// модифицированная матрица и её обратная
+double **Q;                 // вспомогательная матрица Q (для вывода)
+double *x, *l, *l_tilde, *l_hat; // векторы
+int i;                      // номер заменяемого столбца (1-индексация)
 
-// Parsing state
-int parsing_matrix_flag = 0;   // 1 if currently parsing a matrix
-int parsing_vector_flag = 0;   // 1 if parsing a vector
-int current_parsing_matrix;    // 0 for A, 1 for A_inv
-int current_row, current_col;  // for matrix parsing
-int current_vec_index;          // for vector parsing
-int error_flag = 0;             // error indicator
+/* Флаги состояния парсера для разбора матриц и векторов */
+int parsing_matrix_flag = 0;   // 1 – сейчас разбираем матрицу
+int parsing_vector_flag = 0;   // 1 – разбираем вектор
+int current_parsing_matrix;    // 0 = A, 1 = A_inv
+int current_row, current_col;  // текущие индексы при заполнении матриц
+int current_vec_index;         // индекс при заполнении вектора x
+int error_flag = 0;            // флаг ошибки (ненулевой, если парсинг провалился)
 
 void yyerror(const char *s);
 int yylex(void);
 
-// Memory management
+/* Функции управления памятью */
 void allocate_matrices(int n);
 void allocate_vector(int n);
 void free_matrices();
 void free_vector();
 
-// Computation functions
-void compute_A_bar();
-void compute_l();
-int is_invertible();
-void compute_l_tilde();
-void compute_l_hat();
-void compute_Q();
-void compute_A_bar_inv();
-void output_json(const char *filename);
+/* Основные вычислительные функции (шаги алгоритма) */
+void compute_A_bar();      // Шаг 1: строим A_bar = A с заменой столбца i на x
+void compute_l();          // Шаг 2: вычисляем l = A_inv * x
+int is_invertible();       // Шаг 3: проверяем, обратима ли A_bar (l_i != 0)
+void compute_l_tilde();    // Шаг 4: формируем вектор l_tilde (l с заменой i-го элемента на -1)
+void compute_l_hat();      // Шаг 5: вычисляем l_hat = (-1 / l_i) * l_tilde
+void compute_Q();          // Шаг 6: строим матрицу Q (единичная, но i-й столбец заменён на l_hat)
+void compute_A_bar_inv();  // Шаг 7: A_bar_inv = Q * A_inv
+void output_json(const char *filename); // вывод результатов в JSON
 %}
 
 %union {
     double num;
 }
 
+/* Терминалы (токены) */
 %token TOKEN_SIZE TOKEN_A TOKEN_A_INV TOKEN_X TOKEN_I
 %token <num> NUMBER
 %token ',' ':' '[' ']' '{' '}'
 
 %%
 
+/* Начальное правило: весь входной файл – JSON-объект с полями size, A, A_inv, x, i */
 input: '{' size_field ',' A_field ',' A_inv_field ',' x_field ',' i_field '}' {
-    // all data parsed
+    /* После успешного разбора все данные уже считаны в глобальные переменные */
 };
 
+/* Поле "size": сохраняем размер матриц и выделяем память */
 size_field: TOKEN_SIZE ':' NUMBER {
     n = (int)$3;
     if (n <= 0) {
@@ -66,24 +69,27 @@ size_field: TOKEN_SIZE ':' NUMBER {
     allocate_vector(n);
 };
 
+/* Поле "A": разбор матрицы A */
 A_field: TOKEN_A ':' {
     parsing_matrix_flag = 1;
-    current_parsing_matrix = 0;
+    current_parsing_matrix = 0;  // 0 означает A
     current_row = 0;
     current_col = 0;
 } matrix {
     parsing_matrix_flag = 0;
 };
 
+/* Поле "A_inv": разбор матрицы A_inv */
 A_inv_field: TOKEN_A_INV ':' {
     parsing_matrix_flag = 1;
-    current_parsing_matrix = 1;
+    current_parsing_matrix = 1;  // 1 означает A_inv
     current_row = 0;
     current_col = 0;
 } matrix {
     parsing_matrix_flag = 0;
 };
 
+/* Поле "x": разбор вектора x */
 x_field: TOKEN_X ':' {
     parsing_vector_flag = 1;
     current_vec_index = 0;
@@ -91,6 +97,7 @@ x_field: TOKEN_X ':' {
     parsing_vector_flag = 0;
 };
 
+/* Поле "i": номер столбца (целое число, 1-индексация) */
 i_field: TOKEN_I ':' NUMBER {
     i = (int)$3;
     if (i < 1 || i > n) {
@@ -99,23 +106,27 @@ i_field: TOKEN_I ':' NUMBER {
     }
 };
 
+/* Правила для разбора матрицы (список строк, каждая строка – список чисел) */
 matrix: '[' row_list ']';
 
 row_list: row | row_list ',' row;
 
 row: '[' number_list ']' {
-    current_row++;
+    current_row++;          /* переходим к следующей строке */
     current_col = 0;
 };
 
+/* Универсальное правило для списка чисел (используется и для строк матриц, и для векторов) */
 number_list: NUMBER {
     if (parsing_matrix_flag) {
+        /* Заполняем текущий элемент матрицы A или A_inv */
         if (current_parsing_matrix == 0)
             A[current_row][current_col] = $1;
         else
             A_inv[current_row][current_col] = $1;
         current_col++;
     } else if (parsing_vector_flag) {
+        /* Заполняем вектор x */
         x[current_vec_index++] = $1;
     }
 } | number_list ',' NUMBER {
@@ -130,6 +141,7 @@ number_list: NUMBER {
     }
 };
 
+/* Вектор – просто список чисел в квадратных скобках */
 vector: '[' number_list ']';
 
 %%
@@ -139,6 +151,7 @@ void yyerror(const char *s) {
     error_flag = 1;
 }
 
+/* ----- Управление памятью ----- */
 void allocate_matrices(int n) {
     A = (double**)malloc(n * sizeof(double*));
     A_inv = (double**)malloc(n * sizeof(double*));
@@ -172,7 +185,9 @@ void free_vector() {
     free(x); free(l); free(l_tilde); free(l_hat);
 }
 
+/* ----- ШАГ 1: построение A_bar ---- */
 void compute_A_bar() {
+    /* A_bar – копия A, но i-й столбец (индекс i-1) заменён на вектор x */
     for (int r = 0; r < n; r++) {
         for (int c = 0; c < n; c++) {
             A_bar[r][c] = A[r][c];
@@ -181,6 +196,7 @@ void compute_A_bar() {
     }
 }
 
+/* ----- ШАГ 2: вычисление l = A_inv * x ----- */
 void compute_l() {
     for (int r = 0; r < n; r++) {
         l[r] = 0.0;
@@ -190,24 +206,34 @@ void compute_l() {
     }
 }
 
+/* ----- ШАГ 3: проверка обратимости A_bar (необходимо l_i != 0) ----- */
 int is_invertible() {
+    /* используем эпсилон = 1e-12 для сравнения с нулём */
     return fabs(l[i-1]) > 1e-12;
 }
 
+/* ----- ШАГ 4: формирование l_tilde ----- */
 void compute_l_tilde() {
+    /* l_tilde = l, но i-й элемент заменяется на -1 */
     for (int j = 0; j < n; j++) {
         l_tilde[j] = l[j];
     }
     l_tilde[i-1] = -1.0;
 }
 
+/* ----- ШАГ 5: вычисление l_hat = (-1 / l_i) * l_tilde ----- */
 void compute_l_hat() {
-    double factor = -1.0 / l[i-1];
+    double factor = -1.0 / l[i-1];   // -1 / l_i
     for (int j = 0; j < n; j++) {
         l_hat[j] = factor * l_tilde[j];
     }
 }
+/* Вектор l_hat обладает свойством:
+   - Для j != i-1: l_hat[j] = -l_j / l_i
+   - Для j == i-1: l_hat[i-1] = 1 / l_i
+*/
 
+/* ----- ШАГ 6: построение матрицы Q (единичная, но i-й столбец заменён на l_hat) ----- */
 void compute_Q() {
     for (int r = 0; r < n; r++) {
         for (int c = 0; c < n; c++) {
@@ -216,9 +242,15 @@ void compute_Q() {
         Q[r][i-1] = l_hat[r];
     }
 }
+/* Q = I + (l_hat - e_{i}) * e_i^T, где e_i – единичный вектор с 1 в позиции i */
 
+/* ----- ШАГ 7: вычисление A_bar_inv = Q * A_inv ----- */
 void compute_A_bar_inv() {
-    // A_bar_inv = Q * A_inv
+    /* Эффективное вычисление без полного перемножения:
+       Для строки r = i-1: новая строка = l_hat[i-1] * (старая строка i-1 из A_inv)
+       Для строки r != i-1: новая строка = старая строка + l_hat[r] * (строка i-1 из A_inv)
+       Это эквивалентно умножению Q на A_inv.
+    */
     for (int j = 0; j < n; j++) {
         for (int k = 0; k < n; k++) {
             if (j == i-1) {
@@ -230,6 +262,7 @@ void compute_A_bar_inv() {
     }
 }
 
+/* ----- Вывод результатов в JSON-файл "output.json" ----- */
 void output_json(const char *filename) {
     FILE *f = fopen(filename, "w");
     if (!f) {
@@ -238,8 +271,6 @@ void output_json(const char *filename) {
     }
 
     fprintf(f, "{\n");
-
-    // A_bar
     fprintf(f, "  \"A_bar\": [\n");
     for (int r = 0; r < n; r++) {
         fprintf(f, "    [");
@@ -253,7 +284,6 @@ void output_json(const char *filename) {
     }
     fprintf(f, "  ],\n");
 
-    // A_bar_inv
     fprintf(f, "  \"A_bar_inv\": [\n");
     for (int r = 0; r < n; r++) {
         fprintf(f, "    [");
@@ -267,7 +297,6 @@ void output_json(const char *filename) {
     }
     fprintf(f, "  ],\n");
 
-    // l
     fprintf(f, "  \"l\": [");
     for (int j = 0; j < n; j++) {
         fprintf(f, "%.6f", l[j]);
@@ -275,7 +304,6 @@ void output_json(const char *filename) {
     }
     fprintf(f, "],\n");
 
-    // l_tilde
     fprintf(f, "  \"l_tilde\": [");
     for (int j = 0; j < n; j++) {
         fprintf(f, "%.6f", l_tilde[j]);
@@ -283,7 +311,6 @@ void output_json(const char *filename) {
     }
     fprintf(f, "],\n");
 
-    // l_hat
     fprintf(f, "  \"l_hat\": [");
     for (int j = 0; j < n; j++) {
         fprintf(f, "%.6f", l_hat[j]);
@@ -291,7 +318,6 @@ void output_json(const char *filename) {
     }
     fprintf(f, "],\n");
 
-    // Q
     fprintf(f, "  \"Q\": [\n");
     for (int r = 0; r < n; r++) {
         fprintf(f, "    [");
@@ -304,11 +330,11 @@ void output_json(const char *filename) {
         fprintf(f, "\n");
     }
     fprintf(f, "  ]\n");
-
     fprintf(f, "}\n");
     fclose(f);
 }
 
+/* ----- Главная функция ----- */
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s input.json\n", argv[0]);
@@ -330,21 +356,23 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    compute_A_bar();
-    compute_l();
+    /* Последовательное выполнение шагов алгоритма */
+    compute_A_bar();        // 1. строим A_bar
+    compute_l();            // 2. вычисляем l = A_inv * x
 
-    if (!is_invertible()) {
+    if (!is_invertible()) { // 3. проверяем, не нулевой ли l_i
         fprintf(stderr, "Matrix A_bar is singular (l_i = 0).\n");
         return 1;
     }
 
-    compute_l_tilde();
-    compute_l_hat();
-    compute_Q();
-    compute_A_bar_inv();
+    compute_l_tilde();      // 4. строим l_tilde
+    compute_l_hat();        // 5. вычисляем l_hat
+    compute_Q();            // 6. строим Q (для вывода)
+    compute_A_bar_inv();    // 7. получаем A_bar_inv = Q * A_inv
 
     output_json("output.json");
 
+    /* Освобождение памяти */
     free_matrices();
     free_vector();
 
