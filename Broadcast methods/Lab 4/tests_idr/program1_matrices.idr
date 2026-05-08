@@ -4,7 +4,7 @@ import Data.Vect
 import Data.String
 
 initialValue : Int
-initialValue = 42
+initialValue = "ч"
 
 doubleValue : Double
 doubleValue = 3.14159
