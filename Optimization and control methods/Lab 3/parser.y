@@ -212,7 +212,7 @@ int invert_matrix(double **mat, double **inv, int size) {
     return 1;
 }
 
-/* Основная фаза симплекс-метода (алгоритм из методички) */
+/* Основная фаза симплекс-метода */
 void simplex_main_phase() {
     double **A_B = (double**)malloc(m * sizeof(double*));
     double **inv_A_B = (double**)malloc(m * sizeof(double*));
