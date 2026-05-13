@@ -824,7 +824,7 @@ public:
                         statusMsg = L"No file selected";
                         break;
                     }
-                    std::wstring defaultName = getSelectedName();
+                    std::wstring defaultName = utf8_to_wstring(src);
                     std::wstring dstW = inputStringWithDefault(L"Enter new name/path", defaultName);
                     if (dstW.empty()) {
                         statusMsg = L"Move cancelled";
