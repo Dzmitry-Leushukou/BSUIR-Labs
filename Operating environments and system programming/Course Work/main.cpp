@@ -418,6 +418,7 @@ private:
         if (startY < 0) startY = 0;
         int startX = 2;
         WINDOW* inputWin = newwin(height, width, startY, startX);
+        keypad(inputWin, TRUE);
         box(inputWin, 0, 0);
         mvwaddwstr(inputWin, 1, 1, (prompt + L": ").c_str());
         wrefresh(inputWin);
