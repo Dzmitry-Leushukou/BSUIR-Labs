@@ -49,7 +49,8 @@ std::wstring truncateWithEllipsis(const std::wstring& str, int maxLen) {
 }
 
 std::ofstream logFile;
-void log(const std::string& msg) {
+void log(const std::string& msg) 
+{
     if (logFile.is_open()) {
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
