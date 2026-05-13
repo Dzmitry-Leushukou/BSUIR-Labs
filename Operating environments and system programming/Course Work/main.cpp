@@ -49,6 +49,34 @@ std::wstring truncateWithEllipsis(const std::wstring& str, int maxLen) {
     return str.substr(0, maxLen - 3) + L"...";
 }
 
+std::wstring formatSize(off_t size) {
+    if (size < 1024) return std::to_wstring(size) + L" B";
+    if (size < 1024 * 1024) return std::to_wstring(size / 1024) + L" KB";
+    if (size < 1024 * 1024 * 1024) return std::to_wstring(size / (1024 * 1024)) + L" MB";
+    return std::to_wstring(size / (1024 * 1024 * 1024)) + L" GB";
+}
+
+std::wstring formatMode(mode_t mode) {
+    std::wstring result = L"";
+    result += (mode & S_IRUSR) ? L'r' : L'-';
+    result += (mode & S_IWUSR) ? L'w' : L'-';
+    result += (mode & S_IXUSR) ? L'x' : L'-';
+    result += (mode & S_IRGRP) ? L'r' : L'-';
+    result += (mode & S_IWGRP) ? L'w' : L'-';
+    result += (mode & S_IXGRP) ? L'x' : L'-';
+    result += (mode & S_IROTH) ? L'r' : L'-';
+    result += (mode & S_IWOTH) ? L'w' : L'-';
+    result += (mode & S_IXOTH) ? L'x' : L'-';
+    return result;
+}
+
+std::wstring formatTime(time_t t) {
+    std::tm* tm = std::localtime(&t);
+    wchar_t buf[20];
+    std::wcsftime(buf, sizeof(buf)/sizeof(wchar_t), L"%Y-%m-%d %H:%M", tm);
+    return std::wstring(buf);
+}
+
 std::ofstream logFile;
 void log(const std::string& msg) {
     if (logFile.is_open()) {
@@ -66,6 +94,7 @@ struct FileEntry {
     bool isDirectory;
     off_t size;
     mode_t mode;
+    time_t mtime;
 };
 
 struct TreeNode {
@@ -73,11 +102,14 @@ struct TreeNode {
     std::string fullPath;
     bool isDirectory;
     bool expanded;
+    off_t size;
+    mode_t mode;
+    time_t mtime;
     std::vector<std::unique_ptr<TreeNode>> children;
     TreeNode* parent;
 
-    TreeNode(const std::string& path, const std::wstring& n, bool isDir, TreeNode* p = nullptr)
-        : name(n), fullPath(path), isDirectory(isDir), expanded(false), parent(p) {}
+    TreeNode(const std::string& path, const std::wstring& n, bool isDir, off_t sz, mode_t md, time_t mt, TreeNode* p = nullptr)
+        : name(n), fullPath(path), isDirectory(isDir), expanded(false), size(sz), mode(md), mtime(mt), parent(p) {}
 
     void loadChildren() {
         if (!isDirectory || expanded) return;
@@ -99,7 +131,7 @@ struct TreeNode {
             }
             bool isDir = S_ISDIR(st.st_mode);
             std::wstring wname = utf8_to_wstring(entry->d_name);
-            children.push_back(std::make_unique<TreeNode>(childPath, wname, isDir, this));
+            children.push_back(std::make_unique<TreeNode>(childPath, wname, isDir, st.st_size, st.st_mode, st.st_mtime, this));
         }
         closedir(dir);
         std::sort(children.begin(), children.end(),
@@ -215,9 +247,14 @@ private:
             log("Error resolving path " + startPath + ": " + strerror(errno));
             return;
         }
+        struct stat st;
+        if (stat(realPath.c_str(), &st) == -1) {
+            statusMsg = L"Error: stat failed on " + utf8_to_wstring(realPath);
+            return;
+        }
         std::wstring rootName = utf8_to_wstring(realPath.substr(realPath.find_last_of('/') + 1));
         if (rootName.empty()) rootName = L"/";
-        root = std::make_unique<TreeNode>(realPath, rootName, true, nullptr);
+        root = std::make_unique<TreeNode>(realPath, rootName, true, st.st_size, st.st_mode, st.st_mtime, nullptr);
         root->loadChildren();
         updateFlatList();
     }
@@ -245,6 +282,7 @@ private:
             fe.isDirectory = S_ISDIR(st.st_mode);
             fe.size = st.st_size;
             fe.mode = st.st_mode;
+            fe.mtime = st.st_mtime;
             flatEntries.push_back(fe);
         }
         closedir(dir);
@@ -258,6 +296,33 @@ private:
             selectedIndex = flatEntries.empty() ? 0 : flatEntries.size() - 1;
         if (selectedIndex < 0) selectedIndex = 0;
         scrollOffset = 0;
+        refreshSelectedMetadata();
+    }
+
+    void refreshSelectedMetadata() {
+        if (treeMode) {
+            if (selectedIndex >= 0 && selectedIndex < (int)flatList.size()) {
+                TreeNode* node = flatList[selectedIndex];
+                struct stat st;
+                if (stat(node->fullPath.c_str(), &st) == 0) {
+                    node->size = st.st_size;
+                    node->mode = st.st_mode;
+                    node->mtime = st.st_mtime;
+                } else {
+                    log("stat error in refreshSelectedMetadata: " + node->fullPath);
+                }
+            }
+        } else {
+            if (selectedIndex >= 0 && selectedIndex < (int)flatEntries.size()) {
+                std::string fullPath = currentPath + "/" + wstring_to_utf8(flatEntries[selectedIndex].name);
+                struct stat st;
+                if (stat(fullPath.c_str(), &st) == 0) {
+                    flatEntries[selectedIndex].size = st.st_size;
+                    flatEntries[selectedIndex].mode = st.st_mode;
+                    flatEntries[selectedIndex].mtime = st.st_mtime;
+                }
+            }
+        }
     }
 
     void displayList() {
@@ -322,7 +387,25 @@ private:
             line0 = L"Mode: FLAT";
             line0 += L" Path: " + utf8_to_wstring(currentPath);
         }
-        line1 = L"Status: " + statusMsg;
+        
+        if (treeMode && selectedIndex >= 0 && selectedIndex < (int)flatList.size()) {
+            TreeNode* node = flatList[selectedIndex];
+            line1 = L"Selected: " + node->name + L" | " + (node->isDirectory ? L"Directory" : L"File");
+            if (!node->isDirectory)
+                line1 += L" | Size: " + formatSize(node->size);
+            line1 += L" | Perm: " + formatMode(node->mode);
+            line1 += L" | Modified: " + formatTime(node->mtime);
+        } else if (!treeMode && selectedIndex >= 0 && selectedIndex < (int)flatEntries.size()) {
+            const auto& e = flatEntries[selectedIndex];
+            line1 = L"Selected: " + e.name + L" | " + (e.isDirectory ? L"Directory" : L"File");
+            if (!e.isDirectory)
+                line1 += L" | Size: " + formatSize(e.size);
+            line1 += L" | Perm: " + formatMode(e.mode);
+            line1 += L" | Modified: " + formatTime(e.mtime);
+        } else {
+            line1 = L"Status: " + statusMsg;
+        }
+        
         line2 = L"Commands: ↑↓ - navigate, Enter - open/expand, Backspace - parent, c - copy, m - move, d - delete, n - new, t - toggle tree/flat, q - quit";
 
         line0 = truncateWithEllipsis(line0, maxX);
@@ -718,13 +801,13 @@ public:
 
             switch (cmd) {
                 case KEY_UP:
-                    if (selectedIndex > 0) { --selectedIndex; adjustScroll(); }
+                    if (selectedIndex > 0) { --selectedIndex; adjustScroll(); refreshSelectedMetadata(); }
                     break;
                 case KEY_DOWN:
                     if (treeMode && selectedIndex < (int)flatList.size()-1) {
-                        ++selectedIndex; adjustScroll();
+                        ++selectedIndex; adjustScroll(); refreshSelectedMetadata();
                     } else if (!treeMode && selectedIndex < (int)flatEntries.size()-1) {
-                        ++selectedIndex; adjustScroll();
+                        ++selectedIndex; adjustScroll(); refreshSelectedMetadata();
                     }
                     break;
                 case '\n':
@@ -745,6 +828,7 @@ public:
                                     }
                                 }
                                 adjustScroll();
+                                refreshSelectedMetadata();
                             } else {
                                 statusMsg = L"Selected file: " + node->name;
                             }
@@ -760,6 +844,7 @@ public:
                                    !flatEntries[selectedIndex].isDirectory) {
                             statusMsg = L"Selected file: " + flatEntries[selectedIndex].name;
                         }
+                        refreshSelectedMetadata();
                     }
                     break;
                 case KEY_BACKSPACE:
@@ -777,6 +862,7 @@ public:
                             loadFlatDirectory();
                             selectedIndex = 0;
                             adjustScroll();
+                            refreshSelectedMetadata();
                         } else {
                             statusMsg = L"Already at root";
                         }
@@ -794,6 +880,7 @@ public:
                         } else {
                             statusMsg = L"Already at root";
                         }
+                        refreshSelectedMetadata();
                     }
                     break;
                 case 't':
@@ -802,6 +889,7 @@ public:
                     scrollOffset = 0;
                     if (treeMode) updateFlatList();
                     else loadFlatDirectory();
+                    refreshSelectedMetadata();
                     break;
                 case 'c': {
                     std::string src = getSelectedPath();
@@ -824,6 +912,7 @@ public:
                             std::string parentDir = dst.substr(0, dst.find_last_of('/'));
                             if (parentDir.empty()) parentDir = "/";
                             updateAfterOperation(parentDir);
+                            refreshSelectedMetadata();
                         }
                     }
                     break;
@@ -834,13 +923,28 @@ public:
                         statusMsg = L"No file selected";
                         break;
                     }
-                    std::wstring defaultName = utf8_to_wstring(src);
-                    std::wstring dstW = inputStringWithDefault(L"Enter new name/path", defaultName);
+                    std::wstring dstW = inputStringWithDefault(L"Enter new name/path", utf8_to_wstring(src));
                     if (dstW.empty()) {
                         statusMsg = L"Move cancelled";
                         break;
                     }
                     std::string dst = wstring_to_utf8(dstW);
+                    if (dst == src) {
+                        statusMsg = L"Move cancelled: source and destination are the same";
+                        break;
+                    }
+                    if (exists(dst)) {
+                        std::wstring overwrite = inputStringWithDefault(L"Destination already exists. Overwrite? (y/n)", L"n");
+                        if (overwrite != L"y" && overwrite != L"Y") {
+                            statusMsg = L"Move cancelled";
+                            break;
+                        }
+                        if (remove(dst.c_str()) != 0) {
+                            statusMsg = L"Error: cannot remove existing destination";
+                            log("Error removing existing file: " + dst);
+                            break;
+                        }
+                    }
                     if (rename(src.c_str(), dst.c_str()) == -1) {
                         statusMsg = L"Error moving: " + utf8_to_wstring(strerror(errno));
                         log("Error moving: " + std::string(strerror(errno)));
@@ -853,6 +957,7 @@ public:
                         if (dstParent.empty()) dstParent = "/";
                         updateAfterOperation(srcParent);
                         if (srcParent != dstParent) updateAfterOperation(dstParent);
+                        refreshSelectedMetadata();
                     }
                     break;
                 }
@@ -871,6 +976,7 @@ public:
                             std::string parentDir = target.substr(0, target.find_last_of('/'));
                             if (parentDir.empty()) parentDir = "/";
                             updateAfterOperation(parentDir);
+                            refreshSelectedMetadata();
                         } else {
                             statusMsg = L"Error deleting: " + utf8_to_wstring(strerror(errno));
                             log("Error deleting: " + std::string(strerror(errno)));
@@ -896,6 +1002,7 @@ public:
                                 statusMsg = L"File created";
                                 log("Created file " + fullPath);
                                 updateAfterOperation(creationPath);
+                                refreshSelectedMetadata();
                             }
                         }
                     } else if (type == "d") {
@@ -909,6 +1016,7 @@ public:
                                 statusMsg = L"Directory created";
                                 log("Created directory " + fullPath);
                                 updateAfterOperation(creationPath);
+                                refreshSelectedMetadata();
                             }
                         }
                     } else {
