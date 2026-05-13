@@ -166,6 +166,37 @@ private:
         updateFlatList();
     }
 
+    TreeNode* findTreeNode(const std::string& path) {
+        if (!root) return nullptr;
+        if (root->fullPath == path) return root.get();
+        std::function<TreeNode*(TreeNode*)> search = [&](TreeNode* node) -> TreeNode* {
+            for (auto& child : node->children) {
+                if (child->fullPath == path) return child.get();
+                TreeNode* found = search(child.get());
+                if (found) return found;
+            }
+            return nullptr;
+        };
+        return search(root.get());
+    }
+
+    void refreshTreeNode(const std::string& path) {
+        if (!treeMode) return;
+        TreeNode* node = findTreeNode(path);
+        if (!node || !node->isDirectory) return;
+        bool wasExpanded = node->expanded;
+        node->unloadChildren();
+        if (wasExpanded) node->loadChildren();
+        updateFlatList();
+        for (size_t i = 0; i < flatList.size(); ++i) {
+            if (flatList[i]->fullPath == path) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        adjustScroll();
+    }
+
     void loadTree(const std::string& startPath) {
         char realBuf[PATH_MAX];
         std::string realPath;
@@ -520,14 +551,6 @@ private:
             log("Error: destination already exists " + dst);
             return false;
         }
-        char srcReal[PATH_MAX], dstReal[PATH_MAX];
-        if (realpath(src.c_str(), srcReal) && realpath(dst.c_str(), dstReal)) {
-        } else {
-            std::string parent = dst.substr(0, dst.find_last_of('/'));
-            if (parent.empty()) parent = "/";
-            if (realpath(parent.c_str(), dstReal) == nullptr) {
-            }
-        }
         if (isSubdir(src, dst)) {
             statusMsg = L"Error: cannot copy directory into itself";
             log("Error: cannot copy " + src + " into its subdirectory " + dst);
@@ -633,11 +656,12 @@ private:
         displayStatus();
     }
 
-    void updateTreeAfterOperation() {
-        if (!treeMode) return;
-        saveExpandedState();
-        loadTree(currentPath);
-        restoreExpandedState();
+    void updateAfterOperation(const std::string& changedDir) {
+        if (treeMode) {
+            refreshTreeNode(changedDir);
+        } else {
+            loadFlatDirectory();
+        }
     }
 
 public:
@@ -786,11 +810,9 @@ public:
                         bool ok = isSelectedDirectory() ? copyDirectory(src, dst) : copyFile(src, dst);
                         if (ok) {
                             statusMsg = L"Copied successfully";
-                            if (treeMode) {
-                                updateTreeAfterOperation();
-                            } else {
-                                loadFlatDirectory();
-                            }
+                            std::string parentDir = dst.substr(0, dst.find_last_of('/'));
+                            if (parentDir.empty()) parentDir = "/";
+                            updateAfterOperation(parentDir);
                         }
                     }
                     break;
@@ -814,11 +836,12 @@ public:
                     } else {
                         statusMsg = L"Moved successfully";
                         log("Moved " + src + " -> " + dst);
-                        if (treeMode) {
-                            updateTreeAfterOperation();
-                        } else {
-                            loadFlatDirectory();
-                        }
+                        std::string srcParent = src.substr(0, src.find_last_of('/'));
+                        if (srcParent.empty()) srcParent = "/";
+                        std::string dstParent = dst.substr(0, dst.find_last_of('/'));
+                        if (dstParent.empty()) dstParent = "/";
+                        updateAfterOperation(srcParent);
+                        if (srcParent != dstParent) updateAfterOperation(dstParent);
                     }
                     break;
                 }
@@ -834,11 +857,9 @@ public:
                         if (ok) {
                             statusMsg = L"Deleted successfully";
                             log("Deleted " + target);
-                            if (treeMode) {
-                                updateTreeAfterOperation();
-                            } else {
-                                loadFlatDirectory();
-                            }
+                            std::string parentDir = target.substr(0, target.find_last_of('/'));
+                            if (parentDir.empty()) parentDir = "/";
+                            updateAfterOperation(parentDir);
                         } else {
                             statusMsg = L"Error deleting: " + utf8_to_wstring(strerror(errno));
                             log("Error deleting: " + std::string(strerror(errno)));
@@ -863,11 +884,7 @@ public:
                                 close(fd);
                                 statusMsg = L"File created";
                                 log("Created file " + fullPath);
-                                if (treeMode) {
-                                    updateTreeAfterOperation();
-                                } else {
-                                    loadFlatDirectory();
-                                }
+                                updateAfterOperation(creationPath);
                             }
                         }
                     } else if (type == "d") {
@@ -880,11 +897,7 @@ public:
                             } else {
                                 statusMsg = L"Directory created";
                                 log("Created directory " + fullPath);
-                                if (treeMode) {
-                                    updateTreeAfterOperation();
-                                } else {
-                                    loadFlatDirectory();
-                                }
+                                updateAfterOperation(creationPath);
                             }
                         }
                     } else {
