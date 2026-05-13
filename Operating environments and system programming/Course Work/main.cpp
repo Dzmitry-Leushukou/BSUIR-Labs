@@ -11,6 +11,7 @@
 #include <clocale>
 #include <cwchar>
 #include <cctype>
+#include <cwctype>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -49,8 +50,7 @@ std::wstring truncateWithEllipsis(const std::wstring& str, int maxLen) {
 }
 
 std::ofstream logFile;
-void log(const std::string& msg) 
-{
+void log(const std::string& msg) {
     if (logFile.is_open()) {
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
@@ -437,9 +437,12 @@ private:
         wmove(inputWin, 1, 1 + prompt.length() + 2 + curPos);
         wrefresh(inputWin);
 
-        int ch;
+        wint_t ch;
         bool cancelled = false;
-        while ((ch = wgetch(inputWin)) != '\n' && ch != KEY_ENTER) {
+        while (true) {
+            int ret = wget_wch(inputWin, &ch);
+            if (ret == ERR) continue;
+            if (ch == '\n' || ch == KEY_ENTER) break;
             if (ch == 27) {
                 cancelled = true;
                 break;
@@ -467,8 +470,8 @@ private:
                     curPos = 0;
                     break;
                 default:
-                    if (ch >= 32 && ch <= 126) {
-                        current.insert(curPos, 1, (wchar_t)ch);
+                    if (iswprint(ch) && ch != 27) {
+                        current.insert(curPos, 1, static_cast<wchar_t>(ch));
                         curPos++;
                     }
                     break;
@@ -806,8 +809,7 @@ public:
                         statusMsg = L"No file selected";
                         break;
                     }
-                    std::string defaultDst = getDefaultDestinationPath();
-                    std::wstring dstW = inputStringWithDefault(L"Enter destination path", utf8_to_wstring(defaultDst));
+                    std::wstring dstW = inputStringWithDefault(L"Enter destination path", utf8_to_wstring(src));
                     if (dstW.empty()) {
                         statusMsg = L"Copy cancelled";
                         break;
