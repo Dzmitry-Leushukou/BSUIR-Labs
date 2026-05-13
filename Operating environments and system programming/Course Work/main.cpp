@@ -19,6 +19,7 @@
 #include <libgen.h>
 #include <curses.h>
 #include <locale>
+#include <utime.h>
 
 std::wstring utf8_to_wstring(const std::string& str) {
     if (str.empty()) return L"";
@@ -170,8 +171,11 @@ private:
         std::string realPath;
         if (realpath(startPath.c_str(), realBuf))
             realPath = realBuf;
-        else
-            realPath = startPath;
+        else {
+            statusMsg = L"Error: cannot resolve path " + utf8_to_wstring(startPath) + L" - " + utf8_to_wstring(strerror(errno));
+            log("Error resolving path " + startPath + ": " + strerror(errno));
+            return;
+        }
         std::wstring rootName = utf8_to_wstring(realPath.substr(realPath.find_last_of('/') + 1));
         if (rootName.empty()) rootName = L"/";
         root = std::make_unique<TreeNode>(realPath, rootName, true, nullptr);
@@ -365,6 +369,15 @@ private:
         return false;
     }
 
+    bool isSubdir(const std::string& parent, const std::string& child) {
+        if (parent.empty() || child.empty()) return false;
+        std::string p = parent;
+        if (p.back() != '/') p += '/';
+        std::string c = child;
+        if (c.back() != '/') c += '/';
+        return c.find(p) == 0 && c != p;
+    }
+
     std::wstring inputStringWithDefault(const std::wstring& prompt, const std::wstring& defaultValue) {
         echo();
         curs_set(1);
@@ -385,7 +398,12 @@ private:
         wrefresh(inputWin);
 
         int ch;
+        bool cancelled = false;
         while ((ch = wgetch(inputWin)) != '\n' && ch != KEY_ENTER) {
+            if (ch == 27) {
+                cancelled = true;
+                break;
+            }
             switch (ch) {
                 case KEY_LEFT:
                     if (curPos > 0) curPos--;
@@ -424,12 +442,31 @@ private:
         delwin(inputWin);
         curs_set(0);
         noecho();
+        if (cancelled) return L"";
         return current;
     }
 
     bool exists(const std::string& path) {
         struct stat st;
         return stat(path.c_str(), &st) == 0;
+    }
+
+    bool copyFileMetadata(const std::string& src, const std::string& dst) {
+        struct stat st;
+        if (stat(src.c_str(), &st) == -1) {
+            log("stat error for metadata copy: " + src + " - " + strerror(errno));
+            return false;
+        }
+        if (chmod(dst.c_str(), st.st_mode) == -1) {
+            log("chmod error for " + dst + " - " + strerror(errno));
+        }
+        struct utimbuf times;
+        times.actime = st.st_atime;
+        times.modtime = st.st_mtime;
+        if (utime(dst.c_str(), &times) == -1) {
+            log("utime error for " + dst + " - " + strerror(errno));
+        }
+        return true;
     }
 
     bool copyFile(const std::string& src, const std::string& dst) {
@@ -448,39 +485,69 @@ private:
         }
         char buffer[8192];
         ssize_t n;
+        bool success = true;
         while ((n = read(fdSrc, buffer, sizeof(buffer))) > 0) {
-            if (write(fdDst, buffer, n) != n) {
-                statusMsg = L"Error: write error to " + utf8_to_wstring(dst) + L" - " + utf8_to_wstring(strerror(errno));
-                log("Error: write error to " + dst + " - " + strerror(errno));
-                close(fdSrc);
-                close(fdDst);
-                return false;
+            ssize_t written = 0;
+            while (written < n) {
+                ssize_t ret = write(fdDst, buffer + written, n - written);
+                if (ret == -1) {
+                    statusMsg = L"Error: write error to " + utf8_to_wstring(dst) + L" - " + utf8_to_wstring(strerror(errno));
+                    log("Error: write error to " + dst + " - " + strerror(errno));
+                    success = false;
+                    break;
+                }
+                written += ret;
             }
+            if (!success) break;
         }
         if (n == -1) {
             statusMsg = L"Error: read error from " + utf8_to_wstring(src) + L" - " + utf8_to_wstring(strerror(errno));
             log("Error: read error from " + src + " - " + strerror(errno));
+            success = false;
         }
         close(fdSrc);
         close(fdDst);
-        if (n != -1) {
+        if (success) {
+            copyFileMetadata(src, dst);
             log("Copied file: " + src + " -> " + dst);
         }
-        return n != -1;
+        return success;
     }
 
     bool copyDirectory(const std::string& src, const std::string& dst) {
+        if (exists(dst)) {
+            statusMsg = L"Error: destination already exists: " + utf8_to_wstring(dst);
+            log("Error: destination already exists " + dst);
+            return false;
+        }
+        char srcReal[PATH_MAX], dstReal[PATH_MAX];
+        if (realpath(src.c_str(), srcReal) && realpath(dst.c_str(), dstReal)) {
+        } else {
+            std::string parent = dst.substr(0, dst.find_last_of('/'));
+            if (parent.empty()) parent = "/";
+            if (realpath(parent.c_str(), dstReal) == nullptr) {
+            }
+        }
+        if (isSubdir(src, dst)) {
+            statusMsg = L"Error: cannot copy directory into itself";
+            log("Error: cannot copy " + src + " into its subdirectory " + dst);
+            return false;
+        }
         DIR* dir = opendir(src.c_str());
         if (!dir) {
             statusMsg = L"Error: cannot open source directory " + utf8_to_wstring(src) + L" - " + utf8_to_wstring(strerror(errno));
             log("Error: cannot open source directory " + src + " - " + strerror(errno));
             return false;
         }
-        if (mkdir(dst.c_str(), 0755) == -1 && errno != EEXIST) {
+        if (mkdir(dst.c_str(), 0755) == -1) {
             statusMsg = L"Error: cannot create destination directory " + utf8_to_wstring(dst) + L" - " + utf8_to_wstring(strerror(errno));
             log("Error: cannot create destination directory " + dst + " - " + strerror(errno));
             closedir(dir);
             return false;
+        }
+        struct stat stSrc;
+        if (stat(src.c_str(), &stSrc) == 0) {
+            chmod(dst.c_str(), stSrc.st_mode);
         }
         struct dirent* entry;
         bool success = true;
@@ -506,6 +573,8 @@ private:
         closedir(dir);
         if (success) {
             log("Copied directory: " + src + " -> " + dst);
+        } else {
+            statusMsg = L"Error during directory copy, some items may have been copied";
         }
         return success;
     }
