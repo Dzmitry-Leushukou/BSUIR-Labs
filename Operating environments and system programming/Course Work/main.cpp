@@ -20,6 +20,8 @@
 #include <curses.h>
 #include <locale>
 #include <utime.h>
+#include <chrono>
+#include <ctime>
 
 std::wstring utf8_to_wstring(const std::string& str) {
     if (str.empty()) return L"";
@@ -49,7 +51,12 @@ std::wstring truncateWithEllipsis(const std::wstring& str, int maxLen) {
 std::ofstream logFile;
 void log(const std::string& msg) {
     if (logFile.is_open()) {
-        logFile << msg << std::endl;
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+        std::tm* tm_info = std::localtime(&now_time);
+        char time_buf[20];
+        std::strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
+        logFile << "[" << time_buf << "] " << msg << std::endl;
     }
 }
 
