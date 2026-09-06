@@ -1,0 +1,3 @@
+[submodule "Simulation and Statistical Modeling/Lab 1/external/fltk"]
+	path = Simulation and Statistical Modeling/Lab 1/external/fltk
+	url = https://github.com/fltk/fltk.git
