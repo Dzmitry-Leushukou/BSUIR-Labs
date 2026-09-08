@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "config.h"
+#include "utils.h"
 
 class task1
 {
@@ -25,7 +26,7 @@ public:
 
     static long long runMultiple(double p, long long n)
     {
-        int threadsNumber = 1 + (log10(n) / 2.0);
+        unsigned int threadsNumber = threadsCount(n);
         std::vector <std::thread> threads;
         std::atomic_llong result = 0;
 

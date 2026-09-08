@@ -4,12 +4,12 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Tabs.H>
+#include <FL/Fl_Multiline_Input.H>
+#include <FL/Fl_Multiline_Output.H>
 
 #include "config.h"
 #include "task1.h"
-
-
-
+#include "task2.h"
 
 
 int main() {
@@ -64,16 +64,30 @@ int main() {
             task1::MultipleDTO dto1m{&NInput, &task1_p, &simulate_multiple_task1_result};
             simulate_multiple_task1_button.callback(task1::simulate_multiple_callback, &dto1m);
         task1.end();
-
-
-
         
         Fl_Group task2(TASK_X,TASK_Y,WW-TASK_X,WH-TASK_Y,"Task 2");
         task2.color(dark_grey_green);
         task2.begin();
+            Fl_Box probabilities_k_list_label(PROBABILITIES_K_LIST_LABEL_X, PROBABILITIES_K_LIST_LABEL_Y, 
+                PROBABILITIES_K_LIST_LABEL_SX, PROBABILITIES_K_LIST_LABEL_SY, "K:");
+            
+            Fl_Multiline_Input input_task2 =  Fl_Multiline_Input(PROBABILITIES_LIST_INPUT_X, PROBABILITIES_LIST_INPUT_Y,
+                 PROBABILITIES_LIST_INPUT_SX, PROBABILITIES_LIST_INPUT_SY);
+            
+            Fl_Button simulate_single_task2_button(SIMULATE_K_LIST_PROBABILITIES_X,
+            SIMULATE_K_LIST_PROBABILITIES_Y, SIMULATE_K_LIST_PROBABILITIES_SX,
+            SIMULATE_K_LIST_PROBABILITIES_SY, SIMULATE_K_LIST_PROBABILITIES_TEXT.c_str());
 
-            Fl_Button check2(200,200,200,200,"2");
+            Fl_Box probabilities_result_k_list_label(PROBABILITIES_RESULT_K_LIST_LABEL_X,
+                PROBABILITIES_RESULT_K_LIST_LABEL_Y, PROBABILITIES_RESULT_K_LIST_LABEL_SX,
+                PROBABILITIES_RESULT_K_LIST_LABEL_SY, "RESULT:");
+            
+            Fl_Multiline_Output output_task2 =  Fl_Multiline_Output(PROBABILITIES_LIST_OUTPUT_X,
+                PROBABILITIES_LIST_OUTPUT_Y, PROBABILITIES_LIST_OUTPUT_SX, PROBABILITIES_LIST_OUTPUT_SY);
 
+            Fl_Button simulate_multi_task2_button(SIMULATE_MULTI_LIST_PROBABILITIES_X,
+            SIMULATE_MULTI_LIST_PROBABILITIES_Y, SIMULATE_MULTI_LIST_PROBABILITIES_SX,
+            SIMULATE_MULTI_LIST_PROBABILITIES_SY, SIMULATE_MULTI_LIST_PROBABILITIES_TEXT.c_str());
         task2.end();
 
         Fl_Group task3(TASK_X,TASK_Y,WW-TASK_X,WH-TASK_Y,"Task 3");
