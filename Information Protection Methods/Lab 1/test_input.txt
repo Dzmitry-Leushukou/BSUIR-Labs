@@ -1,0 +1,2 @@
+GOST 28147-89 test file.
+Simple replacement, gamma mode, feedback mode, and imitation insert.

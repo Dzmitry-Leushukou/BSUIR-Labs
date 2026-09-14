@@ -6,11 +6,13 @@
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Multiline_Input.H>
 #include <FL/Fl_Multiline_Output.H>
+#include <FL/fl_draw.H>
+
 
 #include "config.h"
 #include "task1.h"
 #include "task2.h"
-
+#include "task3.h"
 
 int main() {
     Fl::lock(); 
@@ -105,7 +107,88 @@ int main() {
         task3.color(dark_grey_green);
         task3.begin();
 
-            Fl_Button check3(200,200,200,200,"3");
+            Fl_Input task3_pa(PA_X, PA_Y, PA_SX, PA_SY, PA_TEXT.c_str());
+            task3_pa.type(FL_FLOAT_INPUT); 
+            task3_pa.value("0.5");
+
+            Fl_Input task3_pbaa(PBaA_X, PBaA_Y, PBaA_SX, PBaA_SY, PBaA_TEXT.c_str());
+            task3_pbaa.type(FL_FLOAT_INPUT); 
+            task3_pbaa.value("0.5");
+
+            Fl_Box task3_pab(PAB_X, PAB_Y, PAB_SX, PAB_SY, PAB_TEXT.c_str());
+            Fl_Box task3_panb(PANB_X, PANB_Y, PANB_SX, PANB_SY, PANB_TEXT.c_str());
+            Fl_Box task3_pnab(PNAB_X, PNAB_Y, PNAB_SX, PNAB_SY, PNAB_TEXT.c_str());
+            Fl_Box task3_pnanb(PNANB_X, PNANB_Y, PNANB_SX, PNANB_SY, PNANB_TEXT.c_str());
+            task3_pab.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_panb.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pnab.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pnanb.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+            Fl_Button task3_sbutton(SIMULATE_ST3_X, SIMULATE_ST3_Y, SIMULATE_ST3_SX, SIMULATE_ST3_SY,
+            SIMULATE_ST3_TEXT.c_str());
+
+            Fl_Button task3_mbutton(SIMULATE_MT3_X, SIMULATE_MT3_Y, SIMULATE_MT3_SX, SIMULATE_MT3_SY,
+            SIMULATE_MT3_TEXT.c_str());
+
+            
+            Fl_Box task3_border(task3_border_x, task3_border_y,
+            task3_border_sx, task3_border_sy);
+            task3_border.box(FL_BORDER_BOX);
+            task3_border.color(FL_BLACK);
+            task3_border.labelcolor(FL_BLACK);
+
+
+            Fl_Box t3hb1(t3hb1_x, t3hb1_y, t3hb1_sx, t3hb1_sy);
+            t3hb1.box(FL_BORDER_BOX);
+            t3hb1.color(FL_BLACK);
+            t3hb1.labelcolor(FL_BLACK);
+
+            Fl_Box t3hb2(t3hb2_x, t3hb2_y, t3hb2_sx, t3hb2_sy);
+            t3hb2.box(FL_BORDER_BOX);
+            t3hb2.color(FL_BLACK);
+            t3hb2.labelcolor(FL_BLACK);
+
+            Fl_Box t3hb3(t3hb3_x, t3hb3_y, t3hb3_sx, t3hb3_sy);
+            t3hb3.box(FL_BORDER_BOX);
+            t3hb3.color(FL_BLACK);
+            t3hb3.labelcolor(FL_BLACK);
+
+            Fl_Box t3hb4(t3hb4_x, t3hb4_y, t3hb4_sx, t3hb4_sy);
+            t3hb4.box(FL_BORDER_BOX);
+            t3hb4.color(FL_BLACK);
+            t3hb4.labelcolor(FL_BLACK);
+            
+            Fl_Box t3hb5(t3hb5_x, t3hb5_y, t3hb5_sx, t3hb5_sy);
+            t3hb5.box(FL_BORDER_BOX);
+            t3hb5.color(FL_BLACK);
+            t3hb5.labelcolor(FL_BLACK);
+
+            Fl_Box t3hb6(t3hb6_x, t3hb6_y, t3hb6_sx, t3hb6_sy);
+            t3hb6.box(FL_BORDER_BOX);
+            t3hb6.color(FL_BLACK);
+            t3hb6.labelcolor(FL_BLACK);
+
+            Fl_Box task3_pa_res(task3_sc, PA_Y, PA_SX, PA_SY, "JOPA");
+            Fl_Box task3_pbaa_res(task3_sc, PBaA_Y, PBaA_SX, PBaA_SY, "JOPA");
+            Fl_Box task3_pab_res(task3_sc, PAB_Y, PAB_SX, PAB_SY, "JOPA");
+            Fl_Box task3_panb_res(task3_sc, PANB_Y, PANB_SX, PANB_SY, "JOPA");
+            Fl_Box task3_pnab_res(task3_sc, PNAB_Y, PNAB_SX, PNAB_SY, "JOPA");
+            Fl_Box task3_pnanb_res(task3_sc, PNANB_Y, PNANB_SX, PNANB_SY, "JOPA");
+            task3_pab_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_panb_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pnab_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pnanb_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pbaa_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            task3_pa_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+            task3::DTO t3dto = task3::DTO{&task3_pa_res, &task3_pbaa_res,
+            &task3_pab, &task3_panb_res, &task3_pnab_res, &task3_pnanb_res,
+            &task3_pab, &task3_panb, &task3_pnab, &task3_pnanb, &task3_pa,
+            &task3_pbaa};
+
+
+            task3_pa.when(FL_WHEN_CHANGED);
+            task3_pa.callback(task3::input_changed, &t3dto);
 
         task3.end();
 
