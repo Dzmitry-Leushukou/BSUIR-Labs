@@ -29,5 +29,14 @@
 - [Modern platforms for application development](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Modern%20platforms%20for%20application%20development)  (Lecturer: Glamazdin Igor)
 - [Operating environments and system programming](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Operating%20environments%20and%20system%20programming)
 - [Software verification](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Software%20verification)
-
+  
+### [Sixth semester (2026)](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6)
+- [Broadcast methods](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Broadcast%20methods)
+- [Data models and database management systems](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Data%20models%20and%20database%20management%20systems)
+- [Information Networks Security Fundamentals](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Information%20Networks%20Security%20Fundamentals)
+- [Mobile Application Programming](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Mobile%20Application%20Programming/Lab1)
+- [Operating environments and system programming](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_5/Operating%20environments%20and%20system%20programming)
+- [Optimization and control methods](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Optimization%20and%20control%20methods)
+- [Practice](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Practice)
+- [Processing of experimental data](https://github.com/Dzmitry-Leushukou/BSUIR-Labs/tree/Semester_6/Processing%20of%20experimental%20data)
 
