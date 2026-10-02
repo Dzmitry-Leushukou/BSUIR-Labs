@@ -13,6 +13,8 @@
 #include "task1.h"
 #include "task2.h"
 #include "task3.h"
+#include "task4.h"
+#include "task5.h"
 
 int main() {
     Fl::lock(); 
@@ -71,34 +73,39 @@ int main() {
         Fl_Group task2(TASK_X,TASK_Y,WW-TASK_X,WH-TASK_Y,"Task 2");
         task2.color(dark_grey_green);
         task2.begin();
-            Fl_Box probabilities_k_list_label(PROBABILITIES_K_LIST_LABEL_X, PROBABILITIES_K_LIST_LABEL_Y, 
+            Fl_Box probabilities_k_list_label(PROBABILITIES_K_LIST_LABEL_X, PROBABILITIES_K_LIST_LABEL_Y,
                 PROBABILITIES_K_LIST_LABEL_SX, PROBABILITIES_K_LIST_LABEL_SY, "K:");
-            
+
             Fl_Multiline_Input input_task2 =  Fl_Multiline_Input(PROBABILITIES_LIST_INPUT_X, PROBABILITIES_LIST_INPUT_Y,
                  PROBABILITIES_LIST_INPUT_SX, PROBABILITIES_LIST_INPUT_SY);
 
             Fl_Multiline_Output output_task2 =  Fl_Multiline_Output(PROBABILITIES_LIST_OUTPUT_X,
                 PROBABILITIES_LIST_OUTPUT_Y, PROBABILITIES_LIST_OUTPUT_SX, PROBABILITIES_LIST_OUTPUT_SY);
 
-            
-            
+            Fl_Box probabilities_theoretical_label(PROBABILITIES_THEORETICAL_LABEL_X, PROBABILITIES_THEORETICAL_LABEL_Y,
+                PROBABILITIES_THEORETICAL_LABEL_SX, PROBABILITIES_THEORETICAL_LABEL_SY, "THEORETICAL:");
+
+            Fl_Multiline_Output output_task2_theoretical =  Fl_Multiline_Output(PROBABILITIES_THEORETICAL_OUTPUT_X,
+                PROBABILITIES_THEORETICAL_OUTPUT_Y, PROBABILITIES_THEORETICAL_OUTPUT_SX, PROBABILITIES_THEORETICAL_OUTPUT_SY);
+
+
             Fl_Button simulate_single_task2_button(SIMULATE_K_LIST_PROBABILITIES_X,
             SIMULATE_K_LIST_PROBABILITIES_Y, SIMULATE_K_LIST_PROBABILITIES_SX,
             SIMULATE_K_LIST_PROBABILITIES_SY, SIMULATE_K_LIST_PROBABILITIES_TEXT.c_str());
-            
-            task2::task2DTO dto2 = task2::task2DTO{&input_task2, &output_task2, 1};
+
+            task2::task2DTO dto2 = task2::task2DTO{&input_task2, &output_task2, &output_task2_theoretical, 1};
             simulate_single_task2_button.callback(task2::callback, &dto2);
 
             Fl_Box probabilities_result_k_list_label(PROBABILITIES_RESULT_K_LIST_LABEL_X,
                 PROBABILITIES_RESULT_K_LIST_LABEL_Y, PROBABILITIES_RESULT_K_LIST_LABEL_SX,
-                PROBABILITIES_RESULT_K_LIST_LABEL_SY, "RESULT:");
-            
-            
+                PROBABILITIES_RESULT_K_LIST_LABEL_SY, "EXPERIMENTAL:");
+
+
             Fl_Button simulate_multi_task2_button(SIMULATE_MULTI_LIST_PROBABILITIES_X,
             SIMULATE_MULTI_LIST_PROBABILITIES_Y, SIMULATE_MULTI_LIST_PROBABILITIES_SX,
             SIMULATE_MULTI_LIST_PROBABILITIES_SY, SIMULATE_MULTI_LIST_PROBABILITIES_TEXT.c_str());
 
-            task2::task2DTO dto2n = task2::task2DTO{&input_task2, &output_task2, std::stoll(NInput.value())};
+            task2::task2DTO dto2n = task2::task2DTO{&input_task2, &output_task2, &output_task2_theoretical, std::stoll(NInput.value())};
             simulate_multi_task2_button.callback(task2::callback, &dto2n);
 
         task2.end();
@@ -124,13 +131,7 @@ int main() {
             task3_pnab.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
             task3_pnanb.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
-            Fl_Button task3_sbutton(SIMULATE_ST3_X, SIMULATE_ST3_Y, SIMULATE_ST3_SX, SIMULATE_ST3_SY,
-            SIMULATE_ST3_TEXT.c_str());
 
-            Fl_Button task3_mbutton(SIMULATE_MT3_X, SIMULATE_MT3_Y, SIMULATE_MT3_SX, SIMULATE_MT3_SY,
-            SIMULATE_MT3_TEXT.c_str());
-
-            
             Fl_Box task3_border(task3_border_x, task3_border_y,
             task3_border_sx, task3_border_sy);
             task3_border.box(FL_BORDER_BOX);
@@ -168,12 +169,12 @@ int main() {
             t3hb6.color(FL_BLACK);
             t3hb6.labelcolor(FL_BLACK);
 
-            Fl_Box task3_pa_res(task3_sc, PA_Y, PA_SX, PA_SY, "JOPA");
-            Fl_Box task3_pbaa_res(task3_sc, PBaA_Y, PBaA_SX, PBaA_SY, "JOPA");
-            Fl_Box task3_pab_res(task3_sc, PAB_Y, PAB_SX, PAB_SY, "JOPA");
-            Fl_Box task3_panb_res(task3_sc, PANB_Y, PANB_SX, PANB_SY, "JOPA");
-            Fl_Box task3_pnab_res(task3_sc, PNAB_Y, PNAB_SX, PNAB_SY, "JOPA");
-            Fl_Box task3_pnanb_res(task3_sc, PNANB_Y, PNANB_SX, PNANB_SY, "JOPA");
+            Fl_Box task3_pa_res(task3_sc, PA_Y, PA_SX, PA_SY, "");
+            Fl_Box task3_pbaa_res(task3_sc, PBaA_Y, PBaA_SX, PBaA_SY, "");
+            Fl_Box task3_pab_res(task3_sc, PAB_Y, PAB_SX, PAB_SY, "");
+            Fl_Box task3_panb_res(task3_sc, PANB_Y, PANB_SX, PANB_SY, "");
+            Fl_Box task3_pnab_res(task3_sc, PNAB_Y, PNAB_SX, PNAB_SY, "");
+            Fl_Box task3_pnanb_res(task3_sc, PNANB_Y, PNANB_SX, PNANB_SY, "");
             task3_pab_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
             task3_panb_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
             task3_pnab_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -181,14 +182,26 @@ int main() {
             task3_pbaa_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
             task3_pa_res.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
-            task3::DTO t3dto = task3::DTO{&task3_pa_res, &task3_pbaa_res,
-            &task3_pab, &task3_panb_res, &task3_pnab_res, &task3_pnanb_res,
-            &task3_pab, &task3_panb, &task3_pnab, &task3_pnanb, &task3_pa,
-            &task3_pbaa};
+            Fl_Button task3_mbutton(SIMULATE_MT3_X, SIMULATE_MT3_Y, SIMULATE_MT3_SX, SIMULATE_MT3_SY,
+            SIMULATE_MT3_TEXT.c_str());
+
+            task3::DTO t3dto = task3::DTO{
+                &task3_pa_res, &task3_pbaa_res,
+                &task3_pab_res, &task3_panb_res, &task3_pnab_res, &task3_pnanb_res,
+                &task3_pab, &task3_panb, &task3_pnab, &task3_pnanb,
+                &task3_pa, &task3_pbaa, &NInput
+            };
 
 
             task3_pa.when(FL_WHEN_CHANGED);
             task3_pa.callback(task3::input_changed, &t3dto);
+
+            task3_pbaa.when(FL_WHEN_CHANGED);
+            task3_pbaa.callback(task3::input_changed, &t3dto);
+
+            task3_mbutton.callback(task3::simulate_multiple, &t3dto);
+
+            task3::input_changed(&task3_pa, &t3dto);
 
         task3.end();
 
@@ -196,12 +209,50 @@ int main() {
         task4.color(dark_grey_green);
         task4.begin();
 
-            Fl_Button check4(200,200,200,200,"4");
+            Fl_Box task4_k_list_label(T4_K_LIST_LABEL_X, T4_K_LIST_LABEL_Y,
+                T4_K_LIST_LABEL_SX, T4_K_LIST_LABEL_SY, "K:");
+
+            Fl_Multiline_Input task4_input(T4_LIST_INPUT_X, T4_LIST_INPUT_Y,
+                T4_LIST_INPUT_SX, T4_LIST_INPUT_SY);
+            task4_input.value("0.1\n0.2\n0.3\n0.4");
+
+            Fl_Box task4_result_label(T4_RESULT_LABEL_X, T4_RESULT_LABEL_Y,
+                T4_RESULT_LABEL_SX, T4_RESULT_LABEL_SY, "EXPERIMENTAL:");
+
+            Fl_Multiline_Output task4_output_experimental(T4_OUTPUT_SINGLE_X, T4_OUTPUT_SINGLE_Y,
+                T4_OUTPUT_SINGLE_SX, T4_OUTPUT_SINGLE_SY);
+
+            Fl_Box task4_theoretical_label(T4_THEORETICAL_LABEL_X, T4_THEORETICAL_LABEL_Y,
+                T4_THEORETICAL_LABEL_SX, T4_THEORETICAL_LABEL_SY, "THEORETICAL:");
+
+            Fl_Multiline_Output task4_output_theoretical(T4_OUTPUT_THEORETICAL_X, T4_OUTPUT_THEORETICAL_Y,
+                T4_OUTPUT_THEORETICAL_SX, T4_OUTPUT_THEORETICAL_SY);
+
+            Fl_Button task4_single_btn(T4_BUTTON_SINGLE_X, T4_BUTTON_SINGLE_Y,
+                T4_BUTTON_SINGLE_SX, T4_BUTTON_SINGLE_SY, "SIMULATE");
+
+            Fl_Button task4_multi_btn(T4_BUTTON_MULTI_X, T4_BUTTON_MULTI_Y,
+                T4_BUTTON_MULTI_SX, T4_BUTTON_MULTI_SY, "SIMULATE N ACTIONS");
+
+            task4::task4DTO dto4{&task4_input, &NInput, &task4_output_experimental, &task4_output_theoretical};
+            task4_single_btn.callback(task4::callback_single, &dto4);
+            task4_multi_btn.callback(task4::callback_multiple, &dto4);
 
         task4.end();
 
+        Fl_Group task5(TASK_X,TASK_Y,WW-TASK_X,WH-TASK_Y,"Task 5");
+        task5.color(dark_grey_green);
+        task5.begin();
+
+            Fl_Button open_wheel_button(TASK_X + 200, TASK_Y + 120, 200, 60, "Open Wheel of Fortune");
+            open_wheel_button.color(FL_RED);
+            open_wheel_button.labelsize(14);
+            open_wheel_button.callback(task5::show_window, nullptr);
+
+        task5.end();
+
     tabs.end();
-    window.end(); 
+    window.end();
     window.show();
 
     return Fl::run();

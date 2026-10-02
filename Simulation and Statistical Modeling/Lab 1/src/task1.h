@@ -60,7 +60,22 @@ public:
     static void simulate_callback(Fl_Widget* button, void* data)
     {
         task1::SingleDTO* tmp = static_cast<task1::SingleDTO*>(data);
-        double val = std::stod(tmp->input->value());
+
+        double val;
+        try {
+            val = std::stod(tmp->input->value());
+        } catch(...) {
+            tmp->aim->label("Error: P must be a number");
+            tmp->aim->redraw();
+            return;
+        }
+
+        if(val < 0.0 || val > 1.0) {
+            tmp->aim->label("Error: P must be in [0, 1]");
+            tmp->aim->redraw();
+            return;
+        }
+
         bool result = task1::runSingle(val);
         tmp->aim->label(result ? "True" : "False");
         tmp->aim->redraw();
@@ -69,27 +84,50 @@ public:
     static void simulate_multiple_callback(Fl_Widget* button, void* data)
     {
         task1::MultipleDTO* tmp = static_cast <task1::MultipleDTO*> (data);
-        double p = std::stod(tmp -> P -> value());
-        long long n = std::stoll(tmp -> N -> value());
-        button -> deactivate();
-        Fl_Box* aim = tmp -> aim;
-        
+
+        double p;
+        long long n;
+
+        try {
+            p = std::stod(tmp->P->value());
+            n = std::stoll(tmp->N->value());
+        } catch(...) {
+            tmp->aim->copy_label("Error: Invalid input format");
+            Fl::redraw();
+            return;
+        }
+
+        if(p < 0.0 || p > 1.0) {
+            tmp->aim->copy_label("Error: P must be in [0, 1]");
+            Fl::redraw();
+            return;
+        }
+
+        if(n <= 0) {
+            tmp->aim->copy_label("Error: N must be positive");
+            Fl::redraw();
+            return;
+        }
+
+        button->deactivate();
+        Fl_Box* aim = tmp->aim;
+
         std::thread return_result([button, aim, n, p](){
             long long result = task1::runMultiple(p, n);
             std::string* text_result = new std::string(SIMULATE_MULTIPLE_TASK_RESULT_TEXT);
             *text_result += std::to_string((long double)result / (long double)(n));
-            
+
             Fl::awake([](void* userdata) {
                 auto params = static_cast<std::pair<std::pair<Fl_Widget*, Fl_Box*>, std::string*>*>(userdata);
-                
+
                 Fl_Widget* btn = params->first.first;
                 Fl_Box* box = params->first.second;
                 std::string* str = params->second;
 
-                box->copy_label(str->c_str()); 
-                btn->activate();        
-                
-                Fl::redraw();          
+                box->copy_label(str->c_str());
+                btn->activate();
+
+                Fl::redraw();
 
                 delete str;
                 delete params;
