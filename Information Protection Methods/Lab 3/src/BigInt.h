@@ -348,11 +348,9 @@ BigInt BigInt::operator<<(int shift) const {
     if (shift == 0) return *this;
     if (isZero()) return *this;
 
-    // Use power of 2 for shifting
     BigInt power(1);
     BigInt two(2);
 
-    // Build 2^shift efficiently using binary exponentiation
     int s = shift;
     BigInt base(2);
     while (s > 0) {
@@ -374,11 +372,9 @@ BigInt BigInt::operator>>(int shift) const {
     if (shift == 0) return *this;
     if (isZero()) return *this;
 
-    // Use power of 2 for shifting
     BigInt power(1);
     BigInt two(2);
 
-    // Build 2^shift efficiently using binary exponentiation
     int s = shift;
     BigInt base(2);
     while (s > 0) {
@@ -510,24 +506,20 @@ size_t BigInt::bitLength() const {
 }
 
 void BigInt::setBit(size_t pos) {
-    // Direct implementation without using operator| or operator<<
-    // Calculate which digit and which bit within that digit
-    size_t bitsPerDigit = 30; // BASE = 10^9 ~ 2^30
+    size_t bitsPerDigit = 30;
     size_t digitIndex = pos / bitsPerDigit;
     size_t bitInDigit = pos % bitsPerDigit;
 
-    // Expand digits array if needed
     while (digits_.size() <= digitIndex) {
         digits_.push_back(0);
     }
 
-    // Set the bit using power of 2
+
     int64_t bitValue = 1LL << bitInDigit;
     digits_[digitIndex] |= bitValue;
 
-    // Normalize if digit exceeds BASE
     if (digits_[digitIndex] >= BASE) {
-        // Split the digit
+
         int64_t carry = digits_[digitIndex] / BASE;
         digits_[digitIndex] %= BASE;
         if (digitIndex + 1 < digits_.size()) {
@@ -539,7 +531,6 @@ void BigInt::setBit(size_t pos) {
 }
 
 bool BigInt::getBit(size_t pos) const {
-    // Direct implementation without using operator& or operator<<
     size_t bitsPerDigit = 30;
     size_t digitIndex = pos / bitsPerDigit;
     size_t bitInDigit = pos % bitsPerDigit;

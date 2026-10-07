@@ -8,8 +8,67 @@ class Simplex {
     int m, n;
     vector<vector<double>> D;
     vector<int> B, N;
+    bool verbose;
+
+    void printTable(const string& title) {
+        if (!verbose) return;
+
+        cout << "\n" << title << "\n";
+        cout << string(80, '-') << "\n";
+
+        // Header
+        cout << setw(8) << "Basis" << " | ";
+        for (int j = 0; j <= n; ++j) {
+            if (N[j] == -1) cout << setw(10) << "s";
+            else cout << setw(10) << ("x" + to_string(N[j] + 1));
+        }
+        cout << " | " << setw(10) << "RHS" << "\n";
+        cout << string(80, '-') << "\n";
+
+        // Basis rows
+        for (int i = 0; i < m; ++i) {
+            if (B[i] == -1) cout << setw(8) << "s";
+            else if (B[i] >= n) cout << setw(8) << ("s" + to_string(B[i] - n + 1));
+            else cout << setw(8) << ("x" + to_string(B[i] + 1));
+            cout << " | ";
+            for (int j = 0; j <= n; ++j) {
+                cout << setw(10) << fixed << setprecision(4) << D[i][j];
+            }
+            cout << " | " << setw(10) << fixed << setprecision(4) << D[i][n + 1] << "\n";
+        }
+
+        cout << string(80, '-') << "\n";
+
+        // Objective row (Phase 2)
+        cout << setw(8) << "z" << " | ";
+        for (int j = 0; j <= n; ++j) {
+            cout << setw(10) << fixed << setprecision(4) << D[m][j];
+        }
+        cout << " | " << setw(10) << fixed << setprecision(4) << D[m][n + 1] << "\n";
+
+        // Auxiliary objective row (Phase 1)
+        if (D[m + 1][n] != 0) {
+            cout << setw(8) << "w" << " | ";
+            for (int j = 0; j <= n; ++j) {
+                cout << setw(10) << fixed << setprecision(4) << D[m + 1][j];
+            }
+            cout << " | " << setw(10) << fixed << setprecision(4) << D[m + 1][n + 1] << "\n";
+        }
+
+        cout << string(80, '-') << "\n";
+    }
 
     void pivot(int r, int s) {
+        if (verbose) {
+            string enterVar = (N[s] == -1) ? "s" : ("x" + to_string(N[s] + 1));
+            string leaveVar = (B[r] == -1) ? "s" :
+                              (B[r] >= n) ? ("s" + to_string(B[r] - n + 1)) :
+                              ("x" + to_string(B[r] + 1));
+            cout << "\n>>> Pivot: " << enterVar << " enters, " << leaveVar
+                 << " leaves (pivot element = " << fixed << setprecision(4)
+                 << D[r][s] << ")\n";
+        }
+
         double inv = 1.0 / D[r][s];
         for (int i = 0; i < m + 2; ++i)
             if (i != r)
@@ -24,6 +83,16 @@ class Simplex {
 
     bool phase(int ph) {
         int x = ph == 1 ? m + 1 : m;
+
+        if (verbose) {
+            if (ph == 1) {
+                cout << "\n========== PHASE 1: Finding initial feasible solution ==========\n";
+            } else {
+                cout << "\n========== PHASE 2: Optimizing objective function ==========\n";
+            }
+            printTable("Initial tableau for Phase " + to_string(ph));
+        }
+
         while (true) {
             int s = -1;
             for (int j = 0; j <= n; ++j) {
@@ -31,7 +100,13 @@ class Simplex {
                 if (s == -1 || D[x][j] < D[x][s] - EPS ||
                     (abs(D[x][j] - D[x][s]) <= EPS && N[j] < N[s])) s = j;
             }
-            if (D[x][s] >= -EPS) return true;
+            if (D[x][s] >= -EPS) {
+                if (verbose) {
+                    cout << "\nPhase " << ph << " complete: all reduced costs >= 0\n";
+                    printTable("Final tableau for Phase " + to_string(ph));
+                }
+                return true;
+            }
 
             int r = -1;
             for (int i = 0; i < m; ++i) if (D[i][s] > EPS) {
@@ -42,16 +117,24 @@ class Simplex {
                     if (a < b - EPS || (abs(a - b) <= EPS && B[i] < B[r])) r = i;
                 }
             }
-            if (r == -1) return false;
+            if (r == -1) {
+                if (verbose) cout << "\nUnbounded: no leaving variable found\n";
+                return false;
+            }
+
             pivot(r, s);
+
+            if (verbose) {
+                printTable("After pivot");
+            }
         }
     }
 
 public:
     Simplex(const vector<vector<double>>& A, const vector<double>& b,
-            const vector<double>& c)
+            const vector<double>& c, bool verb = false)
         : m((int)b.size()), n((int)c.size()),
-          D(m + 2, vector<double>(n + 2)), B(m), N(n + 1) {
+          D(m + 2, vector<double>(n + 2)), B(m), N(n + 1), verbose(verb) {
         for (int i = 0; i < m; ++i)
             for (int j = 0; j < n; ++j) D[i][j] = A[i][j];
         for (int i = 0; i < m; ++i) {
@@ -67,22 +150,18 @@ public:
         D[m + 1][n] = 1;
     }
 
-    bool solve(vector<double>& x, double& value, bool verbose) {
+    bool solve(vector<double>& x, double& value, bool verboseSimplex) {
+        verbose = verboseSimplex;
         int r = 0;
         for (int i = 1; i < m; ++i)
             if (D[i][n + 1] < D[r][n + 1]) r = i;
 
-        int step = 0;
-        auto doPivot = [&](int rr, int ss) {
-            if (verbose)
-                cout << "    Simplex step " << ++step
-                     << ": enter variable " << ss + 1
-                     << ", leave row " << rr + 1 << '\n';
-            pivot(rr, ss);
-        };
-
         if (D[r][n + 1] < -EPS) {
-            doPivot(r, n);
+            if (verbose) {
+                cout << "\nInitial basis infeasible (negative RHS detected)\n";
+                cout << "Adding artificial variable and starting Phase 1\n";
+            }
+            pivot(r, n);
             if (!phase(1) || D[m + 1][n + 1] < -EPS) return false;
             if (abs(D[m + 1][n + 1]) > EPS) return false;
             auto it = find(B.begin(), B.end(), -1);
@@ -91,7 +170,11 @@ public:
                 int s = -1;
                 for (int j = 0; j <= n; ++j)
                     if (abs(D[r][j]) > EPS) { s = j; break; }
-                if (s != -1) doPivot(r, s);
+                if (s != -1) pivot(r, s);
+            }
+        } else {
+            if (verbose) {
+                cout << "\nInitial basis is feasible, skipping Phase 1\n";
             }
         }
 
@@ -104,6 +187,18 @@ public:
         for (int i = 0; i < m; ++i)
             if (B[i] < n) x[B[i]] = D[i][n + 1];
         value = D[m][n + 1];
+
+        if (verbose) {
+            cout << "\nOptimal solution found:\n";
+            cout << "  x = (";
+            for (int j = 0; j < n; ++j) {
+                if (j) cout << ", ";
+                cout << fixed << setprecision(4) << x[j];
+            }
+            cout << ")\n";
+            cout << "  Objective value = " << fixed << setprecision(4) << value << "\n";
+        }
+
         return true;
     }
 };
@@ -121,7 +216,8 @@ struct Node {
 
 class BranchAndBound {
     const Problem& p;
-    bool verbose;
+    bool verboseNodes;
+    bool verboseSimplex;
     int nextId = 1;
     int nodes = 0;
     bool found = false;
@@ -153,15 +249,26 @@ class BranchAndBound {
             b.push_back(node.hi[j] - node.lo[j]);
         }
 
-        // A feasible node must have non-negative right-hand sides.
+        // Check feasibility
         for (double rhs : b)
             if (rhs < -EPS) return false;
 
         vector<double> y;
         double shiftedValue;
-        Simplex simplex(A, b, p.c);
+        Simplex simplex(A, b, p.c, verboseSimplex);
 
-        if (!simplex.solve(y, shiftedValue, verbose)) return false;
+        if (verboseSimplex) {
+            cout << "\n  Solving LP relaxation for this node:\n";
+            cout << "  Shifted bounds: ";
+            for (int j = 0; j < n; ++j) {
+                cout << "0 <= y" << j + 1 << " <= " << fixed << setprecision(4)
+                     << (node.hi[j] - node.lo[j]);
+                if (j + 1 < n) cout << ", ";
+            }
+            cout << "\n";
+        }
+
+        if (!simplex.solve(y, shiftedValue, verboseSimplex)) return false;
 
         x.resize(n);
         value = shiftedValue;
@@ -182,81 +289,103 @@ class BranchAndBound {
         cout << ")\n";
     }
 
-    void dfs(const Node& node) {
-        ++nodes;
-        if (verbose) {
-            cout << "\n[Node " << node.id << "]\n";
-            cout << "    Bounds: ";
-            for (int i = 0; i < p.n; ++i)
-                cout << node.lo[i] << " <= x" << i + 1
-                     << " <= " << node.hi[i] << (i + 1 == p.n ? '\n' : ',');
+public:
+    BranchAndBound(const Problem& problem, bool showNodes, bool showSimplex = false)
+        : p(problem), verboseNodes(showNodes), verboseSimplex(showSimplex) {}
+
+    bool solve() {
+        // Step 2: Initialize x*, r, and empty stack S
+        stack<Node> S;
+        S.push({p.lo, p.hi, 1});
+
+        if (verboseNodes) {
+            cout << "\n========== Step 2: Initialize Stack ==========\n";
+            cout << "Starting Branch and Bound with explicit stack\n";
         }
 
-        vector<double> x;
-        double bound;
+        // Step 4: Main loop
+        while (!S.empty()) {
+            // Case 2: Stack is non-empty - extract task from stack
+            Node node = S.top();
+            S.pop();
+            ++nodes;
 
-        if (!solveRelaxation(node, x, bound)) {
-            if (verbose) cout << "    Pruned: LP relaxation is infeasible.\n";
-            return;
-        }
+            if (verboseNodes) {
+                cout << "\n[Node " << node.id << "]" << " (Stack size: " << S.size() << ")\n";
+                cout << "    Bounds: ";
+                for (int i = 0; i < p.n; ++i) {
+                    cout << node.lo[i] << " <= x" << i + 1
+                         << " <= " << node.hi[i];
+                    if (i + 1 < p.n) cout << ", ";
+                }
+                cout << '\n';
+            }
 
-        if (verbose) {
-            printVector(x);
-            cout << "    LP bound = " << bound << '\n';
-        }
+            vector<double> x;
+            double bound;
 
-        if (found && bound <= bestValue + EPS) {
-            if (verbose) cout << "    Pruned: bound is not better than incumbent.\n";
-            return;
-        }
+            // Solve LP relaxation
+            if (!solveRelaxation(node, x, bound)) {
+                if (verboseNodes) cout << "    Pruned: LP relaxation is infeasible.\n";
+                continue;
+            }
 
-        int branch = -1;
-        for (int j = 0; j < p.n; ++j) {
-            if (!isInteger(x[j])) {
-                branch = j;
-                break;
+            if (verboseNodes) {
+                printVector(x);
+                cout << "    LP bound = " << bound << '\n';
+            }
+
+            // Pruning by bound
+            if (found && bound <= bestValue + EPS) {
+                if (verboseNodes) cout << "    Pruned: bound <= incumbent (" << bestValue << ").\n";                continue;
+            }
+
+            // Check integrality
+            int branch = -1;
+            for (int j = 0; j < p.n; ++j) {
+                if (!isInteger(x[j])) {
+                    branch = j;
+                    break;
+                }
+            }
+
+            if (branch == -1) {
+                // Integer solution found
+                found = true;
+                bestValue = bound;
+                bestX = x;
+                if (verboseNodes) cout << "    Integer solution found! F(x) = " << bestValue << "\n";
+                continue;
+            }
+
+            // Branching
+            double floorValue = floor(x[branch]);
+            double ceilValue = ceil(x[branch]);
+
+            if (verboseNodes) {
+                cout << "    Branch on x" << branch + 1 << " = " << x[branch] << '\n';
+                cout << "    Left : x" << branch + 1 << " <= " << floorValue << '\n';
+                cout << "    Right: x" << branch + 1 << " >= " << ceilValue << '\n';
+            }
+
+            // Right child: x[branch] >= ceil(x[branch])
+            if (ceilValue <= node.hi[branch] + EPS) {
+                Node right = node;
+                right.id = ++nextId;
+                right.lo[branch] = max(right.lo[branch], ceilValue);
+                S.push(right);
+            }
+
+            // Left child: x[branch] <= floor(x[branch])
+            if (floorValue >= node.lo[branch] - EPS) {
+                Node left = node;
+                left.id = ++nextId;
+                left.hi[branch] = min(left.hi[branch], floorValue);
+                S.push(left);
             }
         }
 
-        if (branch == -1) {
-            found = true;
-            bestValue = bound;
-            bestX = x;
-            if (verbose) cout << "    Integer solution found!\n";
-            return;
-        }
-
-        double floorValue = floor(x[branch]);
-        double ceilValue = ceil(x[branch]);
-
-        if (verbose) {
-            cout << "    Branch on x" << branch + 1
-                 << " = " << x[branch] << '\n';
-            cout << "    Left : x" << branch + 1 << " <= " << floorValue << '\n';
-            cout << "    Right: x" << branch + 1 << " >= " << ceilValue << '\n';
-        }
-
-        if (floorValue >= node.lo[branch] - EPS) {
-            Node left = node;
-            left.id = ++nextId;
-            left.hi[branch] = min(left.hi[branch], floorValue);
-            dfs(left);
-        }
-
-        if (ceilValue <= node.hi[branch] + EPS) {
-            Node right = node;
-            right.id = ++nextId;
-            right.lo[branch] = max(right.lo[branch], ceilValue);
-            dfs(right);
-        }
-    }
-
-public:
-    BranchAndBound(const Problem& problem, bool showSteps)
-        : p(problem), verbose(showSteps) {}
-
-    bool solve() {
-        dfs({p.lo, p.hi, 1});
+        // Case 1: Stack is empty - algorithm terminates
         return found;
     }
 
@@ -268,6 +397,7 @@ public:
         }
 
         cout << fixed << setprecision(4);
+
         for (int i = 0; i < p.n; ++i)
             cout << "x" << i + 1 << " = " << bestX[i] << '\n';
         cout << "F(x) = " << bestValue << '\n';
@@ -275,7 +405,23 @@ public:
     }
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool detailedOutput = false;
+    string filename;
+
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "--detailed") {
+            detailedOutput = true;
+        } else {
+            filename = arg;
+        }
+    }
+
+    if (!filename.empty()) {
+        freopen(filename.c_str(), "r", stdin);
+    }
+
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -302,8 +448,13 @@ int main() {
     cout << "==============================================\n";
     cout << "Objective: maximize F(x)\n";
     cout << "Variables: " << p.n << ", constraints: " << p.m << "\n";
+    if (detailedOutput) {
+        cout << "Output mode: DETAILED (showing all simplex iterations)\n";
+    } else {
+        cout << "Output mode: BRIEF (use --detailed flag for full simplex tables)\n";
+    }
 
-    BranchAndBound solver(p, true);
+    BranchAndBound solver(p, true, detailedOutput);
     solver.solve();
     solver.printResult();
 }
