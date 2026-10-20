@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Лабораторная работа 3 — теория и разбор программы</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2825;
+      --muted: #5e6c67;
+      --paper: #fbfcfa;
+      --line: #d8e0dc;
+      --green: #176b52;
+      --green-soft: #e8f3ee;
+      --blue: #315b78;
+      --blue-soft: #edf3f7;
+      --amber: #80561b;
+      --amber-soft: #faf2df;
+      --code: #18221f;
+      --code-ink: #e4eee9;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #edf1ee;
+      font: 16px/1.68 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .page {
+      width: min(100% - 32px, 1000px);
+      margin: 30px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    header {
+      padding: 42px 56px 34px;
+      background: var(--green-soft);
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+    h1 { max-width: 760px; margin: 8px 0 10px; font-size: clamp(28px, 5vw, 42px); line-height: 1.15; }
+    header p { max-width: 760px; margin: 0; color: var(--muted); font-size: 18px; }
+    main { padding: 12px 56px 56px; }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+    a { color: var(--green); text-underline-offset: 3px; }
+    section { padding-top: 28px; scroll-margin-top: 20px; }
+    h2 { margin: 0 0 12px; font-size: 25px; line-height: 1.25; }
+    h3 { margin: 22px 0 8px; font-size: 19px; line-height: 1.35; }
+    p { margin: 9px 0; }
+    .lead { font-size: 18px; }
+    .callout {
+      margin: 18px 0;
+      padding: 14px 18px;
+      border-left: 4px solid var(--green);
+      background: var(--green-soft);
+    }
+    .callout.blue { border-color: var(--blue); background: var(--blue-soft); }
+    .callout.amber { border-color: #ba8125; background: var(--amber-soft); }
+    .formula {
+      overflow-x: auto;
+      margin: 14px 0;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f4f7f5;
+      font: 17px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: nowrap;
+    }
+    .table-wrap { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 9px 12px; border: 1px solid var(--line); text-align: right; }
+    th { background: #f0f4f1; font-weight: 700; }
+    th:first-child, td:first-child { text-align: left; }
+    code:not(pre code) {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #edf2ef;
+      font: 0.92em ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .steps { padding-left: 24px; }
+    .steps li { margin: 8px 0; padding-left: 3px; }
+    .code-heading { margin-top: 34px; }
+    pre {
+      overflow: auto;
+      max-height: none;
+      margin: 14px 0 0;
+      padding: 22px;
+      border-radius: 6px;
+      background: var(--code);
+      color: var(--code-ink);
+      font: 13px/1.58 "Cascadia Code", Consolas, ui-monospace, monospace;
+      tab-size: 4;
+      white-space: pre;
+    }
+    .small { color: var(--muted); font-size: 14px; }
+    footer { padding: 18px 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 650px) {
+      .page { width: 100%; margin: 0; border: 0; border-radius: 0; }
+      header { padding: 30px 22px 26px; }
+      main { padding: 8px 22px 36px; }
+      footer { padding: 18px 22px; }
+      pre { margin-left: -22px; margin-right: -22px; padding: 18px; border-radius: 0; font-size: 12px; }
+      th, td { padding: 7px 9px; }
+    }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; margin: 0; border: 0; }
+      header { background: white; }
+      nav { display: none; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f2f1; color: #111; font-size: 9px; }
+      section { break-inside: avoid; }
+      #source { break-before: page; }
+    }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <header>
+      <div class="eyebrow">Исследование операций · Лабораторная работа 3</div>
+      <h1>Задача распределения ресурсов</h1>
+      <p>Теория динамического программирования и подробный разбор программы на C++ простыми словами.</p>
+    </header>
+    <main>
+      <nav aria-label="Содержание">
+        <a href="#problem">Постановка задачи</a>
+        <a href="#idea">Идея метода</a>
+        <a href="#example">Пример</a>
+        <a href="#code-map">Разбор кода</a>
+        <a href="#complexity">Сложность</a>
+        <a href="#source">Полный исходный код</a>
+      </nav>
+
+      <section id="problem">
+        <h2>1. Что требуется найти</h2>
+        <p class="lead">Есть <strong>Q</strong> одинаковых единиц ресурса и <strong>P</strong> агентов. Нужно распределить весь ресурс между агентами и получить как можно большую суммарную прибыль.</p>
+        <p>Прибыль каждого агента зависит от количества ресурса, которое он получил. Зависимость может быть любой: больше ресурса не обязательно означает больше прибыли. Например, агенту может быть выгодно получить 1 единицу, но невыгодно получать 2.</p>
+        <p>Все возможные прибыли записаны в матрице <code>A</code>. В ней <code>P</code> строк и <code>Q+1</code> столбцов. Строка соответствует агенту, столбец с номером <code>q</code> показывает прибыль, если агент получил <code>q</code> единиц.</p>
+        <div class="callout"><strong>Важно:</strong> столбцы матрицы начинаются с нуля: первый столбец — прибыль при выделении 0 единиц, следующий — при 1 единице и так далее.</div>
+        <p>В примере ниже три агента и три единицы ресурса. Каждая строка после первой — прибыли одного агента для количеств ресурса от 0 до 3.</p>
+        <pre>3 3
+0 1 2 3
+0 0 1 2
+0 2 2 3</pre>
+      </section>
+
+      <section id="idea">
+        <h2>2. Идея динамического программирования</h2>
+        <p>Вместо того чтобы сразу перебирать все полные распределения, решаем много маленьких задач и сохраняем ответы в таблице.</p>
+        <p><code>B(p,q)</code> — это максимальная прибыль, которую можно получить, распределив <code>q</code> единиц ресурса между первыми <code>p</code> агентами.</p>
+        <h3>Базовый случай: один агент</h3>
+        <p>Если агент только один, то все <code>q</code> единиц, которые мы сейчас распределяем, получает он. Значит, прибыль уже записана в матрице <code>A</code>:</p>
+        <div class="formula">B(1, q) = A(1, q), &nbsp;&nbsp; C(1, q) = q</div>
+        <p><code>C(p,q)</code> запоминает решение: сколько единиц отдать агенту номер <code>p</code>, когда <code>q</code> единиц распределяются между первыми <code>p</code> агентами.</p>
+        <h3>Остальные случаи: два агента или больше</h3>
+        <p>Рассмотрим последнего из первых <code>p</code> агентов. Ему можно выделить <code>i</code> единиц, где <code>i</code> меняется от 0 до <code>q</code>. Тогда предыдущим агентам останется <code>q-i</code> единиц.</p>
+        <div class="formula">B(p, q) = max<sub>0 ≤ i ≤ q</sub> [ A(p, i) + B(p-1, q-i) ]</div>
+        <p>Для каждого допустимого <code>i</code> складываем две прибыли: прибыль текущего агента за <code>i</code> единиц и лучшую прибыль предыдущих агентов за остаток. Выбираем самый большой результат. Значение <code>i</code>, на котором получен максимум, записываем в <code>C(p,q)</code>.</p>
+        <div class="callout blue"><strong>Проще говоря:</strong> пробуем отдать последнему агенту 0 единиц, затем 1, затем 2 и так далее. Каждый раз добавляем к его прибыли лучший результат для оставшегося ресурса. Побеждает самый выгодный вариант.</div>
+      </section>
+
+      <section id="example">
+        <h2>3. Пример из методички</h2>
+        <p>Матрица прибыли:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Агент / ресурс</th><th>0</th><th>1</th><th>2</th><th>3</th></tr></thead>
+          <tbody>
+            <tr><th>Агент 1</th><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><th>Агент 2</th><td>0</td><td>0</td><td>1</td><td>2</td></tr>
+            <tr><th>Агент 3</th><td>0</td><td>2</td><td>2</td><td>3</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Сначала агент 1</h3>
+        <p>Первый агент получает весь ресурс в каждой маленькой задаче. Поэтому первая строка <code>B</code> совпадает с его строкой в <code>A</code>; строка <code>C</code> равна количеству ресурса:</p>
+        <div class="formula">B(1, ·) = 0, 1, 2, 3 &nbsp;&nbsp; C(1, ·) = 0, 1, 2, 3</div>
+        <h3>Затем агент 2</h3>
+        <p>Например, для двух единиц между первыми двумя агентами проверяем варианты:</p>
+        <div class="formula">отдать агенту 2: 0 → A(2,0)+B(1,2) = 0+2 = 2<br>отдать агенту 2: 1 → A(2,1)+B(1,1) = 0+1 = 1<br>отдать агенту 2: 2 → A(2,2)+B(1,0) = 1+0 = 1</div>
+        <p>Лучший вариант — прибыль 2, когда агент 2 получает 0. Поэтому <code>B(2,2)=2</code> и <code>C(2,2)=0</code>. Так же считаются остальные ячейки строки.</p>
+        <h3>Наконец агент 3</h3>
+        <p>Для всех трёх единиц сравниваем:</p>
+        <div class="formula">агенту 3 дать 0: A(3,0)+B(2,3) = 0+3 = 3<br>агенту 3 дать 1: A(3,1)+B(2,2) = 2+2 = 4<br>агенту 3 дать 2: A(3,2)+B(2,1) = 2+1 = 3<br>агенту 3 дать 3: A(3,3)+B(2,0) = 3+0 = 3</div>
+        <p>Максимум равен 4. Он получается, если отдать третьему агенту 1 единицу. Следовательно, <code>B(3,3)=4</code>, <code>C(3,3)=1</code>.</p>
+        <p>Полные таблицы, которые строит программа:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>B: максимальная прибыль</th><th>q=0</th><th>q=1</th><th>q=2</th><th>q=3</th></tr></thead>
+          <tbody>
+            <tr><th>p=1</th><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><th>p=2</th><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><th>p=3</th><td>0</td><td>2</td><td>3</td><td>4</td></tr>
+          </tbody>
+        </table></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>C: сколько дать агенту p</th><th>q=0</th><th>q=1</th><th>q=2</th><th>q=3</th></tr></thead>
+          <tbody>
+            <tr><th>p=1</th><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><th>p=2</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th>p=3</th><td>0</td><td>1</td><td>1</td><td>1</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout amber"><strong>Замечание по PDF:</strong> в текстовом разборе примера есть опечатка при вычислении <code>B(2,3)</code>. По формуле значение равно 3, как указано в итоговой матрице <code>B</code>. Программа следует формуле и итоговой матрице.</div>
+      </section>
+
+      <section id="code-map">
+        <h2>4. Как восстановить распределение</h2>
+        <p>Матрица <code>B</code> сообщает максимальную прибыль, но сама по себе не сообщает, кому сколько ресурса выдать. Для этого нужна матрица <code>C</code>.</p>
+        <ol class="steps">
+          <li>Начинаем с полной задачи: <code>p=3</code>, <code>q=3</code>.</li>
+          <li><code>C(3,3)=1</code>: агенту 3 выдаём 1 единицу. Осталось <code>q=2</code>.</li>
+          <li><code>C(2,2)=0</code>: агенту 2 выдаём 0 единиц. Осталось <code>q=2</code>.</li>
+          <li><code>C(1,2)=2</code>: агенту 1 выдаём оставшиеся 2 единицы.</li>
+        </ol>
+        <p>Итог: агент 1 получает 2, агент 2 — 0, агент 3 — 1. Суммарная прибыль равна 4. Сумма выделенных ресурсов равна исходному запасу: <code>2+0+1=3</code>.</p>
+        <h2 style="margin-top:32px">5. Где это находится в программе</h2>
+        <h3>Структура Solution</h3>
+        <p>В начале файла структура <code>Solution</code> хранит три таблицы/результата: <code>best</code> — матрица <code>B</code>; <code>choice</code> — матрица <code>C</code>; <code>allocation</code> — итоговое количество ресурса для каждого агента.</p>
+        <h3>Функция solve</h3>
+        <p>В <code>solve</code> находится основной алгоритм. Сначала создаются матрицы размера <code>P × (Q+1)</code>. Затем заполняется базовая строка для первого агента. Вложенные циклы перебирают каждого следующего агента, каждое количество ресурса <code>q</code> и каждое возможное выделение <code>i</code>. Максимум попадает в <code>best</code>, а соответствующее выделение — в <code>choice</code>.</p>
+        <p>После заполнения таблиц функция проходит по <code>choice</code> с конца к началу, восстанавливая окончательный план. Это и есть обратный ход метода.</p>
+        <h3>Функция main</h3>
+        <p><code>main</code> разбирает параметры запуска, читает <code>P</code>, <code>Q</code> и матрицу прибыли, проверяет корректность ввода, вызывает <code>solve</code> и печатает таблицы и план. Можно читать данные из стандартного ввода или указать имя файла аргументом программы. Флаг <code>--detailed</code> выводит каждую пару <code>B(p,q)</code>, <code>C(p,q)</code>.</p>
+        <h3>Почему индексы в коде выглядят иначе</h3>
+        <p>В методичке агенты пронумерованы от 1, а в C++ индексы вектора начинаются с 0. Поэтому агент 1 в формулах хранится как <code>profit[0]</code>, агент <code>p</code> — как <code>profit[p-1]</code>. Столбец ресурса начинается с 0 и в коде, и в методичке.</p>
+      </section>
+
+      <section id="complexity">
+        <h2>6. Сколько занимает вычисление</h2>
+        <p>Для каждой пары <code>(p,q)</code> перебираются значения <code>i</code> от 0 до <code>q</code>. Поэтому время работы — <code>O(P × Q²)</code>. Таблицы <code>B</code> и <code>C</code> содержат по <code>P × (Q+1)</code> элементов, поэтому память — <code>O(P × Q)</code>.</p>
+        <div class="callout"><strong>Суть всей программы в одной фразе:</strong> заполнить таблицу лучшей прибыли и таблицу решений, которые привели к этой прибыли, затем пройти по таблице решений назад и получить распределение.</div>
+      </section>
+
+      <section id="source">
+        <h2 class="code-heading">7. Полный исходный код</h2>
+        <p class="small">Ниже приведён полный текст файла <code>main.cpp</code>, использованного для лабораторной работы.</p>
+        <pre><code>#include &lt;algorithm&gt;
+#include &lt;cmath&gt;
+#include &lt;fstream&gt;
+#include &lt;iomanip&gt;
+#include &lt;iostream&gt;
+#include &lt;limits&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+struct Solution {
+    vector&lt;vector&lt;double&gt;&gt; best;
+    vector&lt;vector&lt;int&gt;&gt; choice;
+    vector&lt;int&gt; allocation;
+};
+
+static bool isInteger(double value) {
+    return abs(value - round(value)) &lt;= 1e-9;
+}
+
+static string formatNumber(double value) {
+    ostringstream out;
+    if (isInteger(value)) out &lt;&lt; static_cast&lt;long long&gt;(llround(value));
+    else out &lt;&lt; fixed &lt;&lt; setprecision(6) &lt;&lt; value;
+    return out.str();
+}
+
+static Solution solve(const vector&lt;vector&lt;double&gt;&gt;&amp; profit) {
+    const int agents = static_cast&lt;int&gt;(profit.size());
+    const int resource = static_cast&lt;int&gt;(profit.front().size()) - 1;
+
+    Solution result;
+    result.best.assign(agents, vector&lt;double&gt;(resource + 1, 0.0));
+    result.choice.assign(agents, vector&lt;int&gt;(resource + 1, 0));
+
+    for (int q = 0; q &lt;= resource; ++q) {
+        result.best[0][q] = profit[0][q];
+        result.choice[0][q] = q;
+    }
+
+    for (int p = 1; p &lt; agents; ++p) {
+        for (int q = 0; q &lt;= resource; ++q) {
+            double bestValue = -numeric_limits&lt;double&gt;::infinity();
+            int bestChoice = 0;
+            for (int assigned = 0; assigned &lt;= q; ++assigned) {
+                const double candidate = profit[p][assigned] + result.best[p - 1][q - assigned];
+                // Scanning from zero keeps the first (smallest) allocation on ties.
+                if (candidate &gt; bestValue + 1e-9) {
+                    bestValue = candidate;
+                    bestChoice = assigned;
+                }
+            }
+            result.best[p][q] = bestValue;
+            result.choice[p][q] = bestChoice;
+        }
+    }
+
+    result.allocation.assign(agents, 0);
+    int remaining = resource;
+    for (int p = agents - 1; p &gt;= 0; --p) {
+        result.allocation[p] = result.choice[p][remaining];
+        remaining -= result.allocation[p];
+    }
+    return result;
+}
+
+static void printMatrix(const string&amp; name, const vector&lt;vector&lt;double&gt;&gt;&amp; matrix) {
+    cout &lt;&lt; "\n" &lt;&lt; name &lt;&lt; " (rows: agents, columns: q = 0..Q)\n";
+    for (const auto&amp; row : matrix) {
+        for (double value : row) cout &lt;&lt; setw(12) &lt;&lt; formatNumber(value);
+        cout &lt;&lt; '\n';
+    }
+}
+
+static void printChoiceMatrix(const vector&lt;vector&lt;int&gt;&gt;&amp; matrix) {
+    cout &lt;&lt; "\nC (amount assigned to the current agent)\n";
+    for (const auto&amp; row : matrix) {
+        for (int value : row) cout &lt;&lt; setw(12) &lt;&lt; value;
+        cout &lt;&lt; '\n';
+    }
+}
+
+int main(int argc, char* argv[]) {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    bool detailed = false;
+    string filename;
+    for (int i = 1; i &lt; argc; ++i) {
+        const string argument = argv[i];
+        if (argument == "--detailed") detailed = true;
+        else if (filename.empty()) filename = argument;
+        else {
+            cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " [--detailed] [input_file]\n";
+            return 2;
+        }
+    }
+
+    ifstream input;
+    if (!filename.empty()) {
+        input.open(filename);
+        if (!input) {
+            cerr &lt;&lt; "Cannot open input file: " &lt;&lt; filename &lt;&lt; '\n';
+            return 2;
+        }
+        cin.rdbuf(input.rdbuf());
+    }
+
+    int agents = 0;
+    int resource = 0;
+    if (!(cin &gt;&gt; agents &gt;&gt; resource) || agents &lt;= 0 || resource &lt; 0) {
+        cerr &lt;&lt; "Input error: expected P &gt; 0 and Q &gt;= 0.\n";
+        return 2;
+    }
+
+    vector&lt;vector&lt;double&gt;&gt; profit(agents, vector&lt;double&gt;(resource + 1));
+    for (int p = 0; p &lt; agents; ++p) {
+        for (int q = 0; q &lt;= resource; ++q) {
+            if (!(cin &gt;&gt; profit[p][q]) || !isfinite(profit[p][q])) {
+                cerr &lt;&lt; "Input error: expected a P x (Q + 1) profit matrix.\n";
+                return 2;
+            }
+        }
+    }
+
+    string extra;
+    if (cin &gt;&gt; extra) {
+        cerr &lt;&lt; "Input error: unexpected data after the profit matrix.\n";
+        return 2;
+    }
+
+    const Solution result = solve(profit);
+
+    cout &lt;&lt; "Resource Allocation Problem - Dynamic Programming\n";
+    cout &lt;&lt; "=================================================\n";
+    cout &lt;&lt; "Agents (P): " &lt;&lt; agents &lt;&lt; ", resource units (Q): " &lt;&lt; resource &lt;&lt; '\n';
+    cout &lt;&lt; "Input matrix A: profit for each agent and allocated amount\n";
+    printMatrix("A", profit);
+    printMatrix("B (maximum profit)", result.best);
+    printChoiceMatrix(result.choice);
+
+    cout &lt;&lt; "\nOptimal allocation (backward pass):\n";
+    int totalUnits = 0;
+    for (int p = 0; p &lt; agents; ++p) {
+        cout &lt;&lt; "  Agent " &lt;&lt; p + 1 &lt;&lt; ": " &lt;&lt; result.allocation[p] &lt;&lt; " unit(s)\n";
+        totalUnits += result.allocation[p];
+    }
+    cout &lt;&lt; "Total allocated: " &lt;&lt; totalUnits &lt;&lt; " of " &lt;&lt; resource &lt;&lt; '\n';
+    cout &lt;&lt; "Maximum total profit B(P, Q) = " &lt;&lt; formatNumber(result.best.back().back()) &lt;&lt; '\n';
+
+    if (detailed) {
+        cout &lt;&lt; "\nDetailed recurrence values:\n";
+        for (int p = 1; p &lt;= agents; ++p) {
+            for (int q = 0; q &lt;= resource; ++q) {
+                cout &lt;&lt; "B(" &lt;&lt; p &lt;&lt; ", " &lt;&lt; q &lt;&lt; ") = "
+                     &lt;&lt; formatNumber(result.best[p - 1][q])
+                     &lt;&lt; ", C(" &lt;&lt; p &lt;&lt; ", " &lt;&lt; q &lt;&lt; ") = "
+                     &lt;&lt; result.choice[p - 1][q] &lt;&lt; '\n';
+            }
+        }
+    }
+    return 0;
+}</code></pre>
+      </section>
+    </main>
+    <footer>Лабораторная работа 3 · Задача распределения ресурсов · Динамическое программирование</footer>
+  </article>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Лабораторная 6 — максимальное паросочетание</title>
+  <style>
+    :root{--ink:#182329;--muted:#52616a;--paper:#f5f7f6;--surface:#fff;--line:#d7dfdc;--green:#176b55;--green-pale:#e4f2ec;--blue:#245c82;--blue-pale:#e7f0f7;--amber:#a65c12;--amber-pale:#fff1dc;--code:#172126;--max:1000px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+    header{padding:40px 22px 34px;color:#fff;background:var(--green);border-bottom:6px solid #e1a34e}
+    .header-inner,main,footer{width:min(var(--max),calc(100% - 36px));margin-inline:auto}
+    .eyebrow{margin:0 0 8px;color:#d4eee3;font-size:.82rem;font-weight:750;text-transform:uppercase}
+    h1{max-width:800px;margin:0;font-size:clamp(2rem,5vw,3.2rem);line-height:1.12}
+    header p:last-child{max-width:760px;margin:16px 0 0;color:#edf7f2;font-size:1.08rem}
+    main{padding:24px 0 54px}
+    nav{display:flex;flex-wrap:wrap;gap:8px 16px;padding:15px 18px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+    nav a{color:var(--green);font-weight:700;text-underline-offset:3px}
+    section{padding:30px 0;border-bottom:1px solid var(--line)}
+    h2{margin:0 0 14px;font-size:1.7rem;line-height:1.25}h3{margin:24px 0 8px;font-size:1.2rem}
+    p{margin:10px 0}.lead{font-size:1.1rem}
+    .callout{margin:18px 0;padding:15px 18px;border-left:5px solid var(--green);background:var(--green-pale)}
+    .callout.blue{border-color:var(--blue);background:var(--blue-pale)}.callout.amber{border-color:var(--amber);background:var(--amber-pale)}
+    .callout strong{display:block;margin-bottom:3px}
+    .diagram{overflow-x:auto;margin:18px 0;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+    .diagram pre{min-width:480px;margin:0;font:600 15px/1.7 ui-monospace,Consolas,monospace}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;color:var(--muted);font-size:.94rem}
+    .legend span:before{content:"";display:inline-block;width:18px;margin:0 7px 3px 0;border-top:3px solid var(--green)}
+    .legend .back:before{border-color:var(--blue);border-top-style:dashed}
+    .code-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;margin:22px 0 0;padding:10px 14px;color:#fff;background:#29434a;border-radius:6px 6px 0 0}
+    .code-title small{color:#d6e6df;font-weight:500}
+    pre.code{overflow-x:auto;margin:0;padding:16px 18px;color:#e7efec;background:var(--code);border-radius:0 0 6px 6px;tab-size:4;font:14px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace}
+    code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}:not(pre)>code{padding:.12em .35em;background:#e8eeeb;border-radius:3px;font-size:.92em}
+    table{width:100%;margin:16px 0;border-collapse:collapse;background:#fff}th,td{padding:10px 12px;text-align:left;vertical-align:top;border:1px solid var(--line)}th{background:#e8efec}
+    ol,ul{padding-left:1.35rem}li{margin:6px 0}.steps{list-style:none;padding:0;counter-reset:step}
+    .steps li{position:relative;margin:12px 0;padding:12px 14px 12px 52px;background:#fff;border:1px solid var(--line);border-radius:5px}
+    .steps li:before{counter-increment:step;content:counter(step);position:absolute;top:12px;left:14px;display:grid;width:26px;height:26px;place-items:center;color:white;background:var(--green);border-radius:50%;font-weight:800}
+    footer{padding:0 0 32px;color:var(--muted);font-size:.92rem}
+    @media(max-width:620px){body{font-size:15px}header{padding:30px 18px 26px}.header-inner,main,footer{width:calc(100% - 24px)}section{padding:24px 0}h2{font-size:1.45rem}pre.code{font-size:12.5px;padding:14px}th,td{padding:8px}}
+    @media print{body{background:#fff;font-size:11pt}header{padding:20px;print-color-adjust:exact}nav{display:none}main{width:100%;padding-top:0}section{break-inside:avoid}pre.code,.code-title{print-color-adjust:exact}pre.code{white-space:pre-wrap;overflow-wrap:anywhere;font-size:8pt}}
+  </style>
+</head>
+<body>
+  <header><div class="header-inner">
+    <p class="eyebrow">Исследование операций · Лабораторная работа 6</p>
+    <h1>Максимальное паросочетание в двудольном графе</h1>
+    <p>Теория простыми словами, шаги алгоритма и прямые вставки фрагментов C++ программы.</p>
+  </div></header>
+  <main>
+    <nav aria-label="Содержание">
+      <a href="#task">Задача</a><a href="#idea">Идея</a><a href="#gstar">Граф G*</a><a href="#code">Код</a><a href="#example">Пример</a><a href="#proof">Почему верно</a><a href="#input">Запуск</a><a href="#defense">Защита</a>
+    </nav>
+    <section id="task">
+      <h2>1. Что требуется найти</h2>
+      <p class="lead">Двудольный граф — это граф, вершины которого разбиты на две группы. Ребро соединяет вершину слева с вершиной справа, но не вершины одной группы между собой.</p>
+      <p><strong>Паросочетание</strong> — набор рёбер без общих вершин. Если вершина уже участвует в выбранном ребре, второе ребро с ней выбрать нельзя. Нужно найти паросочетание, в котором как можно больше рёбер.</p>
+      <div class="diagram"><pre>Левая доля V1             Правая доля V2
+
+   u1  --------------------  v1
+   u2  -----------+--------  v1
+                  +--------  v2
+   u3  --------------------  v3</pre><div class="legend"><span>Ребро исходного графа</span></div></div>
+      <p>Здесь можно выбрать пары <code>(u1,v1)</code>, <code>(u2,v2)</code>, <code>(u3,v3)</code>. Вершины не повторяются, значит размер паросочетания равен 3.</p>
+      <div class="callout"><strong>Представь людей и задачи</strong>Люди — левая доля, задачи — правая. Ребро значит, что человек умеет выполнять задачу. Паросочетание назначает разным людям разные задачи. Максимальное паросочетание назначает задачу максимально возможному числу людей.</div>
+    </section>
+    <section id="idea">
+      <h2>2. Главная идея: найти путь и переставить пары</h2>
+      <p>Допустим, сейчас выбрана только пара <code>(u1,v1)</code>. Свободная вершина <code>u2</code> тоже связана с <code>v1</code>, но просто добавить <code>(u2,v1)</code> нельзя: тогда у <code>v1</code> было бы две пары.</p>
+      <p>Посмотрим, можно ли освободить <code>v1</code>, пересадив <code>u1</code> на другую вершину:</p>
+      <div class="diagram"><pre>u2 --свободное ребро--&gt; v1 --выбранное ребро назад--&gt; u1
+                                                    |
+                                             свободное ребро
+                                                    v
+                                                   v2
+
+Путь: u2 -&gt; v1 -&gt; u1 -&gt; v2
+После перестройки: (u2,v1), (u1,v2)</pre><div class="legend"><span>Добавляемое ребро</span><span class="back">Выбранное ребро, которое снимем</span></div></div>
+      <p>Путь начинается в свободной левой вершине, заканчивается в свободной правой и чередует невыбранные и выбранные рёбра. После перестройки старую пару убираем, а два свободных ребра выбираем. Было одно ребро, стало два.</p>
+      <div class="callout blue"><strong>Почему размер всегда растёт на 1</strong>На чередующемся пути свободных рёбер на одно больше, чем уже выбранных. Поэтому если убрать выбранные рёбра пути и добавить свободные, общее количество пар увеличится ровно на единицу.</div>
+    </section>
+    <section id="gstar">
+      <h2>3. Ориентированный граф G*</h2>
+      <p>Методичка превращает поиск такого пути в обычный поиск пути от источника <code>s</code> до стока <code>t</code>. Правила направления дуг такие:</p>
+      <table><thead><tr><th>Дуга</th><th>Простое значение</th></tr></thead><tbody>
+        <tr><td><code>s -&gt; u</code></td><td><code>u</code> свободна и может начать путь.</td></tr>
+        <tr><td><code>u -&gt; v</code></td><td>Ребро не выбрано; по нему можно добавить пару.</td></tr>
+        <tr><td><code>v -&gt; u</code></td><td>Ребро выбрано; по нему можно вернуться и снять прежнюю пару.</td></tr>
+        <tr><td><code>v -&gt; t</code></td><td><code>v</code> свободна и может завершить путь.</td></tr>
+      </tbody></table>
+      <div class="callout amber"><strong>Зачем менять направление у выбранных рёбер</strong>Когда путь приходит в занятую правую вершину, он должен пройти назад по её текущей паре и освободить её. Именно поэтому такая дуга направлена из правой доли в левую.</div>
+      <p>В коде <code>G*</code> не сохраняется отдельным списком дуг. Программа определяет направление на лету по массивам текущего паросочетания. Это то же представление графа, только без создания отдельной структуры для дуг.</p>
+    </section>
+    <section id="code">
+      <h2>4. Что в коде за что отвечает</h2>
+      <h3>Данные исходного графа</h3>
+      <div class="code-title"><strong>Структура BipartiteGraph</strong><small>фрагмент C++</small></div>
+      <pre class="code"><code>struct BipartiteGraph {
+    int leftSize = 0;
+    int rightSize = 0;
+    vector&lt;vector&lt;int&gt;&gt; adjacent;
+};</code></pre>
+      <p><code>leftSize</code> и <code>rightSize</code> — размеры долей. <code>adjacent[u]</code> содержит номера всех правых вершин, соединённых ребром с левой вершиной <code>u</code>. Внутри индексы начинаются с нуля; при печати к ним прибавляется единица.</p>
+      <h3>Текущее паросочетание</h3>
+      <div class="code-title"><strong>Соответствия в обе стороны</strong><small>поля класса MaximumMatching</small></div>
+      <pre class="code"><code>vector&lt;int&gt; matchedLeft;
+vector&lt;int&gt; matchedRight;</code></pre>
+      <p><code>matchedLeft[u] = v</code> значит, что <code>u</code> сейчас соединена в паросочетании с <code>v</code>. <code>matchedRight[v] = u</code> хранит обратное соответствие. Значение <code>-1</code> означает «свободна».</p>
+      <h3>Очередь, посещённость и родители BFS</h3>
+      <div class="code-title"><strong>Основа поиска в ширину</strong><small>фрагмент findAugmentingPath</small></div>
+      <pre class="code"><code>parent.assign(vertexCount, -1);
+vector&lt;bool&gt; visited(vertexCount, false);
+queue&lt;int&gt; pending;
+
+visited[source] = true;
+pending.push(source);
+
+while (!pending.empty()) {
+    int current = pending.front();
+    pending.pop();
+    // Обрабатываем дуги G* из current.
+}</code></pre>
+      <p><code>pending</code> — очередь вершин на обработку. <code>visited</code> защищает от повторных заходов. <code>parent</code> запоминает предшественника, чтобы восстановить найденный путь.</p>
+      <h3>Из источника в свободные левые вершины</h3>
+      <div class="code-title"><strong>Реализация дуг s -&gt; u</strong><small>фрагмент findAugmentingPath</small></div>
+      <pre class="code"><code>if (current == source) {
+    for (int left = 0; left &lt; graph.leftSize; ++left) {
+        if (matchedLeft[left] == -1 &amp;&amp; !visited[left]) {
+            visited[left] = true;
+            parent[left] = source;
+            pending.push(left);
+        }
+    }
+    continue;
+}</code></pre>
+      <p>В очередь попадают только свободные левые вершины. Если вершина уже занята, она не может быть началом увеличивающего пути.</p>
+      <h3>Из левой вершины по свободным рёбрам</h3>
+      <div class="code-title"><strong>Реализация дуг u -&gt; v</strong><small>фрагмент findAugmentingPath</small></div>
+      <pre class="code"><code>if (current &lt; graph.leftSize) {
+    int left = current;
+    for (int right : graph.adjacent[left]) {
+        if (matchedLeft[left] == right) continue;
+        int next = rightVertex(right);
+        if (visited[next]) continue;
+        visited[next] = true;
+        parent[next] = current;
+        pending.push(next);
+    }
+}</code></pre>
+      <p>Перебираются исходные рёбра из левой вершины. Если ребро уже входит в matching, оно пропускается. Оставшиеся рёбра направлены слева направо.</p>
+      <h3>Из правой вершины: в сток или назад по выбранному ребру</h3>
+      <div class="code-title"><strong>Реализация дуг v -&gt; t и v -&gt; u</strong><small>фрагмент findAugmentingPath</small></div>
+      <pre class="code"><code>int right = current - graph.leftSize;
+if (matchedRight[right] == -1) {
+    if (!visited[sink]) {
+        visited[sink] = true;
+        parent[sink] = current;
+        finish = sink;
+        return true;
+    }
+} else {
+    int next = matchedRight[right];
+    if (!visited[next]) {
+        visited[next] = true;
+        parent[next] = current;
+        pending.push(next);
+    }
+}</code></pre>
+      <p>Свободная правая вершина означает, что найден конец пути, поэтому BFS возвращает <code>true</code>. Занятая вершина ведёт назад к своей левой паре.</p>
+      <h3>Восстановление пути</h3>
+      <div class="code-title"><strong>Идём по parent назад, затем разворачиваем</strong><small>фрагмент pathWithoutTerminals</small></div>
+      <pre class="code"><code>vector&lt;int&gt; reversed;
+for (int vertex = parent[finish];
+     vertex != source &amp;&amp; vertex != -1;
+     vertex = parent[vertex]) {
+    reversed.push_back(vertex);
+}
+reverse(reversed.begin(), reversed.end());
+return reversed;</code></pre>
+      <p>Каждая вершина помнит, откуда в неё пришёл поиск. Так собирается цепочка назад от <code>t</code>. Функция не включает <code>s</code> и <code>t</code> в сам список вершин пути: они служебные.</p>
+      <h3>Изменение паросочетания</h3>
+      <div class="code-title"><strong>Снять старые пары и добавить новые</strong><small>фрагмент augment</small></div>
+      <pre class="code"><code>// Удалить выбранные ребра, пройденные назад.
+for (size_t i = 1; i + 1 &lt; path.size(); i += 2) {
+    int right = path[i] - graph.leftSize;
+    int left = path[i + 1];
+    if (matchedRight[right] == left) {
+        matchedRight[right] = -1;
+        matchedLeft[left] = -1;
+    }
+}
+
+// Добавить свободные ребра пути.
+for (size_t i = 0; i + 1 &lt; path.size(); i += 2) {
+    int left = path[i];
+    int right = path[i + 1] - graph.leftSize;
+    matchedLeft[left] = right;
+    matchedRight[right] = left;
+}</code></pre>
+      <p>Сначала снимаются старые пары на обратных шагах пути, затем добавляются новые пары на прямых. Оба массива обновляются вместе, чтобы информация слева направо и справа налево не разошлась.</p>
+      <h3>Повторение до остановки</h3>
+      <div class="code-title"><strong>Основной цикл solve</strong><small>фрагмент C++</small></div>
+      <pre class="code"><code>while (true) {
+    vector&lt;int&gt; parent;
+    int finish = -1;
+    if (!findAugmentingPath(parent, finish)) break;
+
+    ++iterations;
+    vector&lt;int&gt; path = pathWithoutTerminals(parent, finish);
+    augment(path);
+}</code></pre>
+      <p>Нашли путь — перестроили matching и пробуем снова. Не нашли — выходим из цикла.</p>
+    </section>
+    <section id="example">
+      <h2>5. Пример полного выполнения</h2>
+      <p>Входной файл <code>input.txt</code> содержит:</p>
+      <pre class="code"><code>3 3 4
+1 1
+2 1
+2 2
+3 3</code></pre>
+      <ol class="steps">
+        <li><strong>Первый BFS.</strong> Все вершины свободны. Находится путь <code>s-&gt;u1-&gt;v1-&gt;t</code>. Добавляем <code>(u1,v1)</code>.</li>
+        <li><strong>Следующий BFS.</strong> Ищем путь из любой свободной левой вершины. Из <code>u2</code> достижимы <code>v1</code> и <code>v2</code>. <code>v1</code> занята, можно пройти назад к <code>u1</code>, но дальше нет подходящего свободного ребра. BFS также видит путь <code>s-&gt;u2-&gt;v2-&gt;t</code> и добавляет <code>(u2,v2)</code>.</li>
+        <li><strong>Третий BFS.</strong> Находит <code>s-&gt;u3-&gt;v3-&gt;t</code> и добавляет <code>(u3,v3)</code>.</li>
+        <li><strong>Финальный BFS.</strong> Свободных левых вершин больше нет, значит из <code>s</code> путь не начинается. <code>t</code> недостижима, алгоритм останавливается. Размер matching равен 3.</li>
+      </ol>
+      <div class="callout blue"><strong>Пример, где пара действительно перестраивается</strong>Пусть рёбра графа: <code>(u1,v1)</code>, <code>(u1,v2)</code>, <code>(u2,v1)</code>. После выбора <code>(u1,v1)</code> путь для следующей итерации: <code>s-&gt;u2-&gt;v1-&gt;u1-&gt;v2-&gt;t</code>. Убираем <code>(u1,v1)</code>, добавляем <code>(u2,v1)</code> и <code>(u1,v2)</code>. Число пар выросло с одной до двух.</div>
+    </section>
+    <section id="proof">
+      <h2>6. Почему полученное решение максимальное</h2>
+      <div class="callout"><strong>Теорема Бержа</strong>Паросочетание максимально по размеру тогда и только тогда, когда увеличивающего пути больше нет.</div>
+      <p>В нашей реализации увеличивающий путь есть тогда и только тогда, когда достижима вершина <code>t</code> из <code>s</code> в ориентированном графе <code>G*</code>. Каждый такой путь увеличивает matching на 1. Когда поиск возвращает <code>false</code>, теорема Бержа гарантирует, что можно остановиться: текущий matching максимален.</p>
+      <p>Число итераций конечно: количество пар не может превысить размер меньшей доли.</p>
+      <div class="callout amber"><strong>Оценка времени</strong>Один BFS работает за <code>O(V + E)</code>. Увеличивающих путей не больше <code>min(|V1|, |V2|)</code>, поэтому оценка всего алгоритма: <code>O(min(|V1|, |V2|) · (V + E))</code>. Память: <code>O(V + E)</code>.</div>
+      <p>Термин «максимальное» здесь означает самое большое по количеству рёбер. Это не просто «уже нельзя добавить ещё одно ребро напрямую»: иногда решение можно улучшить, только сначала перестроив старые пары.</p>
+    </section>
+    <section id="input">
+      <h2>7. Ввод и запуск</h2>
+      <p>Первая строка задаёт <code>|V1| |V2| |E|</code>: размеры долей и количество рёбер. Далее идёт по одной паре номеров вершин на ребро. Нумерация во входном файле начинается с 1.</p>
+      <p>Запуск с файлом:</p>
+      <pre class="code"><code>main.exe input.txt</code></pre>
+      <p>Запуск с подробным выводом путей и состояния ориентированного графа:</p>
+      <pre class="code"><code>main.exe --detailed input.txt</code></pre>
+      <p>В подробном режиме видно: найденный путь, перестройку по шагу 5 методички, состояние matching и дуги <code>G*</code> после перестройки.</p>
+    </section>
+    <section id="defense">
+      <h2>8. Ответ для защиты</h2>
+      <div class="callout"><p>«Программа ищет максимальное паросочетание методом увеличивающих путей. Для текущего паросочетания рассматривается ориентированный граф: источник соединён со свободными вершинами первой доли, невыбранные рёбра направлены слева направо, выбранные — справа налево, а свободные вершины второй доли соединены со стоком. Поиск в ширину находит путь от источника к стоку. Если путь найден, крайние дуги удаляются, промежуточные меняют направление. Это перестраивает matching и увеличивает его на единицу. Поиск повторяется, пока путь существует. Когда путь не найден, по теореме Бержа найдено максимальное паросочетание».</p></div>
+      <h3>Что значат основные переменные</h3>
+      <table><tbody>
+        <tr><th><code>adjacent</code></th><td>Список рёбер исходного графа.</td></tr>
+        <tr><th><code>matchedLeft</code>, <code>matchedRight</code></th><td>Текущее паросочетание, доступное с обеих сторон.</td></tr>
+        <tr><th><code>visited</code></th><td>Посещённые BFS вершины.</td></tr>
+        <tr><th><code>parent</code></th><td>Предшественник вершины для восстановления пути.</td></tr>
+        <tr><th><code>pending</code></th><td>Очередь BFS.</td></tr>
+        <tr><th><code>iterations</code></th><td>Количество найденных увеличивающих путей.</td></tr>
+      </tbody></table>
+    </section>
+  </main>
+  <footer>Конспект к лабораторной работе 6. Фрагменты кода вставлены непосредственно в документ.</footer>
+</body>
+</html>

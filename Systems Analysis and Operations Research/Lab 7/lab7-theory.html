@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f6">
+  <title>Лабораторная работа 7 — Венгерский алгоритм</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #ffffff;
+      --canvas: #f2f5f3;
+      --ink: #182420;
+      --muted: #586761;
+      --line: #d7dfdb;
+      --green: #176b4b;
+      --green-soft: #e6f2ec;
+      --blue: #245e86;
+      --blue-soft: #e9f1f7;
+      --amber: #875b11;
+      --amber-soft: #fbf2df;
+      --code: #15211f;
+      --code-ink: #e9f0ed;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.68;
+    }
+    a { color: var(--green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 56px;
+      padding: 8px max(20px, calc((100vw - 1160px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.96);
+    }
+    .brand { color: var(--ink); font-size: 14px; font-weight: 700; text-decoration: none; }
+    .topbar nav { display: flex; gap: 18px; overflow-x: auto; white-space: nowrap; }
+    .topbar nav a { color: var(--muted); font-size: 13px; text-decoration: none; }
+    .topbar nav a:hover { color: var(--green); }
+    main { max-width: 1160px; margin: 0 auto; padding: 30px 24px 80px; }
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(230px, 300px);
+      align-items: end;
+      gap: 32px;
+      padding: 34px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 12px; font-weight: 750; text-transform: uppercase; }
+    h1 { max-width: 760px; margin: 0; font-size: clamp(30px, 5vw, 48px); line-height: 1.12; }
+    .lead { max-width: 760px; margin: 16px 0 0; color: var(--muted); font-size: 18px; }
+    .summary {
+      padding: 16px 18px;
+      border-left: 3px solid var(--green);
+      background: var(--green-soft);
+    }
+    .summary strong { display: block; margin-bottom: 5px; }
+    .summary p { margin: 0; color: #34483f; font-size: 14px; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 44px; padding-top: 28px; }
+    aside { align-self: start; position: sticky; top: 80px; }
+    aside h2 { margin: 0 0 10px; font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    aside ol { margin: 0; padding: 0; list-style: none; }
+    aside li { margin: 2px 0; }
+    aside a { display: block; padding: 5px 8px; border-radius: 5px; color: var(--muted); font-size: 13px; text-decoration: none; }
+    aside a:hover { background: var(--green-soft); color: var(--green); }
+    article { min-width: 0; }
+    section { margin: 0 0 38px; }
+    h2.section-title { margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 25px; line-height: 1.3; }
+    h3 { margin: 24px 0 8px; font-size: 18px; line-height: 1.4; }
+    p { margin: 10px 0; }
+    .formula {
+      overflow-x: auto;
+      margin: 14px 0;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      font-family: Cambria, Georgia, serif;
+      font-size: 19px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .callout { margin: 16px 0; padding: 13px 16px; border-left: 3px solid var(--blue); background: var(--blue-soft); }
+    .callout p { margin: 0; }
+    .warning { border-left-color: #bd8521; background: var(--amber-soft); }
+    .term-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .term { padding: 13px 15px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+    .term strong { display: block; margin-bottom: 3px; }
+    .term span { color: var(--muted); font-size: 14px; }
+    .steps { counter-reset: step; margin: 0; padding: 0; list-style: none; }
+    .steps li { position: relative; margin: 0; padding: 0 0 18px 44px; }
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid #9bc7af;
+      border-radius: 50%;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    code { font-family: Consolas, "Cascadia Code", monospace; font-size: .92em; }
+    p code, li code { padding: 1px 4px; border-radius: 3px; background: #e8eeeb; }
+    .matrix-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--paper); }
+    th, td { padding: 9px 12px; border: 1px solid var(--line); text-align: center; }
+    th { background: #eaf0ed; font-weight: 650; }
+    td.selected { background: #dff0e5; color: #14563c; font-weight: 750; }
+    .code-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 8px; }
+    .code-heading h3 { margin: 0; }
+    button {
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid #7e9b8d;
+      border-radius: 5px;
+      background: white;
+      color: var(--green);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    button:hover { background: var(--green-soft); }
+    .codebox {
+      overflow: auto;
+      max-height: 760px;
+      margin: 0;
+      padding: 18px;
+      border: 1px solid #2b3d38;
+      border-radius: var(--radius);
+      background: var(--code);
+      color: var(--code-ink);
+      font: 13px/1.58 Consolas, "Cascadia Code", monospace;
+      tab-size: 4;
+      white-space: pre;
+    }
+    .codebox code { font: inherit; }
+    .code-note { color: var(--muted); font-size: 13px; }
+    footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 850px) {
+      .layout { grid-template-columns: 1fr; gap: 20px; }
+      aside { position: static; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+      aside ol { display: flex; flex-wrap: wrap; gap: 2px 8px; }
+      .intro { grid-template-columns: 1fr; align-items: start; }
+      .summary { max-width: 600px; }
+    }
+    @media (max-width: 560px) {
+      main { padding: 18px 16px 54px; }
+      .topbar { padding-inline: 14px; }
+      .topbar nav { gap: 12px; }
+      .brand { white-space: nowrap; }
+      .lead { font-size: 16px; }
+      .term-grid { grid-template-columns: 1fr; }
+      h2.section-title { font-size: 22px; }
+      .codebox { max-height: 620px; padding: 13px; font-size: 12px; }
+    }
+    @media print {
+      body { background: white; font-size: 11pt; }
+      .topbar, aside, button { display: none; }
+      main { max-width: none; padding: 0; }
+      .layout { display: block; }
+      .intro { padding-top: 0; }
+      .codebox { max-height: none; overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8pt; }
+      section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top">Лабораторная работа 7</a>
+    <nav aria-label="Быстрые разделы">
+      <a href="#idea">Идея</a><a href="#method">Метод</a><a href="#example">Пример</a><a href="#code">Код</a>
+    </nav>
+  </header>
+  <main id="top">
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Исследование операций · Венгерский алгоритм</p>
+        <h1>Как программа находит лучшее назначение</h1>
+        <p class="lead">Подробное объяснение задачи о назначениях, шагов методички и того, как каждый шаг реализован в C++.</p>
+      </div>
+      <div class="summary">
+        <strong>В двух словах</strong>
+        <p>Выбрать по одной ячейке из каждой строки и каждого столбца так, чтобы сумма стоимостей была минимальной.</p>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside>
+        <h2>Содержание</h2>
+        <ol>
+          <li><a href="#idea">1. Идея задачи</a></li>
+          <li><a href="#terms">2. Обозначения</a></li>
+          <li><a href="#method">3. Алгоритм по шагам</a></li>
+          <li><a href="#example">4. Пример из методички</a></li>
+          <li><a href="#code-map">5. Где это в коде</a></li>
+          <li><a href="#proof">6. Почему ответ оптимальный</a></li>
+          <li><a href="#run">7. Ввод и запуск</a></li>
+          <li><a href="#code">8. Полный исходный код</a></li>
+        </ol>
+      </aside>
+
+      <article>
+        <section id="idea">
+          <h2 class="section-title">1. Идея задачи</h2>
+          <p>Представь, что есть несколько работников и столько же заданий. Каждая клетка таблицы показывает, сколько будет стоить назначить конкретного работника на конкретное задание. Нужно распределить задания так, чтобы каждый работник получил ровно одно задание, каждое задание досталось ровно одному работнику, а общая стоимость была как можно меньше.</p>
+          <div class="formula">Найти перестановку π, минимизирующую сумму C<sub>1,π(1)</sub> + C<sub>2,π(2)</sub> + … + C<sub>n,π(n)</sub>.</div>
+          <p>Строка означает работника, столбец означает задание, число в клетке означает стоимость пары. В программе роли могут быть любыми: например, строки — это станки, а столбцы — работы.</p>
+          <div class="callout"><p><strong>Почему нельзя просто брать минимум в каждой строке?</strong> Потому что минимумы могут оказаться в одном столбце. Тогда одному заданию соответствовали бы сразу несколько работников, а другому не соответствовал бы никто. Алгоритм ищет назначения одновременно, учитывая все строки и столбцы.</p></div>
+        </section>
+
+        <section id="terms">
+          <h2 class="section-title">2. Обозначения простыми словами</h2>
+          <div class="term-grid">
+            <div class="term"><strong>C<sub>ij</sub></strong><span>Стоимость назначения строки i в столбец j; это число из входной матрицы.</span></div>
+            <div class="term"><strong>α<sub>i</sub> (альфа)</strong><span>Потенциал строки i. В начале все альфы равны нулю.</span></div>
+            <div class="term"><strong>β<sub>j</sub> (бета)</strong><span>Потенциал столбца j. В начале это минимальная стоимость в столбце j.</span></div>
+            <div class="term"><strong>J=</strong><span>Клетки, где α<sub>i</sub> + β<sub>j</sub> = C<sub>ij</sub>. Они становятся рёбрами графа для назначений.</span></div>
+            <div class="term"><strong>J&lt;</strong><span>Клетки, где α<sub>i</sub> + β<sub>j</sub> &lt; C<sub>ij</sub>. В них пока остаётся положительный запас.</span></div>
+            <div class="term"><strong>M</strong><span>Текущие назначения без повторения строк и столбцов. Максимальное паросочетание содержит как можно больше таких пар.</span></div>
+            <div class="term"><strong>I*, J*</strong><span>Строки и столбцы, достижимые в чередующемся обходе графа от неназначенных строк.</span></div>
+            <div class="term"><strong>θ (тета)</strong><span>Половина минимального запаса среди строк I* и столбцов вне J*. Она определяет изменение потенциалов.</span></div>
+          </div>
+          <div class="callout warning"><p><strong>Индексы в программе.</strong> В методичке строки и столбцы нумеруются с 1. В C++ векторы нумеруются с 0. Поэтому, например, строка с индексом 0 печатается как строка 1: в выводе к индексу прибавляется единица.</p></div>
+        </section>
+
+        <section id="method">
+          <h2 class="section-title">3. Алгоритм по шагам методички</h2>
+          <ol class="steps">
+            <li><strong>Получить начальные потенциалы.</strong> Для всех строк положить α<sub>i</sub> = 0. Для каждого столбца положить β<sub>j</sub> равным минимальному числу в этом столбце. Тогда α + β не превосходит стоимости ни в одной клетке.</li>
+            <li><strong>Разделить клетки на равенства и строгие неравенства.</strong> Если α<sub>i</sub> + β<sub>j</sub> = C<sub>ij</sub>, клетка относится к J=. Иначе, поскольку потенциалы допустимы, получается α<sub>i</sub> + β<sub>j</sub> &lt; C<sub>ij</sub>, то есть клетка относится к J&lt;.</li>
+            <li><strong>Построить двудольный граф.</strong> Слева находятся строки, справа — столбцы. Ребро между строкой и столбцом есть только тогда, когда их клетка принадлежит J=.</li>
+            <li><strong>Найти максимальное паросочетание M.</strong> Это максимально возможный набор рёбер, у которых не повторяется ни одна строка и ни один столбец. Каждое ребро — одно назначение.</li>
+            <li><strong>Проверить размер M.</strong> Если в M ровно n рёбер, все строки и столбцы назначены. Это оптимум, алгоритм останавливается.</li>
+            <li><strong>Если назначений меньше n, пройти ориентированный граф.</strong> Начать со всех строк без назначения. Из строки идти по рёбрам, которые не входят в M, из столбца — по ребру M обратно к строке. Все достигнутые строки образуют I*, достигнутые столбцы — J*.</li>
+            <li><strong>Вычислить θ.</strong> Рассмотреть клетки со строкой из I* и столбцом вне J*. Для каждой взять половину запаса C<sub>ij</sub> − α<sub>i</sub> − β<sub>j</sub>. θ — наименьшее из этих значений.</li>
+            <li><strong>Обновить потенциалы.</strong> На строках из I* прибавить θ к α, на остальных строках вычесть θ. На столбцах из J* вычесть θ из β, на остальных столбцах прибавить θ. Клетки, на которых достигается минимум при вычислении θ, становятся новыми равенствами. Повторить со шага 2.</li>
+          </ol>
+          <div class="formula">θ = min<sub>i ∈ I*, j ∉ J*</sub> (C<sub>ij</sub> − α<sub>i</sub> − β<sub>j</sub>) / 2</div>
+          <p>Деление на два здесь именно такое, как в методичке. Потенциал строки и потенциал столбца меняются одновременно, поэтому запас между их суммой и стоимостью уменьшается на 2θ.</p>
+        </section>
+
+        <section id="example">
+          <h2 class="section-title">4. Пример из методички</h2>
+          <p>Исходная матрица стоимостей:</p>
+          <div class="matrix-wrap">
+            <table aria-label="Матрица стоимостей из методички">
+              <thead><tr><th>C</th><th>Задание 1</th><th>Задание 2</th><th>Задание 3</th><th>Задание 4</th><th>Задание 5</th></tr></thead>
+              <tbody>
+                <tr><th>Работник 1</th><td>7</td><td>2</td><td class="selected">1</td><td>9</td><td>4</td></tr>
+                <tr><th>Работник 2</th><td>9</td><td>6</td><td>9</td><td class="selected">5</td><td>5</td></tr>
+                <tr><th>Работник 3</th><td class="selected">3</td><td>8</td><td>3</td><td>1</td><td>8</td></tr>
+                <tr><th>Работник 4</th><td>7</td><td>9</td><td>4</td><td>2</td><td class="selected">2</td></tr>
+                <tr><th>Работник 5</th><td>8</td><td class="selected">4</td><td>7</td><td>4</td><td>8</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Начальные альфы равны нулю. Минимумы столбцов дают β = (3, 2, 1, 1, 2). На первой итерации равенства находятся в клетках (1,2), (1,3), (3,1), (3,4), (4,5). Их только пять, но строки 2 и 5 пока остаются без назначения. Максимальный размер паросочетания равен 3.</p>
+          <p>Обход от неназначенных строк даёт I* = {2,5} и J* = ∅. Методичка получает θ = 1. После обновления потенциалов появляются новые равенства. Следующие итерации дают θ = 0.5 и θ = 0.5; после этого удаётся назначить все пять строк.</p>
+          <table aria-label="Найденное оптимальное назначение">
+            <thead><tr><th>Строка</th><th>Выбранный столбец</th><th>Стоимость</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>3</td><td>1</td></tr>
+              <tr><td>2</td><td>4</td><td>5</td></tr>
+              <tr><td>3</td><td>1</td><td>3</td></tr>
+              <tr><td>4</td><td>5</td><td>2</td></tr>
+              <tr><td>5</td><td>2</td><td>4</td></tr>
+              <tr><th colspan="2">Итоговая стоимость</th><th>15</th></tr>
+            </tbody>
+          </table>
+          <div class="callout"><p>Сумма равна 1 + 5 + 3 + 2 + 4 = 15. Каждый столбец использован ровно один раз.</p></div>
+        </section>
+
+        <section id="code-map">
+          <h2 class="section-title">5. Где это находится в исходнике</h2>
+          <div class="matrix-wrap">
+            <table aria-label="Соответствие частей кода шагам алгоритма">
+              <thead><tr><th>Строки</th><th>Назначение</th><th>Связь с методичкой</th></tr></thead>
+              <tbody>
+                <tr><td>13–22</td><td>Тип стоимости и структура результата</td><td>Данные алгоритма</td></tr>
+                <tr><td>24–36</td><td>Поиск увеличивающего пути и перестройка назначений</td><td>Шаг 4</td></tr>
+                <tr><td>38–58</td><td>Инициализация α=0 и β как минимумов столбцов</td><td>Шаг 1</td></tr>
+                <tr><td>60–92</td><td>Построение множеств равенств и строгих неравенств</td><td>Шаг 2</td></tr>
+                <tr><td>94–120</td><td>Паросочетание и проверка его размера</td><td>Шаги 3–5</td></tr>
+                <tr><td>122–150</td><td>Обход графа и множества достижимых строк и столбцов</td><td>Шаги 6–7</td></tr>
+                <tr><td>152–202</td><td>Вычисление θ и обновление потенциалов</td><td>Шаги 8–11</td></tr>
+                <tr><td>205–207</td><td>Подсчёт стоимости ответа</td><td>Вывод результата</td></tr>
+                <tr><td>210–242</td><td>Чтение и проверка матрицы</td><td>Вход программы</td></tr>
+                <tr><td>244–301</td><td>Выбор файла, режим вывода и печать решения</td><td>Запуск и вывод</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>Самая важная функция — <code>augment</code></h3>
+          <p>Функция получает одну строку и ищет среди её рёбер равенства свободный столбец. Если столбец занят другой строкой, она рекурсивно пробует переселить прежнюю строку в другой столбец. Например, было «строка 1 → столбец 2», а строке 2 тоже нужен столбец 2. Функция ищет для строки 1 другой допустимый столбец, освобождает столбец 2 и назначает его строке 2. Так размер паросочетания может увеличиться.</p>
+          <h3>Как код строит I* и J*</h3>
+          <p>Массив <code>matchedRow</code> отвечает на вопрос «какая строка сейчас заняла этот столбец?». Сначала программа находит строки, у которых нет назначения, и кладёт их в очередь. Затем обходит рёбра равенства, не входящие в M, к столбцам. Если такой столбец занят, программа идёт по его выбранному ребру обратно к строке. Очередь нужна, чтобы обработать все достижимые строки, а не только одну цепочку.</p>
+          <h3>Зачем <code>EPS</code> и <code>long double</code></h3>
+          <p>Потенциалы могут стать дробными, например 0.5. Дробные числа компьютер хранит приближённо, поэтому вместо точного сравнения «равно» код проверяет, что абсолютная разница не больше <code>EPS = 10<sup>−10</sup></code>. Тип <code>long double</code> даёт дополнительную точность для вычислений.</p>
+        </section>
+
+        <section id="proof">
+          <h2 class="section-title">6. Почему это действительно минимум</h2>
+          <p>Потенциалы всегда поддерживают условие α<sub>i</sub> + β<sub>j</sub> ≤ C<sub>ij</sub>. Возьмём любое допустимое назначение. В нём используется ровно один элемент каждой строки и ровно один элемент каждого столбца. Поэтому сумма стоимостей этого назначения не меньше суммы всех потенциалов:</p>
+          <div class="formula">Стоимость любого назначения ≥ Σ<sub>i</sub> α<sub>i</sub> + Σ<sub>j</sub> β<sub>j</sub>.</div>
+          <p>Когда найдено паросочетание размера n по рёбрам J=, каждая назначенная клетка удовлетворяет равенству C<sub>ij</sub> = α<sub>i</sub> + β<sub>j</sub>. Поэтому стоимость именно этого назначения равна сумме потенциалов. Оно достигает нижней границы, которую не может превзойти никакое другое допустимое назначение. Следовательно, найденное решение оптимально.</p>
+          <div class="callout warning"><p>В PDF с примером некоторые списки рёбер равенства могут быть сокращены или содержать опечатку. Код строит J= непосредственно по формуле α + β = C. Например, после обновления потенциалов из примера равенства для второй строки могут появиться не только в перечисленных в тексте примера клетках. Проверка по формуле важнее ручного списка.</p></div>
+        </section>
+
+        <section id="run">
+          <h2 class="section-title">7. Как выглядит ввод и запуск</h2>
+          <p>Формат входного файла: сначала порядок матрицы <code>n</code>, затем ровно <code>n × n</code> целых стоимостей.</p>
+          <pre class="codebox"><code>5
+7 2 1 9 4
+9 6 9 5 5
+3 8 3 1 8
+7 9 4 2 2
+8 4 7 4 8</code></pre>
+          <p>Из папки лабораторной можно запустить обычный вывод командой <code>main.exe input.txt</code>. Чтобы увидеть шаги метода, включая потенциалы, J=, J&lt;, паросочетание, I*, J* и θ, запусти <code>main.exe input.txt --detailed</code>. Если имя файла не задано, программа читает матрицу из стандартного ввода.</p>
+          <p>Программа проверяет размер матрицы, наличие всех чисел, диапазон стоимостей и отсутствие лишних данных после матрицы.</p>
+        </section>
+
+        <section id="code">
+          <h2 class="section-title">8. Полный исходный код</h2>
+          <p>Это полный текст программы, который находится в <code>main.cpp</code>. Он вставлен в эту страницу, а не загружается по внешней ссылке.</p>
+          <div class="code-heading">
+            <h3>main.cpp</h3>
+            <button id="copy-code" type="button" title="Скопировать весь исходный код">Копировать код</button>
+          </div>
+          <pre class="codebox"><code id="cpp-source"></code></pre>
+          <p class="code-note">Блок прокручивается отдельно, чтобы длинный исходник не мешал читать теорию.</p>
+        </section>
+        <footer>Конспект к лабораторной работе 7 «Венгерский алгоритм». Теория и исходный код находятся внутри этого HTML-файла.</footer>
+      </article>
+    </div>
+  </main>
+  <script>
+    const cppSource = String.raw`#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <queue>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+using Cost = long long;
+const long double EPS = 1e-10L;
+
+struct AssignmentResult {
+    vector<int> columnForRow;
+    vector<long double> rowPotential;
+    vector<long double> columnPotential;
+    Cost totalCost = 0;
+    int iterations = 0;
+};
+
+bool augment(int row, const vector<vector<bool>>& equality,
+             vector<bool>& visitedColumns, vector<int>& matchedRow) {
+    for (int column = 0; column < static_cast<int>(equality.size()); ++column) {
+        if (!equality[row][column] || visitedColumns[column]) continue;
+        visitedColumns[column] = true;
+        if (matchedRow[column] == -1 ||
+            augment(matchedRow[column], equality, visitedColumns, matchedRow)) {
+            matchedRow[column] = row;
+            return true;
+        }
+    }
+    return false;
+}
+
+AssignmentResult hungarian(const vector<vector<Cost>>& cost, bool detailed) {
+    const int n = static_cast<int>(cost.size());
+    AssignmentResult result;
+    result.columnForRow.assign(n, -1);
+    result.rowPotential.assign(n, 0);
+    result.columnPotential.assign(n, 0);
+    for (int column = 0; column < n; ++column) {
+        Cost minimum = cost[0][column];
+        for (int row = 1; row < n; ++row)
+            minimum = min(minimum, cost[row][column]);
+        result.columnPotential[column] = minimum;
+    }
+    if (detailed) {
+        cout << "Step 1. Initial dual potentials\n";
+        cout << fixed << setprecision(4);
+        for (int row = 0; row < n; ++row)
+            cout << "alpha[" << row + 1 << "] = 0\n";
+        for (int column = 0; column < n; ++column)
+            cout << "beta[" << column + 1 << "] = "
+                 << static_cast<double>(result.columnPotential[column]) << '\n';
+    }
+
+    while (true) {
+        ++result.iterations;
+        if (detailed)
+            cout << "\nIteration " << result.iterations << "\nStep 2. Build J= and J<\n";
+        vector<vector<bool>> equality(n, vector<bool>(n, false));
+        bool first = true;
+        if (detailed) cout << "J= : ";
+        for (int row = 0; row < n; ++row)
+            for (int column = 0; column < n; ++column) {
+                equality[row][column] =
+                    fabsl(result.rowPotential[row] + result.columnPotential[column]
+                          - cost[row][column]) <= EPS;
+                if (detailed && equality[row][column]) {
+                    if (!first) cout << ", ";
+                    cout << "(" << row + 1 << "," << column + 1 << ")";
+                    first = false;
+                }
+            }
+        if (detailed && first) cout << "empty";
+        if (detailed) {
+            cout << "\nJ< : ";
+            first = true;
+            for (int row = 0; row < n; ++row) {
+                for (int column = 0; column < n; ++column) {
+                    if (equality[row][column]) continue;
+                    if (!first) cout << ", ";
+                    cout << "(" << row + 1 << "," << column + 1 << ")";
+                    first = false;
+                }
+            }
+            if (first) cout << "empty";
+            cout << '\n';
+        }
+
+        if (detailed) cout << "Step 3-4. Build G and find a maximum matching\n";
+        vector<int> matchedRow(n, -1);
+        int matchingSize = 0;
+        for (int row = 0; row < n; ++row) {
+            vector<bool> visitedColumns(n, false);
+            if (augment(row, equality, visitedColumns, matchedRow))
+                ++matchingSize;
+        }
+
+        if (detailed) {
+            cout << "\nMaximum matching M (size " << matchingSize << "): ";
+            first = true;
+            for (int column = 0; column < n; ++column) {
+                if (matchedRow[column] == -1) continue;
+                if (!first) cout << ", ";
+                cout << "(" << matchedRow[column] + 1 << "," << column + 1 << ")";
+                first = false;
+            }
+            cout << '\n';
+        }
+
+        if (matchingSize == n) {
+            if (detailed) cout << "Step 5. |M| = n; the assignment is optimal.\n";
+            for (int column = 0; column < n; ++column)
+                result.columnForRow[matchedRow[column]] = column;
+            break;
+        }
+
+        if (detailed)
+            cout << "Step 6-7. Traverse the residual graph from unmatched rows; form I* and J*\n";
+        vector<bool> reachableRows(n, false), reachableColumns(n, false);
+        queue<int> pendingRows;
+        vector<int> columnForRow(n, -1);
+        for (int column = 0; column < n; ++column)
+            if (matchedRow[column] != -1)
+                columnForRow[matchedRow[column]] = column;
+        for (int row = 0; row < n; ++row) {
+            if (columnForRow[row] == -1) {
+                reachableRows[row] = true;
+                pendingRows.push(row);
+            }
+        }
+
+        while (!pendingRows.empty()) {
+            const int row = pendingRows.front();
+            pendingRows.pop();
+            for (int column = 0; column < n; ++column) {
+                if (!equality[row][column] || columnForRow[row] == column ||
+                    reachableColumns[column])
+                    continue;
+                reachableColumns[column] = true;
+                if (matchedRow[column] != -1 && !reachableRows[matchedRow[column]]) {
+                    reachableRows[matchedRow[column]] = true;
+                    pendingRows.push(matchedRow[column]);
+                }
+            }
+        }
+
+        long double theta = numeric_limits<long double>::infinity();
+        for (int row = 0; row < n; ++row) {
+            if (!reachableRows[row]) continue;
+            for (int column = 0; column < n; ++column) {
+                if (reachableColumns[column]) continue;
+                const long double slack = cost[row][column]
+                                        - result.rowPotential[row]
+                                        - result.columnPotential[column];
+                theta = min(theta, slack / 2);
+            }
+        }
+        if (!isfinite(theta) || theta <= EPS)
+            throw runtime_error("Could not find a positive dual adjustment.");
+        if (detailed) {
+            cout << "I*: ";
+            bool first = true;
+            for (int row = 0; row < n; ++row) {
+                if (!reachableRows[row]) continue;
+                if (!first) cout << ", ";
+                cout << row + 1;
+                first = false;
+            }
+            cout << "\nJ*: ";
+            first = true;
+            for (int column = 0; column < n; ++column) {
+                if (!reachableColumns[column]) continue;
+                if (!first) cout << ", ";
+                cout << column + 1;
+                first = false;
+            }
+            if (first) cout << "empty";
+            cout << "\nStep 8. Adjustment directions: alpha_i = +1 on I*, -1 outside; "
+                    "beta_j = -1 on J*, +1 outside\n";
+            cout << "Step 9. theta = min((c_ij - alpha_i - beta_j) / 2) = "
+                 << fixed << setprecision(4)
+                 << static_cast<double>(theta) << '\n';
+        }
+
+        if (detailed) cout << "Step 10-11. Update the dual potentials\n";
+        for (int row = 0; row < n; ++row)
+            result.rowPotential[row] += theta * (reachableRows[row] ? 1 : -1);
+        for (int column = 0; column < n; ++column)
+            result.columnPotential[column] += theta * (reachableColumns[column] ? -1 : 1);
+        if (detailed) {
+            for (int row = 0; row < n; ++row)
+                cout << "alpha[" << row + 1 << "] = "
+                     << static_cast<double>(result.rowPotential[row]) << '\n';
+            for (int column = 0; column < n; ++column)
+                cout << "beta[" << column + 1 << "] = "
+                     << static_cast<double>(result.columnPotential[column]) << '\n';
+        }
+    }
+
+    for (int row = 0; row < n; ++row)
+        result.totalCost += cost[row][result.columnForRow[row]];
+    return result;
+}
+
+bool readProblem(istream& input, vector<vector<Cost>>& cost, string& error) {
+    int n;
+    if (!(input >> n)) {
+        error = "Could not read the matrix size.";
+        return false;
+    }
+    if (n < 1 || n > 500) {
+        error = "The matrix size must be between 1 and 500.";
+        return false;
+    }
+
+    cost.assign(n, vector<Cost>(n));
+    for (int row = 0; row < n; ++row) {
+        for (int column = 0; column < n; ++column) {
+            if (!(input >> cost[row][column])) {
+                error = "The input must contain exactly n rows with n integer costs each.";
+                return false;
+            }
+            if (cost[row][column] < -1000000000000LL ||
+                cost[row][column] > 1000000000000LL) {
+                error = "Each cost must be between -10^12 and 10^12.";
+                return false;
+            }
+        }
+    }
+
+    string extra;
+    if (input >> extra) {
+        error = "Unexpected data after the n-by-n cost matrix.";
+        return false;
+    }
+    return true;
+}
+
+int main(int argc, char* argv[]) {
+    bool detailed = false;
+    string filename;
+    for (int i = 1; i < argc; ++i) {
+        const string argument = argv[i];
+        if (argument == "--detailed") {
+            detailed = true;
+        } else if (filename.empty()) {
+            filename = argument;
+        } else {
+            cerr << "Usage: " << argv[0] << " [input_file] [--detailed]\n";
+            return 1;
+        }
+    }
+
+    ifstream file;
+    istream* input = &cin;
+    if (!filename.empty()) {
+        file.open(filename);
+        if (!file) {
+            cerr << "Could not open input file: " << filename << '\n';
+            return 1;
+        }
+        input = &file;
+    }
+
+    vector<vector<Cost>> cost;
+    string error;
+    if (!readProblem(*input, cost, error)) {
+        cerr << "Input error: " << error << '\n'
+             << "Expected format: n, followed by n rows of n integer costs.\n";
+        return 1;
+    }
+
+    cout << "Hungarian Algorithm - Assignment Problem\n"
+         << "=========================================\n"
+         << "Cost matrix size: " << cost.size() << " x " << cost.size() << '\n';
+    const AssignmentResult result = hungarian(cost, detailed);
+    if (detailed) {
+        cout << "\nFinal dual potentials:\n";
+        cout << fixed << setprecision(4);
+        for (size_t i = 0; i < result.rowPotential.size(); ++i)
+            cout << "alpha[" << i + 1 << "] = "
+                 << static_cast<double>(result.rowPotential[i]) << '\n';
+        for (size_t j = 0; j < result.columnPotential.size(); ++j)
+            cout << "beta[" << j + 1 << "] = "
+                 << static_cast<double>(result.columnPotential[j]) << '\n';
+    }
+
+    cout << "\nOptimal assignment:\n";
+    for (size_t row = 0; row < result.columnForRow.size(); ++row) {
+        const int column = result.columnForRow[row];
+        cout << "Row " << row + 1 << " -> column " << column + 1
+             << " (cost " << cost[row][column] << ")\n";
+    }
+    cout << "Minimum total cost: " << result.totalCost << '\n';
+    return 0;
+}`;
+    document.getElementById("cpp-source").textContent = cppSource;
+    document.getElementById("copy-code").addEventListener("click", async () => {
+      const button = document.getElementById("copy-code");
+      try {
+        await navigator.clipboard.writeText(cppSource);
+        button.textContent = "Скопировано";
+        setTimeout(() => button.textContent = "Копировать код", 1600);
+      } catch {
+        button.textContent = "Не удалось скопировать";
+        setTimeout(() => button.textContent = "Копировать код", 1800);
+      }
+    });
+  </script>
+</body>
+</html>

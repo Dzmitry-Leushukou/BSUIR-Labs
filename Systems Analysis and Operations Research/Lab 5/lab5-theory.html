@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Подробное объяснение алгоритма динамического программирования для поиска длиннейшего пути в ориентированном ациклическом графе и разбор программы Lab 5.">
+  <title>Лабораторная работа 5 — теория и разбор программы</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172a35;
+      --muted: #536873;
+      --line: #d8e2e6;
+      --paper: #ffffff;
+      --canvas: #f2f6f6;
+      --teal: #087e83;
+      --teal-soft: #e2f4f2;
+      --blue: #3167a6;
+      --blue-soft: #eaf1fb;
+      --orange: #b65b21;
+      --orange-soft: #fff1e6;
+      --red: #a94343;
+      --red-soft: #fcebea;
+      --green: #35704b;
+      --green-soft: #e9f4ec;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.68;
+    }
+
+    a { color: var(--blue); }
+
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid #e49b3f;
+      outline-offset: 3px;
+    }
+
+    .topbar {
+      background: #173d46;
+      color: #fff;
+      border-bottom: 4px solid #39a2a0;
+    }
+
+    .topbar-inner {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .topbar-note { color: #d1e5e5; font-size: 13px; }
+
+    .layout {
+      width: min(1180px, calc(100% - 40px));
+      margin: 30px auto 64px;
+      display: grid;
+      grid-template-columns: 238px minmax(0, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    aside {
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      padding: 18px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    aside h2 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    aside ol { margin: 0; padding-left: 20px; }
+    aside li { padding: 3px 0; font-size: 14px; }
+    aside a { text-decoration: none; color: #294550; }
+    aside a:hover { color: var(--teal); text-decoration: underline; }
+
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(22px, 4vw, 48px);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { margin: 0; max-width: 760px; font-size: clamp(30px, 4vw, 43px); }
+    h2 { margin: 46px 0 15px; font-size: 27px; }
+    h3 { margin: 26px 0 10px; font-size: 19px; }
+    p { margin: 10px 0; }
+    .lead { margin-top: 18px; color: #405965; font-size: 18px; max-width: 780px; }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .meta-item {
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      color: #405965;
+      font-size: 13px;
+    }
+
+    .rule { height: 1px; margin: 32px 0; background: var(--line); }
+
+    .callout, .note, .warning, .success {
+      margin: 18px 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--teal);
+      border-radius: 0 6px 6px 0;
+      background: var(--teal-soft);
+    }
+
+    .note { border-color: var(--blue); background: var(--blue-soft); }
+    .warning { border-color: var(--orange); background: var(--orange-soft); }
+    .success { border-color: var(--green); background: var(--green-soft); }
+    .callout strong, .note strong, .warning strong, .success strong { display: block; margin-bottom: 4px; }
+
+    .formula {
+      margin: 16px 0;
+      padding: 18px;
+      overflow-x: auto;
+      border: 1px solid #b9d9d7;
+      border-radius: 6px;
+      background: #f4fbfa;
+      color: #12484b;
+      text-align: center;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 21px;
+    }
+
+    code, pre { font-family: Consolas, "Courier New", monospace; }
+    code {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #eef2f3;
+      overflow-wrap: anywhere;
+      font-size: 0.93em;
+    }
+
+    pre {
+      margin: 14px 0;
+      padding: 17px 19px;
+      overflow-x: auto;
+      border: 1px solid #d7e0e3;
+      border-radius: 6px;
+      background: #f5f8f8;
+      color: #18343e;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      min-height: 112px;
+      padding: 15px 15px 15px 52px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      counter-increment: step;
+    }
+
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--teal-soft);
+      color: #075f63;
+      font-weight: 700;
+    }
+
+    .step strong { display: block; margin-bottom: 4px; }
+
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; min-width: 520px; }
+    th, td { padding: 10px 12px; border: 1px solid var(--line); text-align: left; }
+    th { background: #eaf2f2; font-size: 14px; }
+    td code { white-space: nowrap; }
+
+    .graph {
+      margin: 18px 0;
+      padding: 19px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfc;
+    }
+
+    .graph pre { margin: 0; border: 0; background: transparent; padding: 0; font-size: 15px; }
+    .graph-caption { margin: 11px 0 0; color: var(--muted); font-size: 13px; }
+
+    .code-map { display: grid; grid-template-columns: 115px minmax(0, 1fr); gap: 0; margin: 12px 0; }
+    .code-map dt, .code-map dd { margin: 0; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+    .code-map dt { color: #31545d; font-weight: 700; }
+    .code-map dd { color: #405965; }
+
+    .proof-list { padding-left: 24px; }
+    .proof-list li { margin: 9px 0; }
+
+    .footer {
+      margin-top: 44px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 840px) {
+      .layout { grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+      aside { position: static; max-height: none; }
+      aside ol { columns: 2; column-gap: 24px; }
+    }
+
+    @media (max-width: 560px) {
+      .topbar-inner { width: calc(100% - 28px); min-height: 56px; }
+      .topbar-note { display: none; }
+      .layout { width: calc(100% - 20px); margin-bottom: 24px; }
+      main { padding: 21px 17px; }
+      aside { padding: 14px; }
+      aside ol { columns: 1; }
+      .steps { grid-template-columns: 1fr; }
+      h2 { margin-top: 38px; font-size: 24px; }
+      .formula { text-align: left; font-size: 18px; }
+      .code-map { grid-template-columns: 1fr; }
+      .code-map dt { padding-bottom: 2px; border-bottom: 0; }
+      .code-map dd { padding-top: 2px; }
+    }
+
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      .topbar { background: #fff; color: var(--ink); border-bottom: 1px solid #999; }
+      .brand, .topbar-note { color: var(--ink); }
+      .layout { display: block; width: 100%; margin: 0; }
+      aside { display: none; }
+      main { border: 0; padding: 15mm 12mm; }
+      h2 { break-after: avoid; }
+      pre, table, .step, .callout, .note, .warning, .success { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#top">Исследование операций · Лабораторная работа 5</a>
+      <span class="topbar-note">Теория и разбор программы</span>
+    </div>
+  </header>
+
+  <div class="layout" id="top">
+    <aside aria-label="Содержание">
+      <h2>Содержание</h2>
+      <ol>
+        <li><a href="#task">Постановка задачи</a></li>
+        <li><a href="#idea">Главная идея</a></li>
+        <li><a href="#terms">Обозначения</a></li>
+        <li><a href="#algorithm">Алгоритм по шагам</a></li>
+        <li><a href="#code-structure">Структура программы</a></li>
+        <li><a href="#input">Входные данные</a></li>
+        <li><a href="#source-code">Полный исходный код</a></li>
+        <li><a href="#example">Пример вычисления</a></li>
+        <li><a href="#correctness">Почему алгоритм верный</a></li>
+        <li><a href="#complexity">Сложность</a></li>
+        <li><a href="#defense">Текст для защиты</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <p class="eyebrow">Подробная теория и разбор кода</p>
+      <h1>Поиск наидлиннейшего пути в ориентированном ациклическом графе</h1>
+      <p class="lead">Объяснение того, что решает лабораторная работа, почему алгоритм работает и за что отвечает каждый основной блок программы на C++.</p>
+      <div class="hero-meta">
+        <span class="meta-item">Динамическое программирование</span>
+        <span class="meta-item">Топологическая сортировка</span>
+        <span class="meta-item">Восстановление пути</span>
+      </div>
+
+      <section id="task">
+        <h2>1. Постановка задачи</h2>
+        <p>Дан ориентированный граф. Каждая дуга имеет целую неотрицательную длину. В графе нет контуров, то есть нет направленных циклов. Заданы начальная вершина <code>s</code> и конечная вершина <code>t</code>.</p>
+        <p>Нужно выяснить, можно ли попасть из <code>s</code> в <code>t</code>. Если можно, требуется найти путь с наибольшей суммой длин дуг.</p>
+        <div class="callout">
+          <strong>Что значит «самый длинный путь»?</strong>
+          Берём каждый возможный путь от <code>s</code> к <code>t</code>, складываем длины его дуг и выбираем путь с максимальной суммой.
+        </div>
+      </section>
+
+      <section id="idea">
+        <h2>2. Главная идея</h2>
+        <p>Если в графе нет циклов, вершины можно расположить в таком порядке, чтобы каждая дуга шла только от более ранней вершины к более поздней. Такой порядок называется <strong>топологическим</strong>.</p>
+        <div class="graph">
+          <pre>v1 ──5──▶ v2 ──4──▶ v4 ──3──▶ v6
+ │                    ▲              ▲
+ ├──3──▶ v3 ──2───────┘              │
+ └──────────────────▶ v2              │
+            v2 ──2──▶ v5 ─────7───────┘</pre>
+          <p class="graph-caption">Схематичный пример. На каждой дуге указана её длина. Вершины можно обработать слева направо.</p>
+        </div>
+        <p>После топологической сортировки программа идёт по вершинам от <code>s</code> к <code>t</code>. К моменту обработки очередной вершины уже известны лучшие пути до всех вершин, из которых в неё входят дуги. Поэтому для неё остаётся сравнить несколько вариантов и выбрать лучший.</p>
+        <div class="note">
+          <strong>Аналогия</strong>
+          Представь, что в каждую вершину записывается лучший результат, с которым до неё можно добраться. Когда рассматриваем новую вершину, проверяем все входы в неё: «если прийти через этот вход, какой получится результат?» Оставляем максимальный.
+        </div>
+      </section>
+
+      <section id="terms">
+        <h2>3. Обозначения из методички</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Обозначение</th><th>Простое объяснение</th><th>Имя в программе</th></tr></thead>
+            <tbody>
+              <tr><td><code>G = (V, A)</code></td><td>Граф: вершины и дуги</td><td><code>Graph</code>, <code>Edge</code></td></tr>
+              <tr><td><code>s</code></td><td>Начальная вершина</td><td><code>graph.source</code></td></tr>
+              <tr><td><code>t</code></td><td>Конечная вершина</td><td><code>graph.target</code></td></tr>
+              <tr><td><code>l(u, v)</code></td><td>Длина дуги из <code>u</code> в <code>v</code></td><td><code>edge.length</code></td></tr>
+              <tr><td><code>OPT(v)</code></td><td>Наибольшая длина пути из <code>s</code> в <code>v</code></td><td><code>opt[v]</code></td></tr>
+              <tr><td><code>x(v)</code></td><td>Предыдущая вершина на лучшем пути в <code>v</code></td><td><code>predecessor[v]</code></td></tr>
+              <tr><td><code>v_k</code></td><td>Начальная вершина в топологическом порядке</td><td><code>graph.source</code></td></tr>
+              <tr><td><code>v_l</code></td><td>Конечная вершина в топологическом порядке</td><td><code>graph.target</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Если вершина недостижима из <code>s</code>, её значение <code>OPT</code> считается равным минус бесконечности. В C++ используется очень маленькое число <code>NEGATIVE_INFINITY</code>, потому что обычные типы чисел не хранят математическую бесконечность так, как нужна этой программе.</p>
+      </section>
+
+      <section id="algorithm">
+        <h2>4. Алгоритм по шагам</h2>
+        <div class="steps">
+          <div class="step"><strong>Считать граф</strong>Получить число вершин и дуг, вершины <code>s</code> и <code>t</code>, затем все дуги с длинами.</div>
+          <div class="step"><strong>Проверить граф</strong>Убедиться, что номера вершин корректны, длины неотрицательные, а циклов нет.</div>
+          <div class="step"><strong>Упорядочить вершины</strong>Построить топологический порядок, в котором каждая дуга идёт вперёд.</div>
+          <div class="step"><strong>Сравнить позиции</strong>Если <code>s</code> стоит после <code>t</code>, путь из <code>s</code> в <code>t</code> невозможен.</div>
+          <div class="step"><strong>Выполнить прямой ход</strong>Для вершин между <code>s</code> и <code>t</code> вычислить <code>OPT</code> и запомнить предшественника.</div>
+          <div class="step"><strong>Выполнить обратный ход</strong>Начать с <code>t</code> и переходить к сохранённым предшественникам, пока не дойдём до <code>s</code>.</div>
+        </div>
+
+        <h3>Начальная формула</h3>
+        <div class="formula">OPT(v<sub>k</sub>) = 0</div>
+        <p>В начальной вершине мы уже находимся, поэтому длина пути до неё равна нулю.</p>
+
+        <h3>Формула перехода</h3>
+        <div class="formula">OPT(v<sub>i</sub>) = max<sub>(v<sub>j</sub>, v<sub>i</sub>) ∈ A</sub> [ OPT(v<sub>j</sub>) + l(v<sub>j</sub>, v<sub>i</sub>) ]</div>
+        <p>Чтобы найти лучший путь в <code>v_i</code>, рассматриваем каждую дугу, входящую в <code>v_i</code>. Для каждой такой дуги прибавляем её длину к лучшему пути до её начала. Из всех вариантов выбираем максимальный.</p>
+        <p>Вершину, через которую получился максимум, записываем как <code>x(v_i)</code>. Она понадобится, чтобы потом восстановить путь.</p>
+      </section>
+
+      <section id="code-structure">
+        <h2>5. Что где находится в программе</h2>
+        <p>Ниже указаны блоки текущего файла <code>main.cpp</code>. Номера строк могут измениться, если редактировать исходник.</p>
+        <dl class="code-map">
+          <dt>Строки 13–19</dt><dd><code>NEGATIVE_INFINITY</code> и структура <code>Edge</code>. Задают специальное значение для недостижимой вершины и формат хранения одной дуги.</dd>
+          <dt>Строки 21–29</dt><dd>Структура <code>Graph</code>. Хранит число вершин и дуг, <code>s</code>, <code>t</code>, список дуг, а также списки входящих и исходящих дуг.</dd>
+          <dt>Строки 31–73</dt><dd>Функция <code>readGraph</code>. Читает входные данные, проверяет их и заполняет структуру графа.</dd>
+          <dt>Строки 75–98</dt><dd>Функция <code>topologicalOrder</code>. Строит топологический порядок алгоритмом Кана и обнаруживает циклы.</dd>
+          <dt>Строки 100–106</dt><dd>Функция <code>printPath</code>. Выводит вершины пути в удобном виде.</dd>
+          <dt>Строки 108–130</dt><dd>Начало <code>main</code>. Настраивает ввод и позволяет читать данные либо из файла, либо из консоли.</dd>
+          <dt>Строки 132–141</dt><dd>Чтение графа, получение топологического порядка и вычисление позиций <code>s</code> и <code>t</code>.</dd>
+          <dt>Строки 143–162</dt><dd>Динамическое программирование. Массив <code>opt</code> хранит значения <code>OPT</code>, а <code>predecessor</code> хранит <code>x(v_i)</code>.</dd>
+          <dt>Строки 164–200</dt><dd>Вывод топологического порядка, значений прямого хода и сообщение, если путь не существует.</dd>
+          <dt>Строки 203–216</dt><dd>Обратный ход: восстановление цепочки предшественников, печать пути и его длины.</dd>
+          <dt>Строки 217–219</dt><dd>Обработка ошибок: вывод сообщения вместо аварийного завершения программы.</dd>
+        </dl>
+
+        <h3>Как устроены данные графа</h3>
+        <pre>Edge {
+    from;    // начало дуги
+    to;      // конец дуги
+    length;  // длина дуги
+}
+
+graph.incoming[v]  // дуги, входящие в v
+graph.outgoing[v]  // дуги, выходящие из v</pre>
+        <p>Для вычисления формулы нужна коллекция <code>incoming</code>: алгоритм смотрит на все дуги, которыми можно попасть в текущую вершину.</p>
+      </section>
+
+      <section id="source-code">
+        <h2>6. Полный исходный код программы</h2>
+        <p>Ниже приведён весь текущий файл <code>main.cpp</code> целиком. Код встроен в эту страницу напрямую, поэтому его можно читать вместе с пояснениями выше.</p>
+        <pre><code>#include &lt;algorithm&gt;
+#include &lt;fstream&gt;
+#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;limits&gt;
+#include &lt;queue&gt;
+#include &lt;stdexcept&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+const long long NEGATIVE_INFINITY = numeric_limits&lt;long long&gt;::lowest() / 4;
+
+struct Edge {
+    int from;
+    int to;
+    long long length;
+};
+
+struct Graph {
+    int vertexCount = 0;
+    int edgeCount = 0;
+    int source = 0;
+    int target = 0;
+    vector&lt;Edge&gt; edges;
+    vector&lt;vector&lt;int&gt;&gt; outgoing;
+    vector&lt;vector&lt;int&gt;&gt; incoming;
+};
+
+Graph readGraph(istream&amp; input) {
+    Graph graph;
+    if (!(input &gt;&gt; graph.vertexCount &gt;&gt; graph.edgeCount))
+        throw runtime_error("Input error: expected vertex and edge counts (n m).");
+    if (graph.vertexCount &lt;= 0 || graph.edgeCount &lt; 0)
+        throw runtime_error("Input error: n must be positive and m must be non-negative.");
+
+    if (!(input &gt;&gt; graph.source &gt;&gt; graph.target))
+        throw runtime_error("Input error: expected source and target vertices (s t).");
+    if (graph.source &lt; 1 || graph.source &gt; graph.vertexCount ||
+        graph.target &lt; 1 || graph.target &gt; graph.vertexCount)
+        throw runtime_error("Input error: source and target must be in the range 1..n.");
+    if (graph.source == graph.target)
+        throw runtime_error("Input error: source and target vertices must be different.");
+
+    --graph.source;
+    --graph.target;
+    graph.outgoing.assign(graph.vertexCount, {});
+    graph.incoming.assign(graph.vertexCount, {});
+    graph.edges.reserve(graph.edgeCount);
+
+    for (int i = 0; i &lt; graph.edgeCount; ++i) {
+        int from, to;
+        long long length;
+        if (!(input &gt;&gt; from &gt;&gt; to &gt;&gt; length))
+            throw runtime_error("Input error: every arc must contain from, to and length.");
+        if (from &lt; 1 || from &gt; graph.vertexCount || to &lt; 1 || to &gt; graph.vertexCount)
+            throw runtime_error("Input error: arc endpoint is outside the range 1..n.");
+        if (length &lt; 0)
+            throw runtime_error("Input error: arc lengths must be non-negative.");
+
+        --from;
+        --to;
+        graph.edges.push_back({from, to, length});
+        graph.outgoing[from].push_back(i);
+        graph.incoming[to].push_back(i);
+    }
+
+    string extra;
+    if (input &gt;&gt; extra)
+        throw runtime_error("Input error: unexpected data after the arc list.");
+    return graph;
+}
+
+vector&lt;int&gt; topologicalOrder(const Graph&amp; graph) {
+    vector&lt;int&gt; indegree(graph.vertexCount, 0);
+    for (const Edge&amp; edge : graph.edges) ++indegree[edge.to];
+
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; ready;
+    for (int vertex = 0; vertex &lt; graph.vertexCount; ++vertex)
+        if (indegree[vertex] == 0) ready.push(vertex);
+
+    vector&lt;int&gt; order;
+    order.reserve(graph.vertexCount);
+    while (!ready.empty()) {
+        int vertex = ready.top();
+        ready.pop();
+        order.push_back(vertex);
+        for (int edgeIndex : graph.outgoing[vertex]) {
+            const Edge&amp; edge = graph.edges[edgeIndex];
+            if (--indegree[edge.to] == 0) ready.push(edge.to);
+        }
+    }
+
+    if ((int)order.size() != graph.vertexCount)
+        throw runtime_error("Input error: the graph contains a directed cycle.");
+    return order;
+}
+
+void printPath(const vector&lt;int&gt;&amp; path) {
+    for (int i = 0; i &lt; (int)path.size(); ++i) {
+        if (i) cout &lt;&lt; " -&gt; ";
+        cout &lt;&lt; path[i] + 1;
+    }
+    cout &lt;&lt; '\n';
+}
+
+int main(int argc, char* argv[]) {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string filename;
+    for (int i = 1; i &lt; argc; ++i) {
+        string argument = argv[i];
+        if (!filename.empty()) {
+            cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " [input_file]\n";
+            return 2;
+        }
+        filename = argument;
+    }
+
+    ifstream inputFile;
+    if (!filename.empty()) {
+        inputFile.open(filename);
+        if (!inputFile) {
+            cerr &lt;&lt; "Cannot open input file: " &lt;&lt; filename &lt;&lt; '\n';
+            return 2;
+        }
+    }
+    istream&amp; input = filename.empty() ? cin : inputFile;
+
+    try {
+        Graph graph = readGraph(input);
+        vector&lt;int&gt; order = topologicalOrder(graph);
+
+        vector&lt;int&gt; position(graph.vertexCount, -1);
+        for (int i = 0; i &lt; graph.vertexCount; ++i)
+            position[order[i]] = i;
+
+        int sourcePosition = position[graph.source];
+        int targetPosition = position[graph.target];
+
+        vector&lt;long long&gt; opt(graph.vertexCount, NEGATIVE_INFINITY);
+        vector&lt;int&gt; predecessor(graph.vertexCount, -1);
+        opt[graph.source] = 0; // (1) OPT(v_k) = 0.
+
+        if (sourcePosition &lt;= targetPosition) {
+            // (2) OPT(v_i) = max(OPT(v_t) + l(v_t, v_i)) over incoming arcs.
+            for (int orderIndex = sourcePosition + 1;
+                 orderIndex &lt;= targetPosition; ++orderIndex) {
+                int vertex = order[orderIndex];
+                for (int edgeIndex : graph.incoming[vertex]) {
+                    const Edge&amp; edge = graph.edges[edgeIndex];
+                    if (opt[edge.from] == NEGATIVE_INFINITY) continue;
+                    long long candidate = opt[edge.from] + edge.length;
+                    if (candidate &gt; opt[vertex]) {
+                        opt[vertex] = candidate;
+                        predecessor[vertex] = edge.from; // x(v_i).
+                    }
+                }
+            }
+        }
+
+        cout &lt;&lt; "Longest path in a directed acyclic graph\n";
+        cout &lt;&lt; "==========================================\n";
+        cout &lt;&lt; "Vertices: " &lt;&lt; graph.vertexCount &lt;&lt; ", arcs: " &lt;&lt; graph.edgeCount &lt;&lt; '\n';
+        cout &lt;&lt; "Source: v" &lt;&lt; graph.source + 1 &lt;&lt; ", target: v" &lt;&lt; graph.target + 1 &lt;&lt; '\n';
+        cout &lt;&lt; "Topological order: ";
+        for (int i = 0; i &lt; (int)order.size(); ++i) {
+            if (i) cout &lt;&lt; ' ';
+            cout &lt;&lt; order[i] + 1;
+        }
+        cout &lt;&lt; '\n';
+        if (sourcePosition &gt; targetPosition) {
+            cout &lt;&lt; "\nSince k &gt; l, target v" &lt;&lt; graph.target + 1
+                 &lt;&lt; " is before source v" &lt;&lt; graph.source + 1
+                 &lt;&lt; " in the topological order, so it is unreachable.\n";
+            return 0;
+        }
+
+        cout &lt;&lt; "\nForward pass (OPT(v_i), x(v_i)):\n";
+        for (int orderIndex = sourcePosition; orderIndex &lt;= targetPosition; ++orderIndex) {
+            int vertex = order[orderIndex];
+            cout &lt;&lt; "OPT(v" &lt;&lt; vertex + 1 &lt;&lt; ") = ";
+            if (opt[vertex] == NEGATIVE_INFINITY) cout &lt;&lt; "-inf";
+            else cout &lt;&lt; opt[vertex];
+            if (vertex == graph.source) {
+                cout &lt;&lt; ", x(v" &lt;&lt; vertex + 1 &lt;&lt; ") = -";
+            } else if (predecessor[vertex] != -1) {
+                cout &lt;&lt; ", x(v" &lt;&lt; vertex + 1 &lt;&lt; ") = v" &lt;&lt; predecessor[vertex] + 1;
+            } else {
+                cout &lt;&lt; ", x(v" &lt;&lt; vertex + 1 &lt;&lt; ") = -";
+            }
+            cout &lt;&lt; '\n';
+        }
+
+        if (opt[graph.target] == NEGATIVE_INFINITY) {
+            cout &lt;&lt; "\nResult: vertex v" &lt;&lt; graph.target + 1
+                 &lt;&lt; " is unreachable from v" &lt;&lt; graph.source + 1 &lt;&lt; ".\n";
+            return 0;
+        }
+
+        vector&lt;int&gt; path;
+        for (int vertex = graph.target; vertex != -1; vertex = predecessor[vertex])
+            path.push_back(vertex);
+        reverse(path.begin(), path.end());
+
+        cout &lt;&lt; "\nResult:\n";
+        cout &lt;&lt; "Backward pass: ";
+        for (int i = (int)path.size() - 1; i &gt;= 0; --i) {
+            if (i != (int)path.size() - 1) cout &lt;&lt; " -&gt; ";
+            cout &lt;&lt; path[i] + 1;
+        }
+        cout &lt;&lt; "\nLongest path: ";
+        printPath(path);
+        cout &lt;&lt; "Path length: " &lt;&lt; opt[graph.target] &lt;&lt; '\n';
+    } catch (const exception&amp; error) {
+        cerr &lt;&lt; error.what() &lt;&lt; '\n';
+        return 1;
+    }
+
+    return 0;
+}
+
+/*
+Input format:
+  n m
+  s t
+  from_1 to_1 length_1
+  ...
+  from_m to_m length_m
+
+Vertices are numbered from 1 to n. Arc lengths are non-negative integers.
+Example:
+  6 7
+  1 6
+  1 2 5
+  1 3 3
+  2 4 4
+  3 4 2
+  2 5 2
+  4 6 3
+  5 6 7
+*/
+</code></pre>
+      </section>
+
+      <section id="input">
+        <h2>7. Формат входных данных</h2>
+        <p>Методичка описывает математическую задачу, но не задаёт формат текстового файла. В программе используется такой формат:</p>
+        <pre>n m
+s t
+from1 to1 length1
+from2 to2 length2
+...
+from_m to_m length_m</pre>
+        <p>Например, строка <code>2 5 2</code> означает дугу из вершины 2 в вершину 5 длины 2. Нумерация во входном файле начинается с единицы.</p>
+        <div class="warning">
+          <strong>Почему программа проверяет вход</strong>
+          Если вершины указаны вне диапазона, дуга имеет отрицательную длину или граф содержит цикл, вход не соответствует условиям задачи. Программа сообщает об этом и не выдаёт результат, которому нельзя доверять.
+        </div>
+      </section>
+
+      <section id="example">
+        <h2>8. Пример вычисления</h2>
+        <p>Возьмём граф из файла <code>input.txt</code>. Нужно найти длиннейший путь из вершины 1 в вершину 6.</p>
+        <div class="graph">
+          <pre>1 ──5──▶ 2 ──4──▶ 4 ──3──▶ 6
+│         │                     ▲
+│         └──2──▶ 5 ─────7──────┘
+└──3──▶ 3 ──2──▶ 4</pre>
+        </div>
+        <p>Топологический порядок в этом примере: <code>1, 2, 3, 4, 5, 6</code>.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Вершина</th><th>Варианты прихода</th><th>Лучшее значение</th><th>Предшественник</th></tr></thead>
+            <tbody>
+              <tr><td><code>1</code></td><td>Начальная вершина</td><td><code>OPT(1) = 0</code></td><td>Нет</td></tr>
+              <tr><td><code>2</code></td><td><code>0 + 5</code></td><td><code>OPT(2) = 5</code></td><td><code>x(2) = 1</code></td></tr>
+              <tr><td><code>3</code></td><td><code>0 + 3</code></td><td><code>OPT(3) = 3</code></td><td><code>x(3) = 1</code></td></tr>
+              <tr><td><code>4</code></td><td>Через 2: <code>5 + 4 = 9</code>; через 3: <code>3 + 2 = 5</code></td><td><code>OPT(4) = 9</code></td><td><code>x(4) = 2</code></td></tr>
+              <tr><td><code>5</code></td><td><code>5 + 2</code></td><td><code>OPT(5) = 7</code></td><td><code>x(5) = 2</code></td></tr>
+              <tr><td><code>6</code></td><td>Через 4: <code>9 + 3 = 12</code>; через 5: <code>7 + 7 = 14</code></td><td><code>OPT(6) = 14</code></td><td><code>x(6) = 5</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Обратный ход</h3>
+        <p>Идём от конечной вершины по сохранённым предшественникам:</p>
+        <pre>6 -> x(6) = 5 -> x(5) = 2 -> x(2) = 1</pre>
+        <p>Это обратная запись пути. Разворачиваем её и получаем:</p>
+        <div class="success"><strong>Ответ</strong>Длиннейший путь: <code>1 -> 2 -> 5 -> 6</code><br>Длина: <code>5 + 2 + 7 = 14</code></div>
+      </section>
+
+      <section id="correctness">
+        <h2>9. Почему алгоритм верный</h2>
+        <ol class="proof-list">
+          <li><strong>Рассматриваются все возможные последние дуги.</strong> Любой путь, который заканчивается в <code>v_i</code>, должен прийти туда по одной из дуг, входящих в <code>v_i</code>.</li>
+          <li><strong>Для каждого варианта берётся лучший предыдущий путь.</strong> Если путь приходит по дуге <code>v_j -> v_i</code>, его лучшая возможная длина равна <code>OPT(v_j) + l(v_j, v_i)</code>.</li>
+          <li><strong>Выбирается максимальный вариант.</strong> Формула сравнивает все входящие дуги и сохраняет наибольшую длину.</li>
+          <li><strong>Нужные значения уже вычислены.</strong> В топологическом порядке начало каждой дуги стоит раньше конца. Значит, <code>OPT(v_j)</code> готово до того, как алгоритм обрабатывает <code>v_i</code>.</li>
+          <li><strong>Предшественники восстанавливают выбранный путь.</strong> Каждое значение <code>x(v_i)</code> указывает на вершину, которая дала максимум. Переходя по ним назад, приходим к <code>s</code>.</li>
+        </ol>
+      </section>
+
+      <section id="complexity">
+        <h2>10. Сложность</h2>
+        <p>Топологическая сортировка обрабатывает каждую вершину и каждую дугу ограниченное число раз. Динамическое программирование также просматривает вершины и входящие в них дуги.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ресурс</th><th>Сложность</th><th>Что это означает</th></tr></thead>
+            <tbody>
+              <tr><td>Время</td><td><code>O(n + m)</code></td><td>Время растёт примерно пропорционально размеру графа.</td></tr>
+              <tr><td>Память</td><td><code>O(n + m)</code></td><td>Хранятся вершины, дуги и вспомогательные списки.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="defense">
+        <h2>11. Короткий ответ для защиты</h2>
+        <div class="note">
+          <p>В программе реализован алгоритм динамического программирования для поиска наидлиннейшего пути в ориентированном ациклическом графе. Сначала строится топологический порядок вершин. Затем для начальной вершины полагается <code>OPT(s) = 0</code>, а для каждой следующей вершины вычисляется максимум по всем входящим дугам: <code>OPT(v) = max(OPT(u) + l(u, v))</code>. Вершина, через которую получен максимум, сохраняется как предшественник. После вычисления значения для конечной вершины путь восстанавливается обратным переходом по предшественникам.</p>
+        </div>
+        <h3>Если попросят объяснить, почему не перебираются все пути</h3>
+        <p>В DAG топологический порядок позволяет обработать каждую вершину один раз после всех её предшественников. Для каждой вершины достаточно сравнить входящие дуги. Поэтому перебор всех путей не нужен.</p>
+        <h3>Если попросят объяснить минус бесконечность</h3>
+        <p>Это метка «пока нет пути из начальной вершины». Она не позволяет случайно использовать недостижимую вершину в формуле перехода.</p>
+      </section>
+
+      <div class="footer">
+        Материал соответствует алгоритму из методички к лабораторной работе 5 и текущей реализации <code>main.cpp</code>.
+      </div>
+    </main>
+  </div>
+</body>
+</html>

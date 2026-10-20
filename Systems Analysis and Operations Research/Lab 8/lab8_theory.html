@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Лабораторная работа 8: максимальный поток</title>
+  <style>
+    :root { --ink:#17202a; --muted:#5f6b76; --line:#d9e0e7; --paper:#fff; --bg:#f4f6f8; --accent:#1264a3; --accent-soft:#eaf3fb; --code:#101820; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--bg); font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    .wrap { max-width:1120px; margin:0 auto; padding:28px 22px 70px; }
+    header { background:linear-gradient(135deg,#102a43,#1264a3); color:#fff; padding:42px clamp(24px,5vw,64px); border-radius:16px; box-shadow:0 12px 30px #102a4326; }
+    h1 { margin:0 0 10px; font-size:clamp(30px,5vw,52px); line-height:1.1; letter-spacing:0; }
+    header p { max-width:780px; margin:0; color:#e5f1fb; font-size:18px; }
+    nav, section { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:26px 30px; margin-top:20px; box-shadow:0 4px 14px #17202a0b; }
+    nav h2, section h2 { margin-top:0; }
+    h2 { font-size:28px; line-height:1.2; }
+    h3 { font-size:21px; margin-top:28px; }
+    p { max-width:900px; }
+    a { color:var(--accent); }
+    .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px 24px; padding-left:20px; }
+    .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:14px 17px; margin:18px 0; }
+    .formula { font:600 18px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; background:#f2f5f7; border:1px solid var(--line); border-radius:8px; padding:14px 16px; overflow:auto; }
+    .steps { counter-reset:step; list-style:none; padding:0; }
+    .steps li { counter-increment:step; position:relative; padding:12px 14px 12px 52px; border-bottom:1px solid var(--line); }
+    .steps li::before { content:counter(step); position:absolute; left:0; top:11px; width:31px; height:31px; border-radius:50%; background:var(--accent); color:#fff; text-align:center; line-height:31px; font-weight:700; }
+    pre, textarea { width:100%; background:var(--code); color:#e8f0f7; border:0; border-radius:8px; padding:18px; overflow:auto; font:14px/1.55 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace; tab-size:4; }
+    pre { white-space:pre-wrap; }
+    textarea { min-height:980px; resize:vertical; white-space:pre; }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; background:#eef1f3; padding:2px 5px; border-radius:4px; }
+    pre code { background:transparent; padding:0; }
+    table { border-collapse:collapse; width:100%; margin:16px 0; }
+    th,td { border:1px solid var(--line); padding:9px 11px; text-align:left; vertical-align:top; }
+    th { background:#edf3f7; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:16px; background:#fbfcfd; }
+    .small { color:var(--muted); font-size:14px; }
+    @media (max-width:650px) { .wrap { padding:12px 10px 45px; } nav,section { padding:20px 17px; } header { border-radius:10px; padding:30px 21px; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Лабораторная работа 8: максимальный поток</h1>
+    <p>Понятное объяснение задачи, алгоритма Форда–Фалкерсона, метода пометок, остаточной сети и каждой существенной части программы на C++.</p>
+  </header>
+
+  <nav>
+    <h2>Содержание</h2>
+    <ol class="toc">
+      <li><a href="#idea">1. Идея задачи</a></li>
+      <li><a href="#terms">2. Основные термины</a></li>
+      <li><a href="#algorithm">3. Алгоритм по методичке</a></li>
+      <li><a href="#residual">4. Остаточная сеть</a></li>
+      <li><a href="#storage">5. Как данные хранятся в коде</a></li>
+      <li><a href="#functions">6. Разбор функций</a></li>
+      <li><a href="#example">7. Пошаговый пример</a></li>
+      <li><a href="#correctness">8. Почему результат максимальный</a></li>
+      <li><a href="#source">9. Полный исходный код</a></li>
+    </ol>
+  </nav>
+
+  <section id="idea">
+    <h2>1. Идея задачи</h2>
+    <p>Представьте сеть труб. У каждой трубы есть ограничение: больше определённого количества воды через неё пропустить нельзя. Есть источник <code>s</code>, откуда вода выходит, и сток <code>t</code>, куда она должна прийти.</p>
+    <p>Задача о максимальном потоке состоит в том, чтобы провести из <code>s</code> в <code>t</code> как можно больше единиц потока, не превышая пропускную способность дуг.</p>
+    <div class="note"><b>Главная мысль:</b> программа много раз ищет путь из истока в сток, по которому ещё можно добавить поток. На каждом найденном пути она добавляет максимально возможное количество, а потом ищет следующий путь.</div>
+    <p>Если путей больше нет, текущий поток является максимальным.</p>
+    <pre><code>поток = 0
+пока существует путь s -> t:
+    найти минимальную свободную пропускную способность на пути
+    увеличить поток по этому пути
+результат = максимальный поток</code></pre>
+  </section>
+
+  <section id="terms">
+    <h2>2. Основные термины</h2>
+    <table>
+      <thead><tr><th>Термин</th><th>Что означает</th><th>Как представлен в программе</th></tr></thead>
+      <tbody>
+        <tr><td>Вершина</td><td>Точка сети.</td><td>Индекс от <code>0</code> до <code>vertexCount - 1</code>.</td></tr>
+        <tr><td>Дуга</td><td>Направленное соединение <code>u -> v</code>.</td><td>Пара индексов матрицы <code>[u][v]</code>.</td></tr>
+        <tr><td>Исток <code>s</code></td><td>Вершина, из которой выходит поток.</td><td>Поле <code>source</code>.</td></tr>
+        <tr><td>Сток <code>t</code></td><td>Вершина, в которую приходит поток.</td><td>Поле <code>sink</code>.</td></tr>
+        <tr><td><code>c(u,v)</code></td><td>Пропускная способность дуги.</td><td><code>capacity[u][v]</code>.</td></tr>
+        <tr><td><code>f(u,v)</code></td><td>Текущий поток по дуге.</td><td><code>flow[u][v]</code>.</td></tr>
+        <tr><td><code>fP(u,v)</code></td><td>Поток, добавляемый на текущем найденном пути.</td><td><code>pathFlow[u][v]</code>.</td></tr>
+      </tbody>
+    </table>
+    <p>В методичке вершины могут называться буквами, а во входном файле они нумеруются числами. Внутри C++ нумерация начинается с нуля, поэтому вершина 1 из файла хранится как индекс 0. При выводе программа снова прибавляет единицу.</p>
+  </section>
+
+  <section id="algorithm">
+    <h2>3. Алгоритм Форда–Фалкерсона по методичке</h2>
+    <ol class="steps">
+      <li><b>Начальный поток.</b> Для всех дуг устанавливается <code>f(a) = 0</code>. В программе матрица <code>flow</code> создаётся заполненной нулями.</li>
+      <li><b>Остаточная сеть.</b> Для каждой дуги вычисляется, сколько потока ещё можно провести или отменить.</li>
+      <li><b>Метод пометок.</b> Из истока выполняется поиск по дугам с положительной остаточной пропускной способностью.</li>
+      <li><b>Проверка стока.</b> Если сток не помечен, путь <code>s -> t</code> отсутствует и алгоритм заканчивается.</li>
+      <li><b>Восстановление пути.</b> По меткам предыдущих вершин путь восстанавливается от стока к истоку.</li>
+      <li><b>Поиск величины увеличения.</b> На пути берётся минимум остаточных пропускных способностей: <code>theta = min cf(a)</code>.</li>
+      <li><b>Построение элементарного потока.</b> На дугах найденного пути записывается <code>theta</code>, на остальных дугах — ноль.</li>
+      <li><b>Обновление.</b> Текущий поток изменяется по формуле из методички, затем поиск начинается снова.</li>
+    </ol>
+  </section>
+
+  <section id="residual">
+    <h2>4. Остаточная сеть и обратные дуги</h2>
+    <p>Для дуги <code>(u,v)</code> методичка задаёт остаточную пропускную способность:</p>
+    <div class="formula">cf(u,v) = c(u,v) - f(u,v) + f(v,u)</div>
+    <p>Первая часть <code>c(u,v) - f(u,v)</code> — свободное место в прямой дуге. Если capacity равна 5, а поток равен 2, напрямую можно добавить ещё 3.</p>
+    <p>Вторая часть <code>+ f(v,u)</code> позволяет отменить поток, который раньше прошёл в обратном направлении. Это необходимо, чтобы исправлять неудачный выбор предыдущего пути.</p>
+    <p>В коде формула записана напрямую:</p>
+    <pre><code>long long residualCapacity(int from, int to) const {
+    return capacity[from][to] - flow[from][to] + flow[to][from];
+}</code></pre>
+    <p>Методичка требует, чтобы вместе с каждой дугой была задана обратная дуга. Поэтому для дуги <code>1 -> 2</code> с capacity 3 во входе есть и строка <code>2 1 0</code>. Нулевая исходная capacity не мешает: после отправки потока по <code>1 -> 2</code> остаточная возможность идти обратно появится за счёт члена <code>+ f(1,2)</code>.</p>
+  </section>
+
+  <section id="storage">
+    <h2>5. Как данные хранятся в коде</h2>
+    <p>Основная логика находится внутри класса <code>FordFulkerson</code>.</p>
+    <pre><code>int vertexCount;
+int source;
+int sink;
+vector&lt;vector&lt;long long&gt;&gt; capacity;
+vector&lt;vector&lt;long long&gt;&gt; flow;
+vector&lt;vector&lt;bool&gt;&gt; hasArc;
+long long maxFlow = 0;
+int iteration = 0;</code></pre>
+    <div class="grid">
+      <div class="card"><b><code>capacity[u][v]</code></b><br>Пропускная способность дуги <code>u -> v</code>.</div>
+      <div class="card"><b><code>flow[u][v]</code></b><br>Текущий поток по дуге <code>u -> v</code>.</div>
+      <div class="card"><b><code>hasArc[u][v]</code></b><br>Проверка, была ли такая дуга во входной сети.</div>
+      <div class="card"><b><code>maxFlow</code></b><br>Суммарное значение потока из истока в сток.</div>
+    </div>
+    <p>Матрицы выбраны потому, что для формулы остаточной сети нужно быстро обращаться и к прямой, и к обратной дуге:</p>
+    <div class="formula">capacity[u][v], flow[u][v], flow[v][u]</div>
+  </section>
+
+  <section id="functions">
+    <h2>6. Разбор функций</h2>
+    <h3><code>residualCapacity</code>: остаточная capacity</h3>
+    <p>Функция возвращает количество потока, которое можно добавить по направлению <code>from -> to</code>. Если результат равен нулю или меньше нуля, при поиске по этой дуге идти нельзя.</p>
+    <pre><code>long long residualCapacity(int from, int to) const {
+    return capacity[from][to] - flow[from][to] + flow[to][from];
+}</code></pre>
+
+    <h3><code>findPath</code>: метод пометок</h3>
+    <p>Функция реализует очередь из методички. Массив <code>parent</code> хранит метку вершины: в нём записывается предыдущая вершина найденного пути.</p>
+    <pre><code>bool findPath(vector&lt;int&gt;&amp; parent) const {
+    fill(parent.begin(), parent.end(), -1);
+    queue&lt;int&gt; pending;
+    pending.push(source);
+    parent[source] = source;
+
+    while (!pending.empty() &amp;&amp; parent[sink] == -1) {
+        int vertex = pending.front();
+        pending.pop();
+        for (int next = 0; next &lt; vertexCount; ++next) {
+            if (parent[next] != -1 || residualCapacity(vertex, next) &lt;= 0)
+                continue;
+            parent[next] = vertex;
+            pending.push(next);
+        }
+    }
+    return parent[sink] != -1;
+}</code></pre>
+    <p>Условие <code>parent[next] != -1</code> означает «вершина уже помечена». Условие <code>residualCapacity(...) &gt; 0</code> означает «дуга не нулевая в остаточной сети».</p>
+
+    <h3><code>addArc</code>: чтение дуги</h3>
+    <pre><code>bool addArc(int from, int to, long long arcCapacity) {
+    if (hasArc[from][to]) return false;
+    hasArc[from][to] = true;
+    capacity[from][to] = arcCapacity;
+    return true;
+}</code></pre>
+    <p>Функция запрещает повторное описание одной и той же направленной дуги и сохраняет её capacity.</p>
+
+    <h3><code>hasAllReverseArcs</code>: проверка условия методички</h3>
+    <pre><code>bool hasAllReverseArcs() const {
+    for (int from = 0; from &lt; vertexCount; ++from)
+        for (int to = 0; to &lt; vertexCount; ++to)
+            if (hasArc[from][to] &amp;&amp; !hasArc[to][from]) return false;
+    return true;
+}</code></pre>
+    <p>Например, если во входе есть <code>1 -> 2</code>, но нет <code>2 -> 1</code>, программа завершится с ошибкой.</p>
+
+    <h3><code>solve</code>: главный цикл</h3>
+    <p>Сначала программа вызывает <code>findPath</code>. Пока сток достижим, она восстанавливает путь, находит <code>theta</code>, создаёт элементарный поток и применяет формулу обновления.</p>
+    <pre><code>vector&lt;int&gt; parent(vertexCount);
+while (findPath(parent)) {
+    // восстановление пути
+    // поиск theta
+    // построение pathFlow
+    // обновление flow
+    // увеличение maxFlow
+}</code></pre>
+
+    <h3>Восстановление пути и поиск <code>theta</code></h3>
+    <pre><code>vector&lt;int&gt; path;
+long long augmentation = numeric_limits&lt;long long&gt;::max();
+for (int vertex = sink; vertex != source; vertex = parent[vertex]) {
+    augmentation = min(
+        augmentation,
+        residualCapacity(parent[vertex], vertex)
+    );
+    path.push_back(vertex);
+}
+path.push_back(source);
+reverse(path.begin(), path.end());</code></pre>
+    <p>Путь восстанавливается с конца. Если метки говорят <code>4 <- 2 <- 1</code>, после <code>reverse</code> получается обычная запись <code>1 -> 2 -> 4</code>.</p>
+
+    <h3>Построение элементарного потока и обновление</h3>
+    <pre><code>vector&lt;vector&lt;long long&gt;&gt; pathFlow(
+    vertexCount, vector&lt;long long&gt;(vertexCount, 0)
+);
+for (size_t i = 1; i &lt; path.size(); ++i)
+    pathFlow[path[i - 1]][path[i]] = augmentation;
+
+vector&lt;vector&lt;long long&gt;&gt; updatedFlow = flow;
+for (int from = 0; from &lt; vertexCount; ++from) {
+    for (int to = 0; to &lt; vertexCount; ++to) {
+        updatedFlow[from][to] = max(
+            0LL,
+            flow[from][to] - flow[to][from] +
+                pathFlow[from][to] - pathFlow[to][from]
+        );
+    }
+}
+flow.swap(updatedFlow);
+maxFlow += augmentation;</code></pre>
+    <p>Последняя формула соответствует методичке:</p>
+    <div class="formula">f'(a) = max(0, f(a) - f(ā) + fP(a) - fP(ā))</div>
+
+    <h3><code>printResult</code>: результат и минимальный разрез</h3>
+    <p>Функция выводит значение максимального потока и поток по каждой входной дуге. Затем она ещё раз запускает поиск из истока по положительным остаточным capacity.</p>
+    <p>Все достижимые вершины образуют множество <code>S</code>, остальные — множество <code>T</code>. Пара <code>S | T</code> является минимальным разрезом.</p>
+  </section>
+
+  <section id="example">
+    <h2>7. Пошаговый пример</h2>
+    <p>Для файла с сетью из методички:</p>
+    <pre><code>4 10 1 4
+1 2 3
+2 1 0
+1 3 2
+3 1 0
+2 3 2
+3 2 0
+2 4 1
+4 2 0
+3 4 2
+4 3 0</code></pre>
+    <h3>Итерация 1</h3>
+    <p>Поиск находит путь <code>1 -> 2 -> 4</code>. Остаточные capacity равны 3 и 1, поэтому:</p>
+    <div class="formula">theta = min(3, 1) = 1</div>
+    <p>Поток на дугах пути увеличивается на 1. Общий поток становится 1.</p>
+    <h3>Итерация 2</h3>
+    <p>Поиск находит путь <code>1 -> 3 -> 4</code>. Обе дуги имеют остаточную capacity 2:</p>
+    <div class="formula">theta = min(2, 2) = 2</div>
+    <p>Общий поток становится <code>1 + 2 = 3</code>.</p>
+    <h3>Остановка</h3>
+    <p>Дуги <code>2 -> 4</code> и <code>3 -> 4</code> заполнены полностью. Сток больше не достижим по остаточной сети, поэтому алгоритм останавливается.</p>
+    <pre><code>Maximum flow: 3
+Minimum cut: S = {1, 2, 3}, T = {4}</code></pre>
+  </section>
+
+  <section id="correctness">
+    <h2>8. Почему результат максимальный</h2>
+    <p>Пока существует увеличивающий путь, текущий поток можно увеличить. Когда такого пути нет, множество вершин, достижимых из истока в остаточной сети, задаёт разрез <code>S | T</code>.</p>
+    <p>Все дуги из <code>S</code> в <code>T</code> имеют нулевую остаточную capacity, то есть полностью заполнены. Поэтому поток равен пропускной способности этого разреза.</p>
+    <div class="note"><b>Теорема о максимальном потоке и минимальном разрезе:</b> величина максимального потока равна пропускной способности минимального разреза. Поэтому найденный результат нельзя улучшить.</div>
+    <p>В этой программе метод пометок реализован через BFS. Такой вариант часто называют Edmonds–Karp, но по сути он реализует требуемый метод Форда–Фалкерсона с поиском увеличивающего пути.</p>
+  </section>
+
+  <section id="source">
+    <h2>9. Полный исходный код</h2>
+    <p class="small">Ниже код вставлен прямо в HTML. Его можно выделить и скопировать в файл <code>main.cpp</code>.</p>
+    <textarea readonly spellcheck="false">#include &lt;algorithm&gt;
+#include &lt;cstdio&gt;
+#include &lt;iostream&gt;
+#include &lt;limits&gt;
+#include &lt;queue&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+class FordFulkerson {
+    int vertexCount;
+    int source;
+    int sink;
+    vector&lt;vector&lt;long long&gt;&gt; capacity;
+    vector&lt;vector&lt;long long&gt;&gt; flow;
+    vector&lt;vector&lt;bool&gt;&gt; hasArc;
+    long long maxFlow = 0;
+    int iteration = 0;
+
+    long long residualCapacity(int from, int to) const {
+        return capacity[from][to] - flow[from][to] + flow[to][from];
+    }
+
+    bool findPath(vector&lt;int&gt;&amp; parent) const {
+        fill(parent.begin(), parent.end(), -1);
+        queue&lt;int&gt; pending;
+        pending.push(source);
+        parent[source] = source;
+
+        while (!pending.empty() &amp;&amp; parent[sink] == -1) {
+            int vertex = pending.front();
+            pending.pop();
+            for (int next = 0; next &lt; vertexCount; ++next) {
+                if (parent[next] != -1 || residualCapacity(vertex, next) &lt;= 0) continue;
+                parent[next] = vertex;
+                pending.push(next);
+            }
+        }
+        return parent[sink] != -1;
+    }
+
+public:
+    FordFulkerson(int count, int start, int finish)
+        : vertexCount(count), source(start), sink(finish),
+          capacity(count, vector&lt;long long&gt;(count, 0)),
+          flow(count, vector&lt;long long&gt;(count, 0)),
+          hasArc(count, vector&lt;bool&gt;(count, false)) {}
+
+    bool addArc(int from, int to, long long arcCapacity) {
+        if (hasArc[from][to]) return false;
+        hasArc[from][to] = true;
+        capacity[from][to] = arcCapacity;
+        return true;
+    }
+
+    bool hasAllReverseArcs() const {
+        for (int from = 0; from &lt; vertexCount; ++from)
+            for (int to = 0; to &lt; vertexCount; ++to)
+                if (hasArc[from][to] &amp;&amp; !hasArc[to][from]) return false;
+        return true;
+    }
+
+    void solve() {
+        vector&lt;int&gt; parent(vertexCount);
+        while (findPath(parent)) {
+            vector&lt;int&gt; path;
+            long long augmentation = numeric_limits&lt;long long&gt;::max();
+            for (int vertex = sink; vertex != source; vertex = parent[vertex]) {
+                augmentation = min(augmentation, residualCapacity(parent[vertex], vertex));
+                path.push_back(vertex);
+            }
+            path.push_back(source);
+            reverse(path.begin(), path.end());
+
+            ++iteration;
+            cout &lt;&lt; "\nAugmenting path " &lt;&lt; iteration &lt;&lt; ": ";
+            for (size_t i = 0; i &lt; path.size(); ++i) {
+                if (i) cout &lt;&lt; " -&gt; ";
+                cout &lt;&lt; path[i] + 1;
+            }
+            cout &lt;&lt; "\nBottleneck capacity: " &lt;&lt; augmentation &lt;&lt; '\n';
+
+            vector&lt;vector&lt;long long&gt;&gt; pathFlow(vertexCount, vector&lt;long long&gt;(vertexCount, 0));
+            for (size_t i = 1; i &lt; path.size(); ++i)
+                pathFlow[path[i - 1]][path[i]] = augmentation;
+
+            vector&lt;vector&lt;long long&gt;&gt; updatedFlow = flow;
+            for (int from = 0; from &lt; vertexCount; ++from) {
+                for (int to = 0; to &lt; vertexCount; ++to) {
+                    updatedFlow[from][to] = max(
+                        0LL,
+                        flow[from][to] - flow[to][from] +
+                            pathFlow[from][to] - pathFlow[to][from]);
+                }
+            }
+            flow.swap(updatedFlow);
+            maxFlow += augmentation;
+        }
+    }
+
+    void printResult() const {
+        cout &lt;&lt; "\nMaximum flow: " &lt;&lt; maxFlow &lt;&lt; '\n';
+        cout &lt;&lt; "\nFlow on arcs (flow/capacity):\n";
+        for (int from = 0; from &lt; vertexCount; ++from)
+            for (int to = 0; to &lt; vertexCount; ++to)
+                if (hasArc[from][to])
+                    cout &lt;&lt; from + 1 &lt;&lt; " -&gt; " &lt;&lt; to + 1 &lt;&lt; ": "
+                         &lt;&lt; flow[from][to] &lt;&lt; '/' &lt;&lt; capacity[from][to] &lt;&lt; '\n';
+
+        vector&lt;bool&gt; reachable(vertexCount, false);
+        queue&lt;int&gt; pending;
+        pending.push(source);
+        reachable[source] = true;
+        while (!pending.empty()) {
+            int vertex = pending.front();
+            pending.pop();
+            for (int next = 0; next &lt; vertexCount; ++next) {
+                if (!reachable[next] &amp;&amp; residualCapacity(vertex, next) &gt; 0) {
+                    reachable[next] = true;
+                    pending.push(next);
+                }
+            }
+        }
+
+        cout &lt;&lt; "\nMinimum cut: S = {";
+        bool first = true;
+        for (int i = 0; i &lt; vertexCount; ++i) {
+            if (!reachable[i]) continue;
+            if (!first) cout &lt;&lt; ", ";
+            cout &lt;&lt; i + 1;
+            first = false;
+        }
+        cout &lt;&lt; "}, T = {";
+        first = true;
+        for (int i = 0; i &lt; vertexCount; ++i) {
+            if (reachable[i]) continue;
+            if (!first) cout &lt;&lt; ", ";
+            cout &lt;&lt; i + 1;
+            first = false;
+        }
+        cout &lt;&lt; "}\n";
+    }
+};
+
+int main(int argc, char* argv[]) {
+    if (argc &gt; 2) {
+        cerr &lt;&lt; "Usage: lab8 [input_file]\n";
+        return 1;
+    }
+    if (argc == 2 &amp;&amp; !freopen(argv[1], "r", stdin)) {
+        cerr &lt;&lt; "Error: cannot open input file '" &lt;&lt; argv[1] &lt;&lt; "'.\n";
+        return 1;
+    }
+
+    int vertexCount, arcCount, source, sink;
+    if (!(cin &gt;&gt; vertexCount &gt;&gt; arcCount &gt;&gt; source &gt;&gt; sink)) {
+        cerr &lt;&lt; "Input must start with: vertex_count arc_count source sink.\n";
+        return 1;
+    }
+    if (vertexCount &lt; 2 || arcCount &lt; 0 || source &lt; 1 || source &gt; vertexCount ||
+        sink &lt; 1 || sink &gt; vertexCount || source == sink) {
+        cerr &lt;&lt; "Error: invalid graph size or source/sink.\n";
+        return 1;
+    }
+
+    FordFulkerson solver(vertexCount, source - 1, sink - 1);
+    for (int i = 0; i &lt; arcCount; ++i) {
+        int from, to;
+        long long arcCapacity;
+        if (!(cin &gt;&gt; from &gt;&gt; to &gt;&gt; arcCapacity)) {
+            cerr &lt;&lt; "Error: missing data for arc " &lt;&lt; i + 1 &lt;&lt; ".\n";
+            return 1;
+        }
+        if (from &lt; 1 || from &gt; vertexCount || to &lt; 1 || to &gt; vertexCount ||
+            from == to || arcCapacity &lt; 0) {
+            cerr &lt;&lt; "Error: invalid arc " &lt;&lt; i + 1 &lt;&lt; ".\n";
+            return 1;
+        }
+        if (!solver.addArc(from - 1, to - 1, arcCapacity)) {
+            cerr &lt;&lt; "Error: duplicate arc " &lt;&lt; from &lt;&lt; " -&gt; " &lt;&lt; to &lt;&lt; ".\n";
+            return 1;
+        }
+    }
+
+    string extra;
+    if (cin &gt;&gt; extra) {
+        cerr &lt;&lt; "Error: unexpected data after the last arc.\n";
+        return 1;
+    }
+    if (!solver.hasAllReverseArcs()) {
+        cerr &lt;&lt; "Error: every arc must have its reverse arc in the input, "
+                "including reverse arcs with zero capacity.\n";
+        return 1;
+    }
+
+    cout &lt;&lt; "Ford-Fulkerson algorithm (labeling method)\n";
+    cout &lt;&lt; "===========================================\n";
+    cout &lt;&lt; "Source: " &lt;&lt; source &lt;&lt; ", sink: " &lt;&lt; sink &lt;&lt; '\n';
+    solver.solve();
+    solver.printResult();
+    return 0;
+}</textarea>
+  </section>
+</div>
+</body>
+</html>

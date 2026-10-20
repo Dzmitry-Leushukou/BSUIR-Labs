@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лабораторная работа 2 — теория метода Гомори</title>
+<style>
+:root{--ink:#17212b;--muted:#536273;--line:#d9e0e8;--bg:#f4f7fa;--blue:#1264a3;--soft:#e8f2fb;--code:#15202b;--warn:#fff6dc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1160px;margin:auto;padding:24px 18px 60px}header{padding:40px;background:linear-gradient(135deg,#123b5d,#1264a3);color:#fff;border-radius:14px;box-shadow:0 12px 30px #123b5d2e}h1{font-size:clamp(28px,4vw,48px);line-height:1.15;margin:0 0 10px}header p{font-size:18px;color:#e9f4fc;max-width:820px;margin:0}
+nav{position:sticky;top:10px;z-index:2;margin:18px 0;padding:12px 16px;background:#ffffffef;border:1px solid var(--line);border-radius:10px;box-shadow:0 5px 15px #12212b12;overflow:auto;white-space:nowrap}nav a{color:var(--blue);text-decoration:none;margin-right:18px}
+main{background:#fff;border:1px solid var(--line);border-radius:14px;padding:32px 42px}section{scroll-margin-top:70px}section+section{border-top:1px solid var(--line);margin-top:35px;padding-top:30px}h2{color:#123b5d;font-size:29px;line-height:1.2}h3{color:#1d5179;margin-top:25px}p{margin:10px 0 14px}.lead{font-size:18px}
+.formula{margin:17px 0;padding:16px;text-align:center;overflow:auto;background:var(--soft);border-left:4px solid var(--blue);font:20px/1.8 Georgia,serif}.callout{margin:17px 0;padding:15px 17px;background:var(--warn);border-left:4px solid #d69b16}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px}.card{padding:15px;border:1px solid var(--line);border-radius:8px;background:#fbfcfd}.card strong{display:block;color:#123b5d}code{font-family:Consolas,"Cascadia Code",monospace}:not(pre)>code{background:#eef3f7;padding:2px 5px;border-radius:4px;color:#163c5c}pre{overflow:auto;padding:17px 19px;border-radius:8px;background:var(--code);color:#e8eef5;font:13px/1.55 Consolas,"Cascadia Code",monospace}table{width:100%;border-collapse:collapse;margin:14px 0 20px}th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:#edf4f9;color:#123b5d}.step{counter-increment:step;position:relative;padding-left:50px;margin:18px 0}.steps{counter-reset:step}.step:before{content:counter(step);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;text-align:center;line-height:32px;font-weight:bold}footer{text-align:center;color:var(--muted);padding-top:24px;font-size:14px}@media(max-width:700px){main,header{padding:24px 18px;border-radius:10px}h2{font-size:25px}}
+</style>
+</head>
+<body><div class="wrap">
+<header><h1>Лабораторная работа 2</h1><p>Отсекающее ограничение Гомори: теория, идея алгоритма и подробный разбор того, где это находится в программе на C++.</p></header>
+<nav><a href="#idea">Идея</a><a href="#math">Математика</a><a href="#algorithm">Алгоритм</a><a href="#simplex">Симплекс</a><a href="#code">Код</a><a href="#example">Пример</a><a href="#limits">Границы</a></nav>
+<main>
+<section id="idea"><h2>1. Идея метода простыми словами</h2>
+<p class="lead">Нужно найти лучший план, где все переменные целые. Сначала разрешаем дробные значения, находим лучший дробный план, затем строим новое ограничение, которое отсекает эту дробную точку.</p>
+<div class="formula">решить LP → проверить целочисленность → добавить срез → решить LP снова → повторять до целого оптимума</div>
+<p>Симплекс-метод умеет решать задачу с непрерывными переменными. Для него <code>x2 = 1.5</code> допустимо. Для исходной целочисленной задачи это недопустимо. Метод Гомори не перебирает варианты, а использует строку симплекс-таблицы, чтобы добавить ограничение: целые решения остаются, а текущая дробная вершина исчезает.</p>
+<div class="grid"><div class="card"><strong>LP-релаксация</strong>Временно убираем условие <code>x ∈ Zⁿ</code>.</div><div class="card"><strong>Дробный оптимум</strong>Ищем дробную базисную переменную.</div><div class="card"><strong>Срез</strong>Берём дробные части строки таблицы и добавляем ограничение.</div><div class="card"><strong>Итог</strong>Повторяем, пока оптимальный план не станет целым.</div></div>
+</section>
+<section id="math"><h2>2. Математическая постановка</h2>
+<p>Методичка рассматривает:</p><div class="formula">cᵀx → max, &nbsp; Ax = b, &nbsp; x ≥ 0, &nbsp; x ∈ Zⁿ</div>
+<table><tr><th>Обозначение</th><th>Смысл</th></tr><tr><td><code>x</code></td><td>Переменные <code>(x1,...,xn)</code>.</td></tr><tr><td><code>c</code></td><td>Коэффициенты цели.</td></tr><tr><td><code>A</code></td><td>Матрица ограничений.</td></tr><tr><td><code>b</code></td><td>Правая часть.</td></tr><tr><td><code>x ≥ 0</code></td><td>Переменные неотрицательны.</td></tr><tr><td><code>x ∈ Zⁿ</code></td><td>Переменные целые.</td></tr></table>
+<p>Входной файл:</p><pre><code>n m
+c[1] ... c[n]
+A[1][1] ... A[1][n]
+...
+A[m][1] ... A[m][n]
+b[1] ... b[m]</code></pre>
+<p>Пример из методички:</p><pre><code>4 2
+0 1 0 0
+3 2 1 0
+-3 2 0 1
+6 0</code></pre>
+<div class="formula">x₂ → max<br>3x₁ + 2x₂ + x₃ = 6<br>−3x₁ + 2x₂ + x₄ = 0</div>
+</section>
+<section id="algorithm"><h2>3. Алгоритм по шагам методички, повторённый до решения</h2><div class="steps">
+<div class="step"><strong>LP-релаксация.</strong> Убираем требование целочисленности и решаем обычную задачу ЛП.</div>
+<div class="step"><strong>Статус.</strong> Если LP несовместна, исходная задача несовместна. Если цель не ограничена сверху, сообщаем об этом.</div>
+<div class="step"><strong>Проверка.</strong> Если оптимальный план целый, он является оптимальным планом целочисленной задачи.</div>
+<div class="step"><strong>Дробная строка.</strong> Выбираем базисную переменную с дробным значением.</div>
+<div class="step"><strong>Базис и небазис.</strong> Нужная строка таблицы раскладывается по небазисным переменным.</div>
+<div class="step"><strong>Дробные части.</strong> Берём дробные части коэффициентов и правой части.</div>
+<div class="step"><strong>Срез.</strong> Получаем <code>Σ{lₚ}(xN)ₚ − s = {xi}</code>, <code>s ≥ 0</code>.</div>
+<div class="step"><strong>Повтор.</strong> Добавляем срез к ограничениям и снова решаем LP симплекс-методом. Повторяем проверку, пока оптимальный план не станет целым.</div>
+</div></section>
+<section id="simplex"><h2>4. Как программа решает LP-релаксацию</h2>
+<h3>4.1. Две фазы</h3><p>При равенствах <code>Ax=b</code> начальный базис не всегда виден. Поэтому программа добавляет искусственные переменные.</p>
+<ul><li><strong>Фаза 1:</strong> искусственные переменные должны стать нулевыми. В коде максимизируется их отрицательная сумма.</li><li><strong>Фаза 2:</strong> возвращается настоящая целевая функция.</li></ul>
+<h3>4.2. Класс <code>Simplex</code></h3><pre><code>class Simplex {
+    int rowsCount;                         // число строк
+    int variableCount;                     // исходные + искусственные
+    vector&lt;vector&lt;double&gt;&gt; tableau;       // коэффициенты таблицы
+    vector&lt;double&gt; rhs;                    // правые части
+    vector&lt;int&gt; basis;                     // базис каждой строки
+};</code></pre>
+<p><code>tableau</code> и <code>rhs</code> описывают систему в текущем базисе. Если базис строки — <code>x2</code>, а RHS равен <code>1.5</code>, то при нулевых небазисных переменных получаем <code>x2=1.5</code>.</p>
+<h3>4.3. Выбор входящей переменной</h3><p><code>optimize</code> вычисляет оценки. Положительная оценка означает, что увеличение переменной может улучшить цель.</p><pre><code>int entering = -1;
+for (int j = 0; j &lt; enteringLimit; ++j) {
+    if (reduced[j] &gt; EPS &amp;&amp;
+        (entering == -1 || reduced[j] &gt; reduced[entering] + EPS ||
+         (abs(reduced[j] - reduced[entering]) &lt;= EPS &amp;&amp; j &lt; entering))) {
+        entering = j;
+    }
+}
+if (entering == -1) return true; // найден оптимум</code></pre>
+<h3>4.4. Выбор выходящей переменной</h3><p>Минимальное положительное отношение ограничивает рост входящей переменной.</p><pre><code>double ratio = rhs[i] / tableau[i][entering];
+if (ratio &lt; bestRatio - EPS ||
+    (abs(ratio - bestRatio) &lt;= EPS &amp;&amp;
+     (leaving == -1 || basis[i] &lt; basis[leaving]))) {
+    bestRatio = ratio;
+    leaving = i;
+}</code></pre>
+<p>Если подходящей строки нет, переменную можно увеличивать бесконечно, поэтому LP не ограничена сверху.</p>
+<h3>4.5. Pivot</h3><pre><code>void pivot(int row, int column) {
+    double value = tableau[row][column];
+    for (int j = 0; j &lt; variableCount; ++j)
+        tableau[row][j] /= value;
+    rhs[row] /= value;
+    for (int i = 0; i &lt; rowsCount; ++i) {
+        if (i == row) continue;
+        double factor = tableau[i][column];
+        if (abs(factor) &lt;= EPS) continue;
+        for (int j = 0; j &lt; variableCount; ++j)
+            tableau[i][j] -= factor * tableau[row][j];
+        rhs[i] -= factor * rhs[row];
+    }
+    basis[row] = column;
+}</code></pre>
+</section>
+<section id="code"><h2>5. Где что находится в коде</h2>
+<h3>5.1. Дробные части и допуск</h3><pre><code>const double EPS = 1e-9;
+double fractionalPart(double value) {
+    double result = value - floor(value);
+    return abs(result) &lt;= EPS || abs(1.0 - result) &lt;= EPS
+        ? 0.0 : result;
+}
+bool isInteger(double value) {
+    return abs(value - round(value)) &lt;= 1e-7;
+}</code></pre>
+<p><code>EPS</code> нужен потому, что <code>double</code> может хранить результат как <code>0.4999999999</code> вместо идеального <code>0.5</code>.</p>
+<h3>5.2. Результат LP</h3><pre><code>struct LPSolution {
+    SolveStatus status = SolveStatus::Infeasible;
+    vector&lt;double&gt; x;
+    vector&lt;int&gt; basis;
+    vector&lt;vector&lt;double&gt;&gt; rows;
+    vector&lt;double&gt; rhs;
+    vector&lt;int&gt; nonbasic;
+    double value = 0;
+};</code></pre>
+<p><code>basis</code>, <code>rows</code>, <code>rhs</code> и <code>nonbasic</code> нужны не только для вывода оптимума, но и для построения среза.</p>
+<h3>5.3. Фаза 1</h3><pre><code>vector&lt;double&gt; phaseOneCosts(variableCount, 0.0);
+for (int j = 0; j &lt; variableCount; ++j)
+    if (j &gt;= (int)objective.size())
+        phaseOneCosts[j] = -1.0;
+double phaseOneValue = 0;
+optimize(phaseOneCosts, variableCount, phaseOneValue,
+         "PHASE 1: Find a feasible basis", detailed);
+if (phaseOneValue &lt; -1e-7) {
+    result.status = SolveStatus::Infeasible;
+    return result;
+}</code></pre>
+<h3>5.4. Фаза 2</h3><pre><code>vector&lt;double&gt; phaseTwoCosts(variableCount, 0.0);
+copy(objective.begin(), objective.end(), phaseTwoCosts.begin());
+if (!optimize(phaseTwoCosts, originalVariables, optimum,
+              "PHASE 2: Optimize the objective", detailed)) {
+    result.status = SolveStatus::Unbounded;
+    return result;
+}</code></pre>
+<h3>5.5. План, базис и небазисные переменные</h3><pre><code>result.x.assign(originalVariables, 0.0);
+for (int i = 0; i &lt; rowsCount; ++i)
+    if (basis[i] &lt; originalVariables)
+        result.x[basis[i]] = rhs[i];
+vector&lt;bool&gt; isBasic(originalVariables, false);
+for (int index : basis)
+    if (index &lt; originalVariables) isBasic[index] = true;
+for (int j = 0; j &lt; originalVariables; ++j)
+    if (!isBasic[j]) result.nonbasic.push_back(j);</code></pre>
+</section>
+<section id="example"><h2>6. Полный разбор примера</h2>
+<h3>6.1. Результат симплекс-метода</h3><pre><code>x1 = 1
+x2 = 1.5
+x3 = 0
+x4 = 0
+F(x) = 1.5
+B = (x1, x2)</code></pre>
+<p><code>x2=1.5</code> — дробное значение, поэтому нужно строить срез.</p>
+<h3>6.2. Строка для <code>x2</code></h3><pre><code>x2 + 0.25*x3 + 0.25*x4 = 1.5</code></pre>
+<p>Дробные части равны <code>0.25</code>, <code>0.25</code> и <code>0.5</code>.</p>
+<h3>6.3. Срез Гомори в коде</h3><pre><code>int fractionalRow = -1;
+for (int i = 0; i &lt; (int)result.basis.size(); ++i) {
+    if (!isInteger(result.rhs[i])) {
+        fractionalRow = i;
+        break;
+    }
+}
+int basicVariable = result.basis[fractionalRow];
+double rhsFraction = fractionalPart(result.rhs[fractionalRow]);
+vector&lt;double&gt; cutCoefficients;
+for (int variable : result.nonbasic)
+    cutCoefficients.push_back(
+        fractionalPart(result.rows[fractionalRow][variable])
+    );</code></pre>
+<div class="formula">0.25x₃ + 0.25x₄ − s = 0.5, &nbsp; s ≥ 0</div>
+<p>Это ровно результат из методички.</p>
+</section>
+<section id="limits"><h2>7. Как работает полная версия</h2>
+<table><tr><th>Делает</th><th>Зачем</th></tr><tr><td>Решает LP-релаксацию двумя фазами</td><td>Находит оптимум и печатает симплексные повороты.</td></tr><tr><td>Строит срез по строке дробной базисной переменной</td><td>Удаляет текущий дробный оптимум, сохраняя целые решения.</td></tr><tr><td>Добавляет срез и повторно решает LP</td><td>Продолжает метод до целочисленного оптимума.</td></tr><tr><td>Печатает окончательный план</td><td>Показывает решение исходной целочисленной задачи.</td></tr></table>
+<div class="callout"><strong>Как связано с методичкой:</strong> методичка формулирует построение одного среза и останавливается на шаге 11. Полная версия повторяет те же шаги после добавления среза, пока не найдёт целый оптимальный план или не обнаружит несовместность текущей релаксации.</div>
+<p>Запуск:</p><pre><code>.main.exe input.txt
+.main.exe --detailed input.txt</code></pre>
+<h3>Короткий ответ для защиты</h3><div class="callout">«Программа решает LP-релаксацию двухфазным симплекс-методом. Если оптимум дробный, она по строке дробной базисной переменной строит срез Гомори, добавляет его к задаче и снова запускает симплекс-метод. В примере после двух срезов найден оптимальный целый план (1,1,1,1) со значением целевой функции 1.»</div>
+</section>
+</main>
+<footer>Все фрагменты C++ встроены в этот HTML-файл.</footer>
+</div></body></html>
