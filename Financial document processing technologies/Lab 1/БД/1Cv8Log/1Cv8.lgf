@@ -55,4 +55,5 @@ fd5b442d-5145-4b9a-8f11-ab77dccf35a8
 {5,eeb23ff4-95a5-47f6-9986-63eaeedc3bf5,"Документ.ДобавлениеПервокурсниковВСправочник",12},
 {4,"_$InfoBase$_.VerifyAndRepairInfo",24},
 {4,"_$InfoBase$_.AdditionalIndexesUsageChange",25},
-{4,"_$Transaction$_.Rollback",26}
+{4,"_$Transaction$_.Rollback",26},
+{5,42263245-f8de-47c1-8051-ec49dad290dd,"Справочник.ВидСтипендии",11}
