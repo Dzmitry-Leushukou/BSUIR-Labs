@@ -1,0 +1,3 @@
+McEliece laboratory test file.
+This text checks key generation, encryption, BCH error correction, and decryption.
+0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz
