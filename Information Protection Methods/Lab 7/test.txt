@@ -1,0 +1,2 @@
+Elliptic-curve ElGamal encryption test.
+This file contains more than one block and also preserves punctuation: 0123456789.
