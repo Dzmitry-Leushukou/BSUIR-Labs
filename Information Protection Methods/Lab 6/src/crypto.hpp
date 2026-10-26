@@ -417,15 +417,14 @@ inline const std::array<std::array<Byte, 64>, 12>& roundConstants()
     return values;
 }
 
-inline std::array<Byte, 64> xorBlock(const std::array<Byte, 64>& left,
-                                     const std::array<Byte, 64>& right)
+using StreebogBlock = std::array<Byte, 64>;
+
+inline void xorInto(StreebogBlock& target, const StreebogBlock& value)
 {
-    std::array<Byte, 64> result{};
-    for (unsigned i = 0; i < result.size(); ++i) result[i] = left[i] ^ right[i];
-    return result;
+    for (std::size_t i = 0; i < target.size(); ++i) target[i] ^= value[i];
 }
 
-inline std::array<Byte, 64> lps(const std::array<Byte, 64>& input)
+inline void lps(StreebogBlock& state)
 {
     static constexpr std::array<Byte, 64> tau = {
         0,8,16,24,32,40,48,56,1,9,17,25,33,41,49,57,
@@ -433,89 +432,120 @@ inline std::array<Byte, 64> lps(const std::array<Byte, 64>& input)
         4,12,20,28,36,44,52,60,5,13,21,29,37,45,53,61,
         6,14,22,30,38,46,54,62,7,15,23,31,39,47,55,63
     };
-    std::array<Byte, 64> substituted{};
-    std::array<Byte, 64> permuted{};
-    std::array<Byte, 64> result{};
-    for (unsigned i = 0; i < 64; ++i) substituted[i] = kPi[input[i]];
-    for (unsigned i = 0; i < 64; ++i) permuted[i] = substituted[tau[i]];
+    StreebogBlock substituted{};
+    for (std::size_t i = 0; i < state.size(); ++i) substituted[i] = kPi[state[i]];
 
-    for (unsigned group = 0; group < 8; ++group) {
+    StreebogBlock permuted{};
+    for (std::size_t i = 0; i < state.size(); ++i) permuted[i] = substituted[tau[i]];
+
+    StreebogBlock transformed{};
+    for (std::size_t group = 0; group < 8; ++group) {
         std::uint64_t word = 0;
-        for (unsigned bit = 0; bit < 64; ++bit) {
-            if ((permuted[group * 8 + bit / 8] & (0x80U >> (bit % 8))) != 0) {
-                word ^= kA[bit];
+        for (std::size_t byte = 0; byte < 8; ++byte) {
+            const Byte value = permuted[group * 8 + byte];
+            for (std::size_t bit = 0; bit < 8; ++bit) {
+                if ((value & (0x80U >> bit)) != 0) word ^= kA[byte * 8 + bit];
             }
         }
-        for (unsigned byte = 0; byte < 8; ++byte) {
-            result[group * 8 + byte] = static_cast<Byte>(word >> ((7 - byte) * 8));
+        for (std::size_t byte = 0; byte < 8; ++byte) {
+            transformed[group * 8 + byte] =
+                static_cast<Byte>(word >> (56 - 8 * byte));
         }
+    }
+    state = transformed;
+}
+
+inline StreebogBlock gostEncrypt(const StreebogBlock& key,
+                                 const StreebogBlock& message)
+{
+    StreebogBlock state = message;
+    xorInto(state, key);
+
+    StreebogBlock roundKey = key;
+    for (std::size_t round = 0; round < roundConstants().size(); ++round) {
+        lps(state);
+        xorInto(roundKey, roundConstants()[round]);
+        lps(roundKey);
+        xorInto(state, roundKey);
+    }
+    return state;
+}
+
+inline StreebogBlock addBlocks(const StreebogBlock& left,
+                               const StreebogBlock& right)
+{
+    StreebogBlock result{};
+    unsigned carry = 0;
+    for (std::size_t i = result.size(); i-- > 0;) {
+        const unsigned sum = static_cast<unsigned>(left[i]) + right[i] + carry;
+        result[i] = static_cast<Byte>(sum);
+        carry = sum >> 8;
     }
     return result;
 }
 
-inline std::array<Byte, 64> compress(const std::array<Byte, 64>& hash,
-                                     const std::array<Byte, 64>& counter,
-                                     const std::array<Byte, 64>& message)
+inline void addBits(StreebogBlock& value, std::uint64_t addend)
 {
-    auto key = lps(xorBlock(hash, counter));
-    auto state = message;
-    for (unsigned round = 0; round < 12; ++round) {
-        state = lps(xorBlock(state, key));
-        key = lps(xorBlock(key, roundConstants()[round]));
+    for (std::size_t i = value.size(); i-- > 0 && addend != 0;) {
+        const unsigned sum = static_cast<unsigned>(value[i]) +
+                             static_cast<unsigned>(addend & 0xffU);
+        value[i] = static_cast<Byte>(sum);
+        addend = (addend >> 8) + (sum >> 8);
     }
-    state = xorBlock(state, key);
-    state = xorBlock(state, hash);
-    return xorBlock(state, message);
 }
 
-inline void add512(std::array<Byte, 64>& target,
-                   const std::array<Byte, 64>& value)
+inline StreebogBlock compress(const StreebogBlock& hash,
+                              const StreebogBlock& counter,
+                              const StreebogBlock& message)
 {
-    unsigned carry = 0;
-    for (int i = 63; i >= 0; --i) {
-        const unsigned sum = target[i] + value[i] + carry;
-        target[i] = static_cast<Byte>(sum);
-        carry = sum >> 8;
-    }
+    StreebogBlock key = hash;
+    xorInto(key, counter);
+    lps(key);
+
+    StreebogBlock result = gostEncrypt(key, message);
+    xorInto(result, hash);
+    xorInto(result, message);
+    return result;
 }
 
 inline std::array<Byte, 32> streebog256(const Bytes& message)
 {
-    std::array<Byte, 64> hash{};
+    StreebogBlock hash{};
     hash.fill(1);
-    std::array<Byte, 64> counter{};
-    std::array<Byte, 64> sum{};
+    StreebogBlock counter{};
+    StreebogBlock sigma{};
+    std::size_t offset = 0;
 
-    std::size_t remaining = message.size();
-    while (remaining >= 64) {
-        std::array<Byte, 64> block{};
-        const std::size_t offset = remaining - 64;
-        std::copy_n(message.begin() + static_cast<std::ptrdiff_t>(offset), 64, block.begin());
+    while (message.size() - offset >= 64) {
+        StreebogBlock block{};
+        std::reverse_copy(message.begin() + static_cast<std::ptrdiff_t>(offset),
+                          message.begin() + static_cast<std::ptrdiff_t>(offset + 64),
+                          block.begin());
         hash = compress(hash, counter, block);
-        std::array<Byte, 64> bitCount{};
-        bitCount[62] = 0x02;
-        add512(counter, bitCount);
-        add512(sum, block);
-        remaining -= 64;
+        addBits(counter, 512);
+        sigma = addBlocks(sigma, block);
+        offset += 64;
     }
 
-    std::array<Byte, 64> finalBlock{};
-    finalBlock[63 - remaining] = 1;
-    std::copy_n(message.begin(), remaining,
-                finalBlock.begin() + static_cast<std::ptrdiff_t>(64 - remaining));
+    const std::size_t remainder = message.size() - offset;
+    StreebogBlock finalBlock{};
+    finalBlock[63 - remainder] = 1;
+    std::reverse_copy(message.begin() + static_cast<std::ptrdiff_t>(offset),
+                      message.end(),
+                      finalBlock.begin() + static_cast<std::ptrdiff_t>(64 - remainder));
+
     hash = compress(hash, counter, finalBlock);
-    std::array<Byte, 64> bitCount{};
-    const std::uint64_t bits = static_cast<std::uint64_t>(remaining) * 8;
-    for (unsigned i = 0; i < 8; ++i) {
-        bitCount[63 - i] = static_cast<Byte>(bits >> (i * 8));
-    }
-    add512(counter, bitCount);
-    add512(sum, finalBlock);
-    hash = compress(hash, {}, counter);
-    hash = compress(hash, {}, sum);
+    addBits(counter, static_cast<std::uint64_t>(remainder) * 8);
+    sigma = addBlocks(sigma, finalBlock);
+
+    const StreebogBlock zero{};
+    hash = compress(hash, zero, counter);
+    hash = compress(hash, zero, sigma);
 
     std::array<Byte, 32> digest{};
-    std::copy_n(hash.begin(), digest.size(), digest.begin());
+    for (std::size_t i = 0; i < digest.size(); ++i) {
+        digest[i] = hash[digest.size() - 1 - i];
+    }
     return digest;
 }
 
