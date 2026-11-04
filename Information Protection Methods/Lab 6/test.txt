@@ -1,2 +1,0 @@
-Digital signature test message for GOST R 34.10-2012.
-The signature must be valid for this exact file content.

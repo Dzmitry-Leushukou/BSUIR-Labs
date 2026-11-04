@@ -12,7 +12,7 @@ void printUsage(const char* program)
               << "  " << program << " verify <public_key_file> <input_file> <signature_file>\n";
 }
 
-} // namespace
+}
 
 int main(int argc, char* argv[])
 {
