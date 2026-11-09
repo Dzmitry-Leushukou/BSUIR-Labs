@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Лабораторная работа 8: сокрытие текста в JPEG через чётность квантованных DCT-коэффициентов. Алгоритм, примеры и связь с кодом.">
+  <title>Стеганография в JPEG — понятная теория</title>
+  <style>
+    :root{color-scheme:light;--ink:#202a2e;--muted:#56656a;--paper:#fff;--canvas:#f3f6f4;--line:#d7dfdc;--teal:#087e79;--teal-soft:#e0f3ef;--coral:#c84f38;--coral-soft:#fff0e9;--violet:#5d57a6;--violet-soft:#efedff;--gold:#936200;--gold-soft:#fff5d9}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--canvas);color:var(--ink);font:17px/1.68 "Segoe UI",Arial,sans-serif}a{color:var(--teal)}
+    .page{display:grid;grid-template-columns:230px minmax(0,820px);gap:48px;max-width:1180px;margin:auto;padding:42px 28px 80px}.toc{position:sticky;top:22px;align-self:start;padding:18px 0;border-top:4px solid var(--teal)}.toc-title,.eyebrow{margin:0 0 12px;font-size:13px;font-weight:700;text-transform:uppercase;color:var(--teal)}.toc-title{color:var(--muted)}.toc a{display:block;padding:5px 0;color:var(--ink);font-size:14px;line-height:1.4;text-decoration:none}.toc a:hover,.toc a:focus-visible{color:var(--teal);text-decoration:underline}
+    main{min-width:0}header{padding-bottom:28px;border-bottom:1px solid var(--line)}h1{margin:0;font-size:42px;line-height:1.12}.intro{margin:18px 0 0;color:var(--muted);font-size:19px}.eyebrow{margin-bottom:8px}section{padding:34px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}h2{margin:0 0 14px;font-size:27px;line-height:1.25}h3{margin:25px 0 8px;font-size:20px;line-height:1.35}p{margin:10px 0}strong{font-weight:650}
+    .lead-box,.note,.warning{margin:20px 0;padding:16px 19px;border-left:4px solid var(--teal);background:var(--teal-soft)}.note{border-color:var(--gold);background:var(--gold-soft)}.warning{border-color:var(--coral);background:var(--coral-soft)}.lead-box p:first-child,.note p:first-child,.warning p:first-child{margin-top:0}.lead-box p:last-child,.note p:last-child,.warning p:last-child{margin-bottom:0}
+    .flow{display:grid;grid-template-columns:1fr 25px 1fr 25px 1fr;gap:8px;align-items:stretch;margin:24px 0}.flow-item{min-width:0;padding:15px;background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--teal)}.flow-item strong{display:block;margin-bottom:5px}.flow-item span{display:block;color:var(--muted);font-size:14px;line-height:1.45}.arrow{display:grid;place-items:center;color:var(--muted);font-size:24px}
+    .formula{overflow-x:auto;margin:16px 0;padding:17px 19px;border-left:4px solid var(--violet);background:var(--violet-soft);color:#302c63;font:17px/1.65 Consolas,monospace}.formula small{display:block;margin-top:6px;color:#514d7e;font:14px/1.5 "Segoe UI",sans-serif}.steps{padding-left:25px}.steps li{margin:9px 0;padding-left:4px}code,pre{font-family:Consolas,"Courier New",monospace}p code,li code,td code{padding:1px 4px;background:#e8eeeb;overflow-wrap:anywhere}pre{overflow-x:auto;margin:14px 0;padding:17px 19px;background:#202c30;color:#f4f7f5;font-size:14px;line-height:1.55}
+    table{width:100%;margin:16px 0;border-collapse:collapse;background:var(--paper);text-align:left}th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top}th{background:#e8eeeb}.table-wrap{overflow-x:auto}details{margin:16px 0;border:1px solid var(--line);background:var(--paper)}summary{padding:12px 15px;color:var(--teal);cursor:pointer;font-weight:650}details>div{padding:0 15px 14px}.muted{color:var(--muted);font-size:14px}
+    .matrix{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;max-width:520px;margin:18px auto}.matrix span{display:grid;place-items:center;aspect-ratio:1;background:#e8eeeb;color:#65736e;font:16px Consolas,monospace;border:1px solid var(--line)}.matrix .eligible{background:var(--teal-soft);border-color:#76b6a9;color:#075650;font-weight:bold}.matrix .dc{background:var(--coral-soft);border-color:#df9b8b;color:var(--coral)}
+    .demo{margin:20px 0;padding:20px;background:var(--paper);border:1px solid var(--line)}.controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center}.controls input[type=number]{width:90px;padding:6px;font:inherit;border:1px solid #99aaa3;border-radius:4px}.controls label{cursor:pointer}.controls fieldset{display:flex;gap:14px;border:0;margin:0;padding:0}.controls legend{font-size:14px;color:var(--muted)}output{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-family:Consolas,monospace;color:var(--teal)}a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #72bdb1;outline-offset:3px}footer{padding-top:24px;color:var(--muted);font-size:14px}
+    @media(max-width:850px){.page{grid-template-columns:1fr;gap:12px;padding:24px 20px 56px}.toc{position:static;padding:12px 0;border-top-width:3px;border-bottom:1px solid var(--line)}.toc nav{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}h1{font-size:35px}}
+    @media(max-width:560px){body{font-size:16px}.page{padding-right:16px;padding-left:16px}.flow{grid-template-columns:1fr;gap:6px}.arrow{min-height:22px;transform:rotate(90deg)}h1{font-size:31px}h2{font-size:24px}.formula{font-size:15px}.matrix span{font-size:14px}th,td{padding:8px}.demo{padding:15px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{body{background:white;font-size:11pt}.page{display:block;max-width:none;padding:0}.toc,.demo{display:none}section{padding:18px 0}h1{font-size:26pt}h2{font-size:18pt}h2,h3{break-after:avoid}table,.formula,.flow{break-inside:avoid}pre{white-space:pre-wrap}details>div{display:block}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc" aria-label="Содержание">
+    <p class="toc-title">Понятная теория</p>
+    <nav>
+      <a href="#idea">1. Что скрываем и где</a>
+      <a href="#jpeg">2. Как устроен JPEG</a>
+      <a href="#dct">3. Смысл DCT и квантования</a>
+      <a href="#bit">4. Как записывается бит</a>
+      <a href="#packet">5. Заголовок и вместимость</a>
+      <a href="#algorithm">6. Запись и извлечение</a>
+      <a href="#limits">7. Ограничения метода</a>
+      <a href="#code">8. Связь с кодом</a>
+      <a href="#defense">9. Вопросы на защите</a>
+    </nav>
+  </aside>
+  <main>
+    <header>
+      <p class="eyebrow">Лабораторная работа № 8 · Методы защиты информации</p>
+      <h1>Скрываем текст<br>в частотной области JPEG</h1>
+      <p class="intro">Сообщение превращается в биты. Каждый бит задаёт чётность одного DCT-коэффициента изображения. При извлечении программа читает те же коэффициенты и восстанавливает текст.</p>
+    </header>
+
+    <section id="idea">
+      <h2>1. Что скрываем и где</h2>
+      <p><strong>Стеганография</strong> скрывает сам факт передачи сообщения внутри другого объекта. В этой работе объект-контейнер — JPEG-изображение, полезные данные — байты текста, а результат — новый JPEG со встроенным сообщением.</p>
+      <div class="flow" aria-label="Текст и контейнер преобразуются в JPEG с сообщением">
+        <div class="flow-item"><strong>Текст</strong><span>UTF-8 → байты → последовательность битов.</span></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="flow-item"><strong>Коэффициенты JPEG</strong><span>Каждый подходящий коэффициент хранит один бит.</span></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="flow-item"><strong>Новый JPEG</strong><span>Открывается как обычная картинка. Из него можно извлечь текст.</span></div>
+      </div>
+      <p>Условие требует работать <strong>в частотной области</strong>. Поэтому программа меняет коэффициенты преобразования изображения. Она не записывает сообщение в EXIF, комментарии файла или младшие биты RGB-пикселей.</p>
+      <div class="lead-box"><p><strong>Сокрытие не шифрует текст.</strong> В нашей реализации нет ключа: любой, кто знает формат и порядок обхода коэффициентов, сможет извлечь сообщение. Шифрование можно выполнять отдельно до встраивания.</p></div>
+    </section>
+
+    <section id="jpeg">
+      <h2>2. Как устроен обычный JPEG</h2>
+      <p>Для обычного цветного JPEG кодирование приблизительно выглядит так:</p>
+      <ol class="steps">
+        <li><strong>Переход к компонентам яркости и цвета.</strong> RGB обычно преобразуют в YCbCr. Y описывает яркость, Cb и Cr — цветовые составляющие. Цветовые компоненты часто уменьшают по разрешению.</li>
+        <li><strong>Разбиение каждой компоненты на блоки 8 × 8.</strong> Поэтому блок яркости и блок цветовой компоненты могут описывать разные по площади участки исходной картинки.</li>
+        <li><strong>DCT.</strong> 64 отсчёта блока преобразуются в 64 частотных коэффициента.</li>
+        <li><strong>Квантование.</strong> Каждый коэффициент делят на соответствующий элемент таблицы квантования и округляют до целого. На этом этапе теряется информация.</li>
+        <li><strong>Упаковка.</strong> Коэффициенты упорядочивают, кодируют серии нулей и применяют энтропийное кодирование. Получается поток JPEG.</li>
+      </ol>
+      <p>Библиотека <code>libjpeg-turbo</code> позволяет прочитать уже <strong>квантованные коэффициенты</strong> через <code>jpeg_read_coefficients</code> и записать их через <code>jpeg_write_coefficients</code>. Декодировать изображение до пикселей и заново вычислять DCT для этой работы не нужно.</p>
+      <p>В программе обходятся все компоненты файла: обычные Y, Cb и Cr, одна компонента серого JPEG либо компоненты CMYK. Для каждой компоненты учитывается её собственное количество блоков.</p>
+    </section>
+
+    <section id="dct">
+      <h2>3. Смысл DCT и квантования</h2>
+      <p><strong>DCT — дискретное косинусное преобразование.</strong> Оно представляет блок как сумму 64 простых узоров: постоянной заливки, плавных волн и более частых чередований светлого и тёмного. Коэффициент показывает, сколько соответствующего узора нужно добавить.</p>
+      <div class="formula">F(u,v) = ¼ · C(u) · C(v) · Σₓ Σᵧ f(x,y)<br>　　　　 · cos((2x+1)uπ/16) · cos((2y+1)vπ/16)
+        <small>x, y, u, v = 0…7; суммы берутся по x и y. f — отсчёты блока после вычитания 128 для обычного 8-битного JPEG. C(0) = 1/√2, для остальных аргументов C = 1.</small>
+      </div>
+      <p>Запоминать всю формулу для понимания алгоритма не обязательно. Важно, что <code>F(0,0)</code> соответствует средней яркости блока — это <strong>DC-коэффициент</strong>. Остальные 63 — <strong>AC-коэффициенты</strong>, описывающие изменения внутри блока.</p>
+      <p>Для указанной нормировки <code>F(0,0) = 8·mean(f)</code>, где <code>mean(f)</code> — среднее отсчётов после вычитания 128. «Частота» здесь пространственная: она показывает, насколько часто меняется яркость вдоль строк или столбцов. Большие индексы соответствуют более мелким деталям.</p>
+      <div class="formula">q(u,v) = round(F(u,v) / Q(u,v))<br>При декодировании: F̃(u,v) = q(u,v) · Q(u,v)
+        <small>Q — таблица квантования JPEG. q — целый коэффициент, который меняет наша программа. F̃ приближает исходный F, потому что округление уже потеряло часть информации.</small>
+      </div>
+      <p>После умножения на таблицу квантования декодер применяет <strong>обратное DCT</strong> и возвращает отсчёты блока. Поэтому изменение одного коэффициента влияет на соответствующий узор во всём блоке 8 × 8, а не на один отдельный пиксель.</p>
+      <p>Ниже — учебный пример одного квантованного блока, а не дамп приложенного изображения. Красный элемент — DC. Зелёные AC подходят для записи. Серые значения 0 и ±1 пропускаются.</p>
+      <div class="matrix" role="img" aria-label="Блок 8 на 8. DC равен 42. Подходящие AC: минус 6, 3, минус 2, 5, минус 4 и 2. Остальные значения 0 или плюс-минус 1.">
+        <span class="dc">42</span><span class="eligible">−6</span><span class="eligible">3</span><span>1</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span class="eligible">−2</span><span class="eligible">5</span><span>−1</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span class="eligible">−4</span><span class="eligible">2</span><span>1</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span>−1</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+        <span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span><span>0</span>
+      </div>
+      <p><strong>В этом блоке помещается 6 бит.</strong> Большое количество нулей обычно встречается у гладких участков изображения. Детальные изображения чаще дают больше пригодных коэффициентов.</p>
+      <p>Внутри массива libjpeg используется обычный порядок 8 × 8: индекс <code>k = 8u + v</code>. Программа проходит индексы <code>1…63</code>. Зигзаг нужен JPEG при упаковке коэффициентов; наш порядок обхода с ним не совпадает.</p>
+    </section>
+
+    <section id="bit">
+      <h2>4. Как записывается один бит</h2>
+      <p>Выбираем только AC-коэффициенты с <code>|q| ≥ 2</code>. Их <strong>знак сохраняется</strong>, а младший бит модуля становится равен биту сообщения <code>b</code>.</p>
+      <div class="formula">a = |q|<br>a' = (a AND ~1) OR b<br>q' = sign(q) · a'<br>Извлечение: b = |q'| AND 1
+        <small>AND — побитовое И, OR — побитовое ИЛИ. Операция AND ~1 очищает младший бит; OR b записывает туда 0 или 1. Чётный модуль означает бит 0, нечётный — бит 1.</small>
+      </div>
+      <table>
+        <thead><tr><th>Было q</th><th>Пишем 0</th><th>Пишем 1</th><th>Пояснение</th></tr></thead>
+        <tbody>
+          <tr><td>6</td><td>6</td><td>7</td><td>У чётного модуля младший бит уже равен 0.</td></tr>
+          <tr><td>7</td><td>6</td><td>7</td><td>Нечётный модуль хранит 1.</td></tr>
+          <tr><td>−6</td><td>−6</td><td>−7</td><td>Меняется модуль, знак остаётся отрицательным.</td></tr>
+          <tr><td>−3</td><td>−2</td><td>−3</td><td>После изменения модуль по-прежнему не меньше 2.</td></tr>
+        </tbody>
+      </table>
+      <p>Коэффициент меняется максимум на <strong>одну единицу</strong> либо остаётся прежним. Уже подходящая чётность не требует изменения. Это не значит, что RGB-канал пикселя изменится максимум на 1: перед обратным DCT коэффициент умножается на соответствующее <code>Q(u,v)</code>.</p>
+      <div class="demo">
+        <h3 style="margin-top:0">Попробуйте записать бит</h3>
+        <div class="controls">
+          <label for="coefficient">Коэффициент q <input id="coefficient" type="number" min="-100" max="100" value="-6" step="1"></label>
+          <fieldset><legend>Бит сообщения</legend><label><input type="radio" name="bit" value="0" checked> 0</label><label><input type="radio" name="bit" value="1"> 1</label></fieldset>
+        </div>
+        <output id="bit-result" aria-live="polite">q = −6 → q' = −6 · извлечённый бит: 0 · изменение: 0</output>
+        <p class="muted">Модель предполагает AC-позицию. DC пропускается при любом значении.</p>
+      </div>
+      <h3>Зачем пропускать 0 и ±1</h3>
+      <p>Ноль оставляем нулём: появление новых ненулевых коэффициентов меняло бы разреженность блока. Значения ±1 пропускаем, чтобы при записи нуля они не превратились в ноль и не выпали из списка позиций при извлечении.</p>
+      <div class="lead-box"><p><strong>Список позиций остаётся тем же.</strong> При |q| ≥ 2 операция переводит 2 ↔ 3, 4 ↔ 5 и так далее. Получатель без оригинальной картинки находит ровно те же пригодные коэффициенты в том же порядке.</p></div>
+    </section>
+
+    <section id="packet">
+      <h2>5. Заголовок и вместимость</h2>
+      <p>Одного текста недостаточно: при извлечении нужно узнать, есть ли наше сообщение, сколько байтов читать и не повредились ли они. Заголовок имеет <strong>переменную длину</strong>: 4 байта сигнатуры, компактная длина текста и 4 байта CRC-32.</p>
+      <table>
+        <thead><tr><th>Байты</th><th>Поле</th><th>Для чего нужно</th></tr></thead>
+        <tbody>
+          <tr><td>0–3</td><td><code>STG9</code></td><td>Сигнатура формата: hex <code>53 54 47 39</code>.</td></tr>
+          <tr><td>4…4+k−1</td><td>Длина текста</td><td>Varint: k байтов, по 7 бит числа в каждом; старший бит показывает наличие следующего байта.</td></tr>
+          <tr><td>4+k…7+k</td><td>CRC-32 текста</td><td>4 байта контрольной суммы, старший байт первым.</td></tr>
+          <tr><td>8+k…</td><td>Байты текста</td><td>Без завершающего нулевого байта. При вводе с клавиатуры — UTF-8.</td></tr>
+        </tbody>
+      </table>
+      <p>Биты каждого байта идут <strong>от старшего к младшему</strong>. Например, буква <code>A</code> — байт <code>0x41</code>, то есть <code>01000001</code>. Начальные восемь пригодных коэффициентов всего сообщения хранят не букву текста, а первый байт сигнатуры — <code>S</code>.</p>
+      <h3>Как длина подстраивается под сообщение</h3>
+      <p>Вместо фиксированного 32-битного поля используется беззнаковый <strong>varint ULEB128</strong>. Берём младшие 7 бит длины, записываем их в байт и сдвигаем число вправо на 7. Если остаток не равен нулю, устанавливаем старший бит байта в 1 и продолжаем. У последнего байта старший бит равен 0. Для пустого текста записывается один байт <code>00</code>.</p>
+      <table><thead><tr><th>Длина текста L</th><th>Байтов длины k</th><th>Размер заголовка H</th></tr></thead><tbody>
+        <tr><td>0…127</td><td>1</td><td>9 байтов</td></tr>
+        <tr><td>128…16 383</td><td>2</td><td>10 байтов</td></tr>
+        <tr><td>16 384…2 097 151</td><td>3</td><td>11 байтов</td></tr>
+      </tbody></table>
+      <p>Например, длина <code>1000</code> записывается двумя байтами <code>E8 07</code>: <code>104 + 7·128 = 1000</code>. Внутри каждого байта биты по-прежнему встраиваются от старшего к младшему; младшие семибитные группы самого числа идут первыми.</p>
+      <div class="formula">N = число AC-коэффициентов с |q| ≥ 2<br>k(L) = max(1, ceil(bit_length(L) / 7))<br>H(L) = 8 + k(L)<br>Для L байтов текста нужно 8 · (H(L) + L) ≤ N<br>C = наибольшее L, удовлетворяющее этому неравенству
+        <small>C — максимальная длина текста в байтах. Заголовок учитывается именно для этой длины. При переходе через 127 или 16 383 байта поле длины увеличивается на один байт.</small>
+      </div>
+      <p><code>bit_length(L)</code> — число битов двоичной записи длины без ведущих нулей; для нуля принимаем 0. <code>ceil</code> означает округление вверх. Например, для <code>L = 1000</code> нужны 10 бит числа: <code>k = ceil(10/7) = 2</code>, поэтому весь заголовок занимает <code>H = 10</code> байтов.</p>
+      <p>Если <code>N &lt; 72</code>, не помещается даже минимальный заголовок. Просмотр вместимости покажет 0 байтов, а запись отклонит и пустой текст. При <code>72 ≤ N &lt; 80</code> вместимость тоже равна 0, но пустое сообщение уже записать можно.</p>
+      <div class="note"><p>В приложенном <code>image.jpg</code> есть <strong>4598 пригодных коэффициентов — 4598 бит контейнера</strong>. С учётом заголовка помещается <strong>564 байта текста, или 4512 бит</strong>. Это не 564 русские буквы: русская буква в UTF-8 обычно занимает 2 байта, многие эмодзи — 4.</p></div>
+      <p>Проверка границы: для 564 байтов текста поле длины занимает 2 байта, и весь пакет требует <code>8·(10 + 564) = 4592</code> бита. Для 565 байтов уже нужно <code>4600</code> бит, что превышает 4598. При максимальном заполнении остаются 6 неиспользованных коэффициентов.</p>
+      <p>Команда <code>Lab8 image.jpg</code> показывает обе величины: полное число доступных битов и полезную вместимость. Для больших значений дополнительно выводятся KiB или MiB: 1 KiB = 1024 байта, 1 MiB = 1 048 576 байтов.</p>
+      <h3>Что проверяет CRC-32</h3>
+      <p>CRC вычисляется только по байтам текста. В коде используется отражённый полином <code>0xEDB88320</code>, начальное значение и финальный XOR — <code>0xFFFFFFFF</code>. Контрольный пример: для ASCII-строки <code>123456789</code> результат равен <code>0xCBF43926</code>.</p>
+      <p>При извлечении сумма считается повторно и сравнивается с записанной. Это помогает обнаружить повреждение сообщения. <strong>CRC не подтверждает авторство</strong> и не защищает от намеренной подмены: злоумышленник может пересчитать её.</p>
+      <h3>Полный пример для одной буквы</h3>
+      <p>Для ASCII-буквы <code>A</code> длина равна 1, varint длины — <code>01</code>, CRC-32 — <code>D3D99E8B</code>. Получается пакет из 10 байтов:</p>
+      <pre><code>53 54 47 39 | 01 | D3 D9 9E 8B | 41
+   STG9    | L  |    CRC-32   | A</code></pre>
+      <p>Пакет занимает <strong>80 пригодных коэффициентов</strong>: 72 бита заголовка и 8 бит текста. При извлечении эти биты собираются в те же байты, после чего проверяется CRC.</p>
+    </section>
+
+    <section id="algorithm">
+      <h2>6. Запись и извлечение по шагам</h2>
+      <h3>Одинаковый порядок обхода</h3>
+      <div class="formula">Компоненты JPEG → строки блоков → блоки слева направо<br>→ AC-индексы 1…63 → только |q| ≥ 2</div>
+      <p>Этот порядок фиксирован и одинаков в обеих операциях. Секретного выбора позиций и случайной перестановки здесь нет.</p>
+      <h3>Сокрытие</h3>
+      <ol class="steps">
+        <li>Открыть JPEG и получить массивы квантованных коэффициентов.</li>
+        <li>Посчитать пригодные AC. Проверить вместимость <strong>до открытия выходного файла</strong>.</li>
+        <li>Закодировать длину текста varint и сформировать <code>STG9 || varint(длина) || CRC-32 || текст</code>. Размер заголовка равен <code>8 + k</code> байтов.</li>
+        <li>Для каждого бита взять следующий пригодный коэффициент и установить младший бит его модуля. Остановиться после последнего бита.</li>
+        <li>Записать новый JPEG из изменённых коэффициентов. Сохранить таблицы квантования, размеры, компоненты и служебные маркеры исходника.</li>
+      </ol>
+      <h3>Извлечение</h3>
+      <ol class="steps">
+        <li>Открыть JPEG и тем же обходом прочитать 4 байта сигнатуры <code>STG9</code>.</li>
+        <li>Читать байты varint до первого байта со старшим битом 0, затем ещё 4 байта CRC-32. Если коэффициентов не хватает, заголовок неполный.</li>
+        <li>Восстановить длину: <code>L = Σ (byte[j] AND 127) · 2^(7j)</code>. Проверить переполнение числа, отсутствие лишних нулевых групп и условие <code>H + L ≤ floor(N/8)</code>. Память под текст выделяется после проверок.</li>
+        <li>Ещё раз пройти коэффициенты и восстановить заголовок вместе с указанным количеством байтов текста.</li>
+        <li>Проверить CRC-32. Вывести текст либо сохранить его точные байты в файл.</li>
+      </ol>
+      <p>Для извлечения нужны только полученный JPEG и знание алгоритма. Исходное изображение и исходный текст не нужны.</p>
+      <h3>Почему текст переживает сохранение</h3>
+      <p>При записи через <code>jpeg_write_coefficients</code> библиотека заново упаковывает коэффициенты, но не проводит ещё один цикл «пиксели → DCT → квантование». Поэтому записанная нами чётность остаётся той же. Размер файла и сжатый поток могут измениться.</p>
+    </section>
+
+    <section id="limits">
+      <h2>7. Ограничения метода</h2>
+      <table>
+        <thead><tr><th>Свойство</th><th>Что происходит в этой реализации</th></tr></thead>
+        <tbody>
+          <tr><td>Незаметность</td><td>Меняются только выбранные AC, каждый максимум на 1. Визуальная незаметность ожидается, но не гарантируется для любого изображения и любой загрузки контейнера.</td></tr>
+          <tr><td>Вместимость</td><td>Зависит от количества ненулевых AC с модулем от 2. У однотонного изображения места может почти не быть.</td></tr>
+          <tr><td>Повторное сжатие</td><td>Меняет коэффициенты, их чётность и иногда список пригодных позиций. Сообщение может потеряться.</td></tr>
+          <tr><td>Обрезка и масштабирование</td><td>Меняют блоки и порядок коэффициентов. Восстановление не гарантируется.</td></tr>
+          <tr><td>Обнаружение</td><td>Изменение статистики коэффициентов может выявить стегоанализ. Криптографической стойкости сокрытия здесь нет.</td></tr>
+          <tr><td>Повреждение</td><td>Сигнатура, длина и CRC помогают отклонить неверные данные. Исправления ошибок и резервирования сообщения нет.</td></tr>
+        </tbody>
+      </table>
+      <div class="warning"><p><strong>Передавайте JPEG как файл без обработки.</strong> Мессенджер при отправке «как фото» может перекодировать изображение. Даже внешне одинаковая картинка после пересохранения может уже не содержать читаемого сообщения.</p></div>
+      <p>Выбранный метод — встраивание через чётность модуля DCT-коэффициента, вариант LSB-подстановки в частотной области. Это не метод Коха — Жао: там бит обычно кодируют соотношением выбранных коэффициентов с заданным запасом.</p>
+    </section>
+
+    <section id="code">
+      <h2>8. Как теория связана с кодом</h2>
+      <p>Вся работа с JPEG и сообщением собрана в <strong>одном классе <code>JpegSteganography</code></strong>. Отдельный <code>main.cpp</code> разбирает команды и читает или записывает текстовые файлы.</p>
+      <table>
+        <thead><tr><th>Часть класса</th><th>Что делает</th></tr></thead>
+        <tbody>
+          <tr><td>Конструктор</td><td>Читает JPEG, сохраняет APP/COM-маркеры и получает массивы коэффициентов.</td></tr>
+          <tr><td><code>visit</code></td><td>Общий обход пригодных AC. Используется при подсчёте, записи и чтении.</td></tr>
+          <tr><td><code>availableBits</code>, <code>capacity</code></td><td>Считают пригодные коэффициенты и максимальное число байтов текста с учётом переменного заголовка.</td></tr>
+          <tr><td><code>lengthSize</code>, <code>putLength</code>, <code>getLength</code></td><td>Определяют размер поля длины, записывают и читают varint.</td></tr>
+          <tr><td><code>hide</code></td><td>Создаёт пакет и записывает биты в модули коэффициентов.</td></tr>
+          <tr><td><code>extract</code></td><td>Восстанавливает пакет, проверяет сигнатуру, длину и CRC.</td></tr>
+          <tr><td><code>save</code></td><td>Записывает коэффициенты в новый JPEG без повторного квантования.</td></tr>
+          <tr><td><code>checksum</code></td><td>Реализует CRC-32 без дополнительной библиотеки.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>src/
+  main.cpp                  команды и текстовые файлы
+  JpegSteganography.hpp      интерфейс класса
+  JpegSteganography.cpp      JPEG и встраивание
+CMakeLists.txt              сборка и подключение JPEG
+vcpkg.json                  зависимость libjpeg-turbo
+image.jpg                   исходный контейнер
+test.txt                    тестовое сообщение
+TEST.md                     команды проверки
+THEORY.html                 эта теория</code></pre>
+      <p>libjpeg-turbo выполняет чтение и упаковку JPEG. Выбор позиций, установка чётности, формат заголовка, контроль длины и CRC реализованы в проекте. Ресурсы библиотеки и открытые файлы освобождает деструктор класса.</p>
+      <pre><code>Lab8 image.jpg
+Lab8 hide image.jpg "Секретное сообщение" stego.jpg
+Lab8 hide-file image.jpg test.txt stego.jpg
+Lab8 extract stego.jpg
+Lab8 extract stego.jpg restored.txt</code></pre>
+      <p><code>hide-file</code> сохраняет точные байты входного файла. Для отображения текста удобно использовать UTF-8. Полные команды сборки и проверки приведены в <a href="TEST.md">TEST.md</a>.</p>
+    </section>
+
+    <section id="defense">
+      <h2>9. Короткие ответы для защиты</h2>
+      <details><summary>Почему это частотная область, если программа не вычисляет DCT?</summary><div><p>DCT уже выполнил кодировщик исходного JPEG. Программа получает его квантованные частотные коэффициенты и меняет именно их. Библиотека освобождает нас от самостоятельного разбора сжатого потока.</p></div></details>
+      <details><summary>Почему не меняем DC?</summary><div><p>DC связан со средней яркостью всего блока. Его изменение может дать заметный сдвиг яркости блока. Выбранный алгоритм оставляет DC без изменений и использует AC.</p></div></details>
+      <details><summary>Как получатель узнаёт, какие коэффициенты читать?</summary><div><p>Он повторяет общий порядок обхода и выбирает AC с модулем от 2. Встраивание сохраняет это условие, поэтому позиции синхронизируются без отдельной карты.</p></div></details>
+      <details><summary>Как программа понимает, где заканчивается текст?</summary><div><p>Длина хранится в заголовке. После проверки вместимости читается ровно указанное число байтов. Специальный символ конца не нужен, поэтому допустимы и нулевые байты.</p></div></details>
+      <details><summary>Можно ли извлечь текст из исходного JPEG?</summary><div><p>В обычном исходнике нет пакета STG9, поэтому программа выдаст ошибку. Совпадение сигнатуры теоретически возможно, но дальше проверяются длина и CRC. Эти проверки не делают формат защищённым от подделки.</p></div></details>
+      <details><summary>JPEG уже сжат с потерями. Почему текст вообще восстанавливается точно?</summary><div><p>Потери произошли при создании исходника. После встраивания программа записывает уже готовые коэффициенты без нового квантования. Если файл больше не преобразовывать, нужные биты читаются точно.</p></div></details>
+      <details><summary>Что проверено в реализации?</summary><div><p>Проверены русский текст и эмодзи, пустой текст, полная вместимость и её превышение, точное восстановление байтов, цветной и серый JPEG, CMYK и progressive JPEG. Отдельное сравнение коэффициентов подтверждает сохранение DC, знаков, неподходящих и неиспользованных AC; использованные AC изменяются максимум на 1. Повреждение сигнатуры, длины и текста приводит к ожидаемым ошибкам.</p></div></details>
+    </section>
+    <footer>Лабораторная работа № 8 · Стеганографические методы · Метод чётности квантованных DCT-коэффициентов</footer>
+  </main>
+</div>
+<script>
+  const coefficient = document.querySelector('#coefficient');
+  const result = document.querySelector('#bit-result');
+  function updateBit() {
+    const q = Number(coefficient.value);
+    if (coefficient.value === '' || !Number.isInteger(q) || Math.abs(q) > 100) {
+      result.textContent = 'Введите целое число от −100 до 100.';
+      return;
+    }
+    if (Math.abs(q) < 2) {
+      result.textContent = 'Коэффициент пропускается: для записи нужно |q| ≥ 2.';
+      return;
+    }
+    const b = Number(document.querySelector('input[name="bit"]:checked').value);
+    const magnitude = (Math.abs(q) & ~1) | b;
+    const changed = q < 0 ? -magnitude : magnitude;
+    result.textContent = `q = ${q} → q' = ${changed} · извлечённый бит: ${Math.abs(changed) & 1} · изменение: ${changed - q}`;
+  }
+  document.querySelectorAll('.controls input').forEach(input => input.addEventListener('input', updateBit));
+  updateBit();
+</script>
+</body>
+</html>

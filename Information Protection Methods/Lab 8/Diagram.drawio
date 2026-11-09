@@ -1,0 +1,231 @@
+<mxfile host="Electron" pages="2">
+  <diagram name="Сокрытие" id="ux0df-93nJ8kHYBUt64P">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-37" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="840" width="670" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-5" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-1" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Исходные данные: квантованные DCT-коэффициенты JPEG и сообщение &lt;code dir=&quot;ltr&quot;&gt;M&lt;/code&gt;" vertex="1">
+          <mxGeometry height="30" width="280" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-3" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-1">
+          <mxGeometry relative="1" x="0.4" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-2" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;arcSize=50;" value="Начало" vertex="1">
+          <mxGeometry height="40" width="90" x="95" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-7" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-4" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Сформировать последовательность &lt;code dir=&quot;ltr&quot;&gt;S&lt;/code&gt; из AC-коэффициентов с &lt;code dir=&quot;ltr&quot;&gt;|q| ≥ 2&lt;/code&gt;" vertex="1">
+          <mxGeometry height="30" width="280" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-9" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="SNYPf4aln_JW7p7YpgR6-10">
+          <mxGeometry relative="1" x="-0.15" as="geometry">
+            <mxPoint x="140" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-6" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Определить &lt;code dir=&quot;ltr&quot;&gt;N&lt;/code&gt; и &lt;code dir=&quot;ltr&quot;&gt;L&lt;/code&gt;&lt;br&gt;Вычислить размер поля длины:&lt;br&gt;k = max(1, ceil(bit_length(L)/7))&lt;br&gt;Размер заголовка: &lt;code dir=&quot;ltr&quot;&gt;H = 8 + k&lt;/code&gt;" vertex="1">
+          <mxGeometry height="60" width="280" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-22" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-11">
+          <mxGeometry relative="1" x="0.6667" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-23" connectable="0" parent="SNYPf4aln_JW7p7YpgR6-22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Да" vertex="1">
+          <mxGeometry relative="1" x="0.5985" y="-1" as="geometry">
+            <mxPoint x="11" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-27" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-19">
+          <mxGeometry relative="1" x="0.0017" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-28" connectable="0" parent="SNYPf4aln_JW7p7YpgR6-27" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Нет" vertex="1">
+          <mxGeometry relative="1" x="-0.8408" y="-2" as="geometry">
+            <mxPoint x="-38" y="-17" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-10" parent="SNYPf4aln_JW7p7YpgR6-37" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="Сообщение помещается?&lt;br&gt;8·(H + L) ≤ N" vertex="1">
+          <mxGeometry height="70" width="280" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-11" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Вычислить контрольную сумму:&lt;br&gt;c = CRC32(M)" vertex="1">
+          <mxGeometry height="30" width="280" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-25" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-12" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Сформировать пакет:&lt;br&gt;B = STG9 ‖ varint(L) ‖ uint32(c) ‖ M" vertex="1">
+          <mxGeometry height="30" width="280" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-26" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-13" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Представить пакет последовательностью битов &lt;code dir=&quot;ltr&quot;&gt;b&lt;/code&gt;&amp;nbsp;- каждый байт от старшего бита к младшему&lt;br&gt;i = 0" vertex="1">
+          <mxGeometry height="50" width="280" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-29" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-30" connectable="0" parent="SNYPf4aln_JW7p7YpgR6-29" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Да" vertex="1">
+          <mxGeometry relative="1" x="-0.1627" as="geometry">
+            <mxPoint x="10" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-33" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-34" connectable="0" parent="SNYPf4aln_JW7p7YpgR6-33" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Нет" vertex="1">
+          <mxGeometry relative="1" x="-0.5899" y="-2" as="geometry">
+            <mxPoint x="-18" y="-25" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-14" parent="SNYPf4aln_JW7p7YpgR6-37" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="Остались биты для записи?&lt;br&gt;i &amp;lt; 8·(H + L)" vertex="1">
+          <mxGeometry height="60" width="280" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-31" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-15" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Записать очередной бит:&lt;br&gt;q = S[i]&lt;br&gt;a = (|q| AND ~1) OR b[i]&lt;br&gt;S[i] = sign(q)·a" vertex="1">
+          <mxGeometry height="60" width="280" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-32" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=open;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-14">
+          <mxGeometry relative="1" x="0.0054" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-17" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Перейти к следующему биту:&lt;br&gt;i = i + 1" vertex="1">
+          <mxGeometry height="30" width="280" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-35" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-20">
+          <mxGeometry relative="1" x="0.0047" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-18" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Сформировать JPEG из изменённых коэффициентов без повторного квантования" vertex="1">
+          <mxGeometry height="30" width="280" x="170" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-36" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="460" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-19" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=0;whiteSpace=wrap;html=1;" value="Сокрытие невозможно: недостаточная вместимость" vertex="1">
+          <mxGeometry height="30" width="280" x="390" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-20" parent="SNYPf4aln_JW7p7YpgR6-37" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;arcSize=50;" value="Конец&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="350" x="290" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="SNYPf4aln_JW7p7YpgR6-24" edge="1" parent="SNYPf4aln_JW7p7YpgR6-37" source="SNYPf4aln_JW7p7YpgR6-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="SNYPf4aln_JW7p7YpgR6-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="Vv_m9u8oJ8MFiiYEr1Vw" name="Раскрытие">
+    <mxGraphModel dx="858" dy="602" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-28" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="640" width="580" x="120" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-3" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-1" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;arcSize=50;" value="Начало" vertex="1">
+          <mxGeometry height="20" width="320" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-5" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-2" parent="GDoGR0D5sNdftD_q5-SR-28" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;shapeInside=1;fixedSize=1;" value="Получить квантованные DCT-коэффициенты JPEG" vertex="1">
+          <mxGeometry height="30" width="320" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-7" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-4" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=0;whiteSpace=wrap;html=1;" value="Выбрать AC-коэффициенты с модулем ≥ 2&lt;br&gt;Обход: компоненты по порядку хранения → строки блоков сверху вниз → блоки слева направо → коэффициенты 1…63" vertex="1">
+          <mxGeometry height="60" width="320" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-9" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-8">
+          <mxGeometry relative="1" x="0.6667" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-6" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=0;whiteSpace=wrap;html=1;" value="Прочитать заголовок: сигнатуру &lt;code dir=&quot;ltr&quot;&gt;STG9&lt;/code&gt;, длину текста в формате varint и контрольную сумму CRC-32" vertex="1">
+          <mxGeometry height="30" width="320" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-13" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-10">
+          <mxGeometry relative="1" x="0.6667" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-14" connectable="0" parent="GDoGR0D5sNdftD_q5-SR-13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Да" vertex="1">
+          <mxGeometry relative="1" x="0.067" as="geometry">
+            <mxPoint x="10" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-22" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-19">
+          <mxGeometry relative="1" x="0.0027" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-23" connectable="0" parent="GDoGR0D5sNdftD_q5-SR-22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Нет" vertex="1">
+          <mxGeometry relative="1" x="-0.8116" y="3" as="geometry">
+            <mxPoint x="-15" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-8" parent="GDoGR0D5sNdftD_q5-SR-28" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="Заголовок корректен и для указанного текста хватает коэффициентов?" vertex="1">
+          <mxGeometry height="70" width="320" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-12" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-10" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=0;whiteSpace=wrap;html=1;" value="Из следующих коэффициентов восстановить указанное количество байтов текста" vertex="1">
+          <mxGeometry height="30" width="320" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-16" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-11" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=0;whiteSpace=wrap;html=1;" value="Вычислить CRC-32 восстановленного текста" vertex="1">
+          <mxGeometry height="20" width="320" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-18" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=none;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-21" connectable="0" parent="GDoGR0D5sNdftD_q5-SR-18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Да" vertex="1">
+          <mxGeometry relative="1" x="-0.188" y="1" as="geometry">
+            <mxPoint x="9" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-24" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" x="-0.009" as="geometry">
+            <mxPoint x="420" y="434.66666666666674" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-25" connectable="0" parent="GDoGR0D5sNdftD_q5-SR-24" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;defaultLabelBackgroundColor=page;" value="Нет" vertex="1">
+          <mxGeometry relative="1" x="-0.3021" y="-3" as="geometry">
+            <mxPoint x="-15" y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-15" parent="GDoGR0D5sNdftD_q5-SR-28" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="Вычисленная CRC-32 совпадает с контрольной суммой из заголовка?" vertex="1">
+          <mxGeometry height="70" width="320" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-27" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="160" y="590" />
+            </Array>
+            <mxPoint x="280" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-17" parent="GDoGR0D5sNdftD_q5-SR-28" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;shapeInside=1;fixedSize=1;" value="Выдать восстановленное сообщение" vertex="1">
+          <mxGeometry height="20" width="320" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-26" edge="1" parent="GDoGR0D5sNdftD_q5-SR-28" source="GDoGR0D5sNdftD_q5-SR-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;endArrow=open;endFill=0;" target="GDoGR0D5sNdftD_q5-SR-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-19" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=0;whiteSpace=wrap;html=1;" value="Сообщение отсутствует или повреждено" vertex="1">
+          <mxGeometry height="20" width="320" x="260" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="GDoGR0D5sNdftD_q5-SR-20" parent="GDoGR0D5sNdftD_q5-SR-28" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;arcSize=50;" value="Конец" vertex="1">
+          <mxGeometry height="30" width="120" x="220" y="610" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

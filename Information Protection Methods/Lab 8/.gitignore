@@ -1,0 +1,37 @@
+# Local IDE settings
+/.idea/
+/.vscode/
+
+# CMake builds and local presets
+/build*/
+/cmake-build-*/
+/out/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/build.ninja
+/.ninja_*
+/CMakeUserPresets.json
+
+# Dependencies restored from vcpkg.json
+/vcpkg_installed/
+
+# Compiled files
+*.exe
+*.dll
+*.obj
+*.o
+*.a
+*.lib
+*.pdb
+*.ilk
+*.idb
+*.pch
+*.exp
+
+
+# Visual Studio local files
+/.vs/
+*.user
+*.suo
