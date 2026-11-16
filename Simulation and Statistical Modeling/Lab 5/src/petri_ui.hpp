@@ -6,7 +6,10 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Multiline_Output.H>
+#include <FL/Fl_Text_Buffer.H>
+#include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Tabs.H>
+#include <FL/Fl_Scroll.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
 
@@ -63,6 +66,31 @@ private:
     void drawTransition(int index) const;
 };
 
+class ReachabilityCanvas final : public Fl_Widget {
+public:
+    ReachabilityCanvas(int x, int y, int width, int height, const PetriNet* net);
+    void redrawGraph();
+
+protected:
+    void draw() override;
+
+private:
+    struct Point {
+        double x;
+        double y;
+    };
+
+    const PetriNet* net_;
+    PetriNet::Reachability graph_;
+    std::vector<Point> positions_;
+    double nodeRadius_ = 45.0;
+
+    void layout();
+    std::string edgeLabel(int from, int to) const;
+    void drawArrow(Point from, Point to, const std::string& label,
+                   bool returnBelow = false) const;
+};
+
 class NetworkPage final : public Fl_Group {
 public:
     NetworkPage(int x, int y, int width, int height, PetriNet net,
@@ -84,9 +112,17 @@ private:
     Fl_Multiline_Output* analysisOutput_ = nullptr;
     Fl_Multiline_Output* reachabilityOutput_ = nullptr;
     Fl_Multiline_Output* parallelOutput_ = nullptr;
-    Fl_Multiline_Output* graphOutput_ = nullptr;
+    Fl_Text_Display* graphOutput_ = nullptr;
+    Fl_Text_Buffer* graphBuffer_ = nullptr;
+    Fl_Scroll* graphScroll_ = nullptr;
     Fl_Multiline_Output* logOutput_ = nullptr;
+    Fl_Text_Display* experimentOutput_ = nullptr;
+    Fl_Text_Buffer* experimentBuffer_ = nullptr;
+    ReachabilityCanvas* graphCanvas_ = nullptr;
     Fl_Input* targetInput_ = nullptr;
+    Fl_Input* runsInput_ = nullptr;
+    Fl_Input* stepsInput_ = nullptr;
+    Fl_Input* seedInput_ = nullptr;
     Fl_Button* autoButton_ = nullptr;
     std::vector<Fl_Button*> transitionButtons_;
     std::vector<TransitionButtonData> transitionButtonData_;
@@ -100,6 +136,7 @@ private:
     static void reachabilityCallback(Fl_Widget* widget, void* data);
     static void parallelCallback(Fl_Widget* widget, void* data);
     static void graphCallback(Fl_Widget* widget, void* data);
+    static void experimentCallback(Fl_Widget* widget, void* data);
     static void autoTimer(void* data);
 
     void fireTransition(int transition);
@@ -109,6 +146,7 @@ private:
     void checkReachability();
     void showParallel();
     void showGraph();
+    void runExperiment();
     void updateView();
     void appendLog(const std::string& line);
 };

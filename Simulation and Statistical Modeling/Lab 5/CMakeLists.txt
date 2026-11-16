@@ -21,6 +21,7 @@ endif()
 add_executable(Lab5
     src/main.cpp
     src/petri_model.cpp
+    src/petri_experiment.cpp
     src/petri_ui.cpp
 )
 
