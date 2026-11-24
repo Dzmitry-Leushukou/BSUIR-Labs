@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 OPR/125.0.0.0">
   <diagram id="lorebase-single-usecase" name="Варианты использования">
-    <mxGraphModel dx="1689" dy="1184" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1776" dy="1245" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -49,7 +49,7 @@
             <mxGeometry height="20" width="68" x="890" y="1098" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="&lt;div style=&quot;font-size: 1px&quot;&gt;&lt;p style=&quot;text-align:left;margin-left:0;margin-right:0;margin-top:0px;margin-bottom:0px;text-indent:0;vertical-align:middle;direction:ltr;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;/div&gt;" tags="Фон" id="12">
+        <UserObject label="&lt;div style=&quot;font-size: 1px&quot;&gt;&lt;p style=&quot;text-align:left;margin-left:0;margin-right:0;margin-top:0px;margin-bottom:0px;text-indent:0;vertical-align:middle;direction:ltr;&quot;&gt;Л&lt;/p&gt;&lt;/div&gt;" tags="Фон" id="12">
           <mxCell parent="1" style="verticalAlign=middle;align=left;overflow=width;vsdxID=462;fillColor=none;gradientColor=none;shape=stencil(nZBLDoAgDERP0z3SIyjew0SURgSD+Lu9kMZoXLhwN9O+tukAlrNpJg1SzDH4QW/URgNYgZTkjA4UkwJUgGXng+6DX1zLfmoymdXo17xh5zmRJ6Q42BWCfc2oJfdAr+Yv+AP9Cb7OJ3H/2JG1HNGz/84klThPVCc=);strokeColor=none;spacingTop=-1;spacingBottom=-2;spacingLeft=-1;spacingRight=-3;points=[];labelBackgroundColor=none;rounded=0;html=1;whiteSpace=wrap;" vertex="1">
             <mxGeometry height="20" width="92" x="958" y="1038" as="geometry" />
           </mxCell>
@@ -64,7 +64,7 @@
             <mxGeometry height="100" width="280" x="1150" y="998" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="&lt;div style=&quot;font-size: 1px&quot;&gt;&lt;p style=&quot;text-align:center;margin-left:0;margin-right:0;margin-top:0px;margin-bottom:0px;text-indent:0;vertical-align:middle;direction:ltr;&quot;&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;ГУИР.453501&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;.015&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;&amp;nbsp;01&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;&lt;br&gt;&lt;/i&gt;&lt;/font&gt;&lt;/p&gt;&lt;/div&gt;" tags="Фон" id="16">
+        <UserObject label="&lt;div style=&quot;font-size: 1px&quot;&gt;&lt;p style=&quot;text-align:center;margin-left:0;margin-right:0;margin-top:0px;margin-bottom:0px;text-indent:0;vertical-align:middle;direction:ltr;&quot;&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;ГУИР.353504&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;.018&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;&amp;nbsp;01&lt;/i&gt;&lt;/font&gt;&lt;font style=&quot;font-size: 28px; font-family: &amp;quot;GOST type B&amp;quot;; color: rgb(0, 0, 0); direction: ltr; letter-spacing: 0px; line-height: 120%; opacity: 1;&quot;&gt;&lt;i&gt;&lt;br&gt;&lt;/i&gt;&lt;/font&gt;&lt;/p&gt;&lt;/div&gt;" tags="Фон" id="16">
           <mxCell parent="1" style="verticalAlign=middle;align=center;overflow=width;vsdxID=466;fillColor=none;gradientColor=none;shape=stencil(nZBLDoAgDERP0z3SIyjew0SURgSD+Lu9kMZoXLhwN9O+tukAlrNpJg1SzDH4QW/URgNYgZTkjA4UkwJUgGXng+6DX1zLfmoymdXo17xh5zmRJ6Q42BWCfc2oJfdAr+Yv+AP9Cb7OJ3H/2JG1HNGz/84klThPVCc=);strokeColor=none;spacingBottom=-1;points=[];labelBackgroundColor=none;rounded=0;html=1;whiteSpace=wrap;" vertex="1">
             <mxGeometry height="60" width="480" x="1150" y="938" as="geometry" />
           </mxCell>
